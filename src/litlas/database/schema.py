@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS authors (
     birthplace TEXT,
     wikidata_id TEXT,
     status TEXT NOT NULL DEFAULT 'unresolved',
-    source TEXT
+    source TEXT,
+    last_lookup_at TEXT
 );
 
 CREATE TABLE IF NOT EXISTS works (
