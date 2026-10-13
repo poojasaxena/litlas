@@ -1,5 +1,6 @@
 """Conservative birthplace lookup. Never silently substitute citizenship for birthplace."""
 import requests
+from litlas.core import iso3
 
 API = 'https://www.wikidata.org/w/api.php'
 
@@ -37,42 +38,101 @@ def label(entry):
     return entry.get('labels',{}).get('en',{}).get('value','')
 
 
+def normalize_author_name(name):
+    """Normalise whitespace without changing the author's identity."""
+    return " ".join(name.split())
+
+
 def candidate(author):
-    results = api({'action':'wbsearchentities','search':author,'language':'en','type':'item','limit':5}).get('search',[])
-    # Only exact-label writer candidates accepted, to reduce false matches.
-    allowed = ('writer','novelist','author','poet','playwright','journalist','literary')
-    matches = [r for r in results if r.get('label','').casefold()==author.casefold() and
-               any(word in r.get('description','').lower() for word in allowed)]
-    return matches[0] if len(matches)==1 else None
+    author = normalize_author_name(author)
+
+    results = api(
+        {
+            "action": "wbsearchentities",
+            "search": author,
+            "language": "en",
+            "type": "item",
+            "limit": 5,
+        }
+    ).get("search", [])
+
+    allowed = (
+        "writer",
+        "novelist",
+        "author",
+        "poet",
+        "playwright",
+        "journalist",
+        "literary",
+    )
+
+    matches = [
+        r
+        for r in results
+        if normalize_author_name(r.get("label", "")).casefold() == author.casefold()
+        and any(word in r.get("description", "").lower() for word in allowed)
+    ]
+
+    return matches[0] if len(matches) == 1 else None
+
+
+def resolve_place_country(place_qid):
+    """Resolve a birthplace country without guessing from claim order."""
+
+    seen = set()
+    place = place_qid
+
+    for _ in range(5):
+        if place in seen:
+            break
+        seen.add(place)
+
+        entry = entity(place)
+        country_ids = set(claim_ids(entry, "P17"))
+
+        if country_ids:
+            country_names = {label(entity(qid)) for qid in country_ids}
+
+            # Do not select the first claim: claim order is
+            # not evidence of the present-day country.
+            if len(country_names) != 1:
+                return "", "review ambiguous country"
+
+            country = next(iter(country_names))
+
+            if not iso3(country):
+                return "", "review historical or unknown country"
+
+            return country, "provisional birthplace"
+
+        # Only traverse upwards when no country claim exists.
+        parents = set(claim_ids(entry, "P131"))
+
+        if len(parents) != 1:
+            return "", "review birthplace geography"
+
+        place = next(iter(parents))
+
+    return "", "review birthplace geography"
 
 
 def resolve_birth_country(author):
     try:
         match = candidate(author)
+
         if not match:
-            return ('', 'review identity', '')
-        qid = match['id']
+            return "", "review identity", ""
+
+        qid = match["id"]
         author_entry = entity(qid)
-        places = claim_ids(author_entry, 'P19')  # birthplace
-        if not places:
-            return ('', 'review birthplace', qid)
-        place = places[0]
-        # P17: country of birthplace. P131: enclosing administrative unit.
-        # Limit levels; historical entities may need manual intervention.
-        seen = set()
-        for _ in range(5):
-            if place in seen: break
-            seen.add(place)
-            entry = entity(place)
-            countries = claim_ids(entry, 'P17')
-            if countries:
-                country_name = label(entity(countries[0]))
-                if country_name in {'Soviet Union','Yugoslavia','Ottoman Empire','British Raj'}:
-                    return ('', 'review historical country', qid)
-                return (country_name, 'provisional birthplace', qid)
-            parents = claim_ids(entry, 'P131')
-            if not parents: break
-            place = parents[0]
-        return ('', 'review birthplace geography', qid)
+        places = set(claim_ids(author_entry, "P19"))
+
+        if len(places) != 1:
+            return "", "review birthplace", qid
+
+        country, status = resolve_place_country(next(iter(places)))
+
+        return country, status, qid
+
     except (requests.RequestException, ValueError, KeyError) as exc:
-        return ('', f'lookup error: {str(exc)[:85]}', '')
+        return "", f"lookup error: {str(exc)[:85]}", ""
