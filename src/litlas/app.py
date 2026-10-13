@@ -8,7 +8,9 @@ from folium.plugins import MarkerCluster
 from streamlit_folium import st_folium
 from countryinfo import CountryInfo
 import pycountry
-from litlas.core import enriched_books_path, load_config
+from litlas.core import load_config
+from litlas.database.connection import database_path
+from litlas.database.repository import load_read_books
 import requests
 
 
@@ -42,22 +44,22 @@ st.markdown('''<style>
 st.title('🌍 Literary Atlas')
 st.caption('A world of books, mapped by where their authors were born.')
 
-# The map is display-only. Run `litlas-prepare` first.
-source = enriched_books_path()
+# Load the literary map data from SQLite.
+source = database_path()
+
 if not source.is_file():
-    st.warning('No enriched CSV found. Run `litlas-prepare --no-lookup` first, then `litlas-prepare` for birthplace lookups.')
+    st.warning("Litlas database not found. Initialise and import the database first.")
     st.stop()
+
 try:
-    books = pd.read_csv(source, keep_default_na=False, low_memory=False)
+    books = load_read_books()
 except Exception as exc:
-    st.error(f'Could not read enriched CSV: {exc}')
+    st.error(f"Could not read Litlas database: {exc}")
     st.stop()
-for field in ('Author','Title','ISO3','My Rating'):
-    if field not in books.columns:
-        st.error(f'Enriched CSV missing column: {field}')
-        st.stop()
-books['My Rating']=pd.to_numeric(books['My Rating'],errors='coerce').fillna(0).astype(int)
-mapped=books[books['ISO3'].astype(bool)].copy()
+
+books["My Rating"] = pd.to_numeric(books["My Rating"], errors="coerce").fillna(0)
+
+mapped = books[books["ISO3"].astype(bool)].copy()
 
 # Approximate marker anchors; CountryInfo includes packaged offline geographic coordinates.
 SPECIAL={'XKX':[42.6,21.0], 'TWN':[23.7,121.0], 'PSE':[31.9,35.2]}
@@ -106,11 +108,7 @@ def pop_html(group, name, code):
                 volumes = volumes.sort_values("Volume Number")
 
                 for _, volume in volumes.iterrows():
-                    rating = int(volume["My Rating"])
-
-                    stars = (
-                        "★" * rating + "☆" * (5 - rating) if 1 <= rating <= 5 else "Not rated"
-                    )
+                    stars = format_rating(volume["My Rating"])
 
                     lines.append(
                         f'<div class="book">'
@@ -120,10 +118,12 @@ def pop_html(group, name, code):
                     )
 
             else:
-                ratings = sorted(set(int(r) for r in records["My Rating"] if int(r) > 0))
+                ratings = sorted(
+                    set(float(r) for r in records["My Rating"] if float(r) > 0)
+                )
 
                 if len(ratings) == 1:
-                    rating_text = "★" * ratings[0] + "☆" * (5 - ratings[0])
+                    rating_text = format_rating(ratings[0])
                 elif len(ratings) > 1:
                     rating_text = "Multiple ratings"
                 else:
@@ -179,27 +179,18 @@ def pop_html(group, name, code):
     </style>
     """
 
-def pop_html_deprecated(group,name,code):
-    count_books=len(group)
-    grouped=[]
-    for author,items in sorted(group.groupby('Author'),key=lambda pair:pair[0].casefold()):
-        lines=[]
-        for _,b in items.sort_values('Title').iterrows():
-            rating=int(b['My Rating'])
-            stars=(('★'*rating)+('☆'*(5-rating))) if 1<=rating<=5 else 'Not rated'
-            lines.append(
-                f'<div class="book">'
-                f'<span>{escape(str(b["Display Title"]))}</span>'
-                f'<span class="rating">{stars}</span>'
-                f'</div>'
-            )
-        grouped.append(f'<h4>{escape(author)}</h4>'+''.join(lines))
 
-    return f'''<div style="font-family:system-ui,sans-serif;width:340px;max-height:370px;overflow:auto;color:#222">
-    <h3 style="margin:0 0 4px">{flag(code)} {escape(name)}</h3>
-    <div style="color:#777;font-size:12px;margin-bottom:14px">{len(group['Author'].unique())} authors · {count_books} books</div>
-    {''.join(grouped)}</div>
-    <style>h4{{font-size:14px;margin:11px 0 6px;border-bottom:1px solid #eee;padding-bottom:5px}}.book{{display:flex;justify-content:space-between;gap:12px;margin:5px 0;font-size:12px;line-height:1.35}}.rating{{white-space:nowrap;color:#b57b13}}</style>'''
+def format_rating(value):
+    rating = float(value)
+
+    if rating <= 0:
+        return "Not rated"
+
+    if rating.is_integer():
+        stars = int(rating)
+        return "★" * stars + "☆" * (5 - stars)
+
+    return f"{rating:g}★"
 
 m = folium.Map(
     location=[15, 0],
