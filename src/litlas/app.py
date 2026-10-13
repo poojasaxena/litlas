@@ -8,15 +8,18 @@ from folium.plugins import MarkerCluster
 from streamlit_folium import st_folium
 from countryinfo import CountryInfo
 import pycountry
-from litlas.core import library_dir
+from litlas.core import enriched_books_path, load_config
 import requests
 
 
 ## Configuration constants for the map and flag display
-FLAG_SIZE = 14
-MAP_HEIGHT = 800
-COUNTRY_FILL = "#82BFA0"  # Soft green
-COUNTRY_OPACITY = 0.25
+config = load_config()
+map_config = config.get("map", {})
+
+FLAG_SIZE = map_config.get("flag_size", 14)
+MAP_HEIGHT = map_config.get("height", 800)
+COUNTRY_FILL = map_config.get("country_fill", "#82BFA0")
+COUNTRY_OPACITY = map_config.get("country_opacity", 0.25)
 
 
 @st.cache_data
@@ -40,7 +43,7 @@ st.title('🌍 Literary Atlas')
 st.caption('A world of books, mapped by where their authors were born.')
 
 # The map is display-only. Run `litlas-prepare` first.
-source = library_dir() / 'books_enriched.csv'
+source = enriched_books_path()
 if not source.is_file():
     st.warning('No enriched CSV found. Run `litlas-prepare --no-lookup` first, then `litlas-prepare` for birthplace lookups.')
     st.stop()

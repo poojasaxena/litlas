@@ -6,8 +6,17 @@ import time
 from pathlib import Path
 import pandas as pd
 import requests
-from litlas.core import (FIELDS, library_dir, latest_goodreads, load_goodreads,
-                         load_authors, save_authors, attach_country, iso3)
+from litlas.core import (
+    FIELDS,
+    library_dir,
+    latest_goodreads,
+    load_goodreads,
+    load_authors,
+    save_authors,
+    attach_country,
+    iso3,
+    enriched_books_path,
+)
 from litlas.wikidata import resolve_birth_country, WikidataRateLimit
 
 
@@ -17,8 +26,11 @@ def build_csv(source=None, folder=None):
     books = book_df.loc[book_df['Exclusive Shelf'].eq('read')].copy()
     # All read books are included, even when the author has not yet been resolved.
     out = attach_country(books, load_authors(folder))
-    target = folder / 'books_enriched.csv'
-    temp = folder / 'books_enriched.csv.tmp'
+    target = enriched_books_path(folder)
+    target.parent.mkdir(parents=True, exist_ok=True)
+
+    temp = target.with_suffix(".csv.tmp")
+
     out.to_csv(temp, index=False)
     os.replace(temp, target)
     return out, target
@@ -26,7 +38,10 @@ def build_csv(source=None, folder=None):
 
 def main():
     p = argparse.ArgumentParser(description='Build a complete enriched Goodreads CSV; optionally resolve every missing author.')
-    p.add_argument('--csv', help='Explicit Goodreads source, otherwise latest Vault archive export')
+    p.add_argument(
+        "--csv",
+        help="Explicit Goodreads CSV; otherwise use the latest export in Library/Goodreads/",
+    )
     p.add_argument('--no-lookup', action='store_true', help='Just rebuild from existing authors.csv (no network)')
     p.add_argument('--delay', type=float, default=5.0, help='Seconds between author lookups')
     p.add_argument('--max-retries', type=int, default=3, help='Max retries per transient error / HTTP 429')
