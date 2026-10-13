@@ -1,4 +1,13 @@
-# Litlas v4 — complete Goodreads birth-country preparation and minimal map
+# Litlas 🌍📚
+
+**Litlas = Literature + Atlas**
+
+An interactive literary world atlas that visualises your
+reading history by authors' countries of birth.
+
+Import your Goodreads history, enrich author metadata,
+and explore the world through the books you've read.
+
 
 Your personal Goodreads data stays under `Vault/Personal/Learning/Library/`, never in the Python package.
 
