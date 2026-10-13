@@ -17,15 +17,70 @@ from litlas.core import (
     iso3,
     enriched_books_path,
 )
+from litlas.cleaning import clean_title
+from litlas.core import load_config
+
 from litlas.wikidata import resolve_birth_country, WikidataRateLimit
+from litlas.cleaning import clean_title
 
 
 def build_csv(source=None, folder=None):
     folder = Path(folder) if folder else library_dir()
+
+    # 1. Load Goodreads data and select read books
     book_df = load_goodreads(source or latest_goodreads(folder))
-    books = book_df.loc[book_df['Exclusive Shelf'].eq('read')].copy()
-    # All read books are included, even when the author has not yet been resolved.
+    books = book_df.loc[book_df["Exclusive Shelf"].eq("read")].copy()
+
+    # 2. Clean book titles for display
+    cleaning_config = load_config().get("cleaning", {})
+    remove_subtitles = cleaning_config.get("remove_subtitles", False)
+
+    books["Display Title"] = books["Title"].map(
+        lambda title: clean_title(
+            title,
+            remove_subtitles=remove_subtitles,
+        )
+    )
+
+    # 3. Attach cached author birth-country metadata
     out = attach_country(books, load_authors(folder))
+
+    # 4. Assign a unique work identifier to each Goodreads record
+    out["Book Id"] = out["Book Id"].astype(str)
+    out["Work ID"] = "goodreads:" + out["Book Id"]
+    out["Work Title"] = out["Display Title"]
+    out["Volume"] = ""
+
+    # 5. Apply manually verified work consolidation
+    works_path = folder / load_config()["paths"]["litlas"] / "works.csv"
+
+    if works_path.is_file():
+        works = pd.read_csv(
+            works_path,
+            dtype=str,
+            keep_default_na=False,
+        )
+
+        required = {"Book Id", "Work ID", "Work Title", "Volume"}
+
+        if not required.issubset(works.columns):
+            raise ValueError(f"Invalid works.csv: expected columns {sorted(required)}")
+
+        if works["Book Id"].duplicated().any():
+            raise ValueError("Duplicate Book Id in works.csv")
+
+        works = works.set_index("Book Id")
+        ids = out["Book Id"]
+
+        for column in ("Work ID", "Work Title", "Volume"):
+            overrides = ids.map(works[column])
+
+            out[column] = overrides.where(
+                overrides.notna() & overrides.ne(""),
+                out[column],
+            )
+
+    # 6. Save the enriched dataset atomically
     target = enriched_books_path(folder)
     target.parent.mkdir(parents=True, exist_ok=True)
 
@@ -33,6 +88,7 @@ def build_csv(source=None, folder=None):
 
     out.to_csv(temp, index=False)
     os.replace(temp, target)
+
     return out, target
 
 

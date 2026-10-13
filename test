@@ -1,0 +1,25 @@
+python - <<'PY'
+from pathlib import Path
+import pandas as pd
+
+library = Path.home() / "PoojaVault/Personal/Learning/Library"
+
+books = pd.read_csv(library / "Litlas/books_enriched.csv")
+authors = pd.read_csv(
+    library / "Litlas/authors.csv",
+    keep_default_na=False,
+)
+
+print("Authors:", len(authors))
+print("Missing country:", authors["ISO3"].eq("").sum())
+print("\nStatus distribution:")
+print(authors["Status"].value_counts().to_string())
+
+print("\nSample book titles:")
+print(
+    books[["Author", "Title"]]
+    .sample(min(30, len(books)), random_state=42)
+    .to_string(index=False)
+)
+
+PY
