@@ -158,6 +158,24 @@ def refresh_display_titles():
 
     return updated
 
+def get_rating_distribution():
+    """Count displayed read books by personal rating."""
+
+    query = """
+        SELECT
+            rating,
+            COUNT(*) AS books
+        FROM books
+        WHERE shelf = 'read'
+          AND excluded_from_display = 0
+          AND rating > 0
+        GROUP BY rating
+        ORDER BY rating
+    """
+
+    with connect() as db:
+        return pd.read_sql_query(query, db)
+    
 def get_reading_summary():
     """Return overall statistics for displayed read books."""
 

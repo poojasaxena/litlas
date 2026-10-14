@@ -9,6 +9,7 @@ from litlas.processing.countries import country_name
 from litlas.database.repository import (
     get_country_reading_density,
     get_reading_summary,
+    get_rating_distribution,
 )
 
 st.set_page_config(
@@ -36,7 +37,7 @@ summary = get_reading_summary()
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric("Books read", summary["works"])
+    st.metric("Books read", summary["books"])
 
 with col2:
     st.metric("Authors", summary["authors"])
@@ -55,7 +56,10 @@ density["country"] = density["iso3"].apply(country_name)
 
 density = density.sort_values("works", ascending=False)
 
-st.subheader("Literary works by country")
+country_col, ratings_col = st.columns([3, 1], gap="large")
+
+with country_col:
+    st.subheader("Literary works by country")
 
 top_density = density.head(15).copy()
 top_density = top_density.sort_values("works", ascending=True)
@@ -95,7 +99,7 @@ fig = go.Figure(
 
 ## Configure and render the Plotly bar chart for reading statistics by country
 fig.update_layout(
-    height=620,
+    height=420,
     margin=dict(l=20, r=40, t=20, b=40),
     paper_bgcolor="#FAF7F1",
     plot_bgcolor="#F5EFE4",
@@ -122,4 +126,71 @@ fig.update_layout(
     bargap=0.22,
 )
 
-st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+with country_col:
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+        config={"displayModeBar": False},
+    )
+
+# Ratings distribution
+ratings = get_rating_distribution()
+
+with ratings_col:
+    st.subheader("My ratings")
+
+if ratings.empty:
+    st.info("No rated books available yet.")
+else:
+    fig_ratings = go.Figure(
+        go.Bar(
+            x=ratings["rating"],
+            y=ratings["books"],
+            marker=dict(
+                color="#A98160",
+                line=dict(color="#855C45", width=1),
+            ),
+            text=ratings["books"],
+            textposition="outside",
+            cliponaxis=False,
+            hovertemplate=(
+                "<b>%{x} stars</b><br>"
+                "%{y} books<extra></extra>"
+            ),
+        )
+    )
+
+    fig_ratings.update_layout(
+        height=420,
+        margin=dict(l=40, r=10, t=30, b=50),
+        paper_bgcolor="#FAF7F1",
+        plot_bgcolor="#EFE3D0",
+        font=dict(
+            family="Georgia, serif",
+            size=11,
+            color="#58412F",
+        ),
+        xaxis=dict(
+            title=None,
+            tickmode="array",
+            tickvals=[1, 2, 3, 4, 5],
+            ticktext=["1", "2", "3", "4", "5"],
+            showgrid=False,
+            zeroline=False,
+        ),
+        yaxis=dict(
+            title=None,
+            showgrid=True,
+            gridcolor="#D1BEA4",
+            zeroline=False,
+        ),
+        bargap=0.25,
+        showlegend=False,
+    )
+
+    with ratings_col:
+        st.plotly_chart(
+            fig_ratings,
+            use_container_width=True,
+            config={"displayModeBar": False},
+        )
