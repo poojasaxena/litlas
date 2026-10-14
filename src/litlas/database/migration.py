@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from litlas.core import authors_path, enriched_books_path
+from litlas.processing.core import authors_path, enriched_books_path
 from litlas.database.connection import connect, database_path
 from litlas.database.schema import initialize_database
 

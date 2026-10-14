@@ -1,7 +1,6 @@
 import pytest
 
-from litlas.cleaning import clean_title
-
+from litlas.processing.cleaning import clean_title
 
 @pytest.mark.parametrize(
     "original,expected",
@@ -64,7 +63,6 @@ def test_remove_everything_after_opening_parenthesis():
 )
 def test_bracket_cleanup(original, expected):
     assert clean_title(original) == expected
-    
 
 
 @pytest.mark.parametrize(
@@ -88,10 +86,6 @@ def test_bracket_cleanup(original, expected):
 )
 def test_edition_cleanup(original, expected):
     assert clean_title(original) == expected
-
-
-import pytest
-from litlas.cleaning import clean_title
 
 
 @pytest.mark.parametrize(

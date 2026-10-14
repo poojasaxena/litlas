@@ -3,7 +3,7 @@
 import argparse
 import time
 from datetime import datetime, timezone
-from litlas.core import iso3
+from litlas.processing.core import iso3
 from litlas.database.connection import connect
 from litlas.enrichment.wikidata import resolve_birth_country, WikidataRateLimit
 

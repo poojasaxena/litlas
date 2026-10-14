@@ -15,8 +15,8 @@ dependencies = [
 
 [project.scripts]
 litlas = "litlas.launcher:main"
+litlas-prepare = "litlas.processing.prepare:main"
 litlas-enrich = "litlas.enrichment.enrich:main"
-litlas-prepare = "litlas.prepare:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

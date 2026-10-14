@@ -8,7 +8,7 @@ from litlas.database.repository import (
     get_author_books,
     verify_author_country,
 )
-from litlas.ui import apply_page_style
+from litlas.app.ui import apply_page_style
 
 st.set_page_config(
     page_title="Author Review · Litlas",

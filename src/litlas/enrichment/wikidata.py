@@ -1,6 +1,6 @@
 """Conservative birthplace lookup. Never silently substitute citizenship for birthplace."""
 import requests
-from litlas.core import iso3
+from litlas.processing.core import iso3
 
 API = 'https://www.wikidata.org/w/api.php'
 

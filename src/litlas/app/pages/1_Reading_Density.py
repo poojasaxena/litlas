@@ -10,11 +10,10 @@ import streamlit as st
 from branca.colormap import LinearColormap
 from streamlit_folium import st_folium
 from branca.element import Element
-from litlas.ui import apply_page_style
-
+from litlas.app.popups import pop_html
+from litlas.app.ui import apply_page_style
+from litlas.processing.core import load_config
 from html import escape
-from litlas.popups import pop_html
-from litlas.core import load_config
 from litlas.database.repository import (
     get_country_reading_density,
     load_read_books,

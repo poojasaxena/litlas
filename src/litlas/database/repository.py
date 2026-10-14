@@ -3,7 +3,8 @@
 import pandas as pd
 
 from litlas.database.connection import connect
-
+from litlas.processing.cleaning import clean_title
+from litlas.processing.core import load_config
 
 def load_read_books():
     """Return read books with their authors and canonical works."""
@@ -106,14 +107,10 @@ def get_country_reading_density():
 
     with connect() as db:
         return pd.read_sql_query(query, db)
-    
 
 
 def refresh_display_titles():
     """Reapply title-cleaning rules to existing Goodreads titles."""
-
-    from litlas.cleaning import clean_title
-    from litlas.core import load_config
 
     remove_subtitles = load_config().get("cleaning", {}).get("remove_subtitles", False)
 

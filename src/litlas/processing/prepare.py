@@ -6,7 +6,7 @@ import time
 from pathlib import Path
 import pandas as pd
 import requests
-from litlas.core import (
+from litlas.processing.core import (
     FIELDS,
     library_dir,
     latest_goodreads,
@@ -17,11 +17,11 @@ from litlas.core import (
     iso3,
     enriched_books_path,
 )
-from litlas.cleaning import clean_title
-from litlas.core import load_config
+from litlas.processing.cleaning import clean_title
+from litlas.processing.core import load_config
 
-from litlas.wikidata import resolve_birth_country, WikidataRateLimit
-from litlas.cleaning import clean_title
+from litlas.enrichment.wikidata import resolve_birth_country, WikidataRateLimit
+from litlas.processing.cleaning import clean_title
 
 
 def build_csv(source=None, folder=None):

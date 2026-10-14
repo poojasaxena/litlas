@@ -8,12 +8,12 @@ from folium.plugins import MarkerCluster
 from streamlit_folium import st_folium
 from countryinfo import CountryInfo
 import pycountry
-from litlas.core import load_config
+from litlas.processing.core import load_config
+from litlas.app.popups import flag, pop_html
+from litlas.app.ui import apply_page_style
 from litlas.database.connection import database_path
 from litlas.database.repository import load_read_books
 import requests
-from litlas.popups import flag, pop_html
-from litlas.ui import apply_page_style
 
 
 ## Configuration constants for the map and flag display

@@ -19,7 +19,7 @@ def main():
 
     parser.parse_args()
 
-    app_path = Path(__file__).resolve().parent / "app.py"
+    app_path = Path(__file__).resolve().parent / "app" / "main.py"
 
     subprocess.run(
         [sys.executable, "-m", "streamlit", "run", str(app_path)],

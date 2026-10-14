@@ -2,8 +2,8 @@
 
 import pandas as pd
 
-from litlas.cleaning import clean_title
-from litlas.core import latest_goodreads, load_config
+from litlas.processing.cleaning import clean_title
+from litlas.processing.core import latest_goodreads, load_config
 from litlas.database.connection import connect
 
 

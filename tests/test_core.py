@@ -1,5 +1,5 @@
 from pathlib import Path
-from litlas.core import latest_goodreads, iso3
+from litlas.processing.core import latest_goodreads, iso3
 
 
 def test_latest_export(tmp_path):

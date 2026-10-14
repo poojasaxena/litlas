@@ -2,7 +2,6 @@
 litlas.core — Goodreads reading data and persistent birthplace metadata.
 """
 
-import os
 from pathlib import Path
 import tomllib
 
@@ -10,7 +9,7 @@ import pandas as pd
 import pycountry
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 CONFIG_PATH = PROJECT_ROOT / "config.toml"
 
 FIELDS = ["Author", "Country", "ISO3", "Status", "Wikidata ID"]
