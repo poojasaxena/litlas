@@ -5,17 +5,17 @@ import streamlit as st
 import folium
 
 from streamlit_folium import st_folium
-from countryinfo import CountryInfo
-import pycountry
 from litlas.processing.core import load_config
 from litlas.app.popups import flag, pop_html
 from litlas.database.connection import database_path
 from litlas.database.repository import load_read_books
 from litlas.app.ui import apply_page_style, render_page_header
 from litlas.app.map_style import apply_map_style
-from litlas.processing.countries import country_name
-from litlas.processing.countries import country_name, load_country_boundaries
-
+from litlas.processing.countries import (
+    country_name,
+    country_coordinates,
+    load_country_boundaries,
+)
 ## Configuration constants for the map and flag display
 config = load_config()
 map_config = config.get("map", {})
@@ -67,20 +67,6 @@ books["My Rating"] = pd.to_numeric(books["My Rating"], errors="coerce").fillna(0
 
 mapped = books[books["ISO3"].astype(bool)].copy()
 
-# Approximate marker anchors; CountryInfo includes packaged offline geographic coordinates.
-SPECIAL={'XKX':[42.6,21.0], 'TWN':[23.7,121.0], 'PSE':[31.9,35.2]}
-def locate(iso):
-    if iso in SPECIAL:return SPECIAL[iso]
-    try:
-        country=pycountry.countries.get(alpha_3=iso)
-        if country is None:return None
-        return CountryInfo(country.name).latlng()
-    except (KeyError,ValueError,AttributeError,TypeError):
-        try:
-            aliases={'USA':'United States','GBR':'United Kingdom','KOR':'South Korea','RUS':'Russia', 'CZE':'Czech Republic', 'IRN':'Iran'}
-            return CountryInfo(aliases.get(iso,iso)).latlng()
-        except (KeyError,ValueError,AttributeError,TypeError):return None
-
 
 m = folium.Map(
     location=[15, 0],
@@ -117,7 +103,7 @@ folium.GeoJson(
 # cluster=MarkerCluster(name='Countries',disableClusteringAtZoom=4,showCoverageOnHover=False).add_to(m)
 placed=0
 for iso, group in mapped.groupby('ISO3',sort=True):
-    position=locate(iso)
+    position = country_coordinates(iso)
     if not position: continue
     name = country_name(iso)
 
