@@ -40,21 +40,24 @@ st.set_page_config(page_title='Literary Atlas',page_icon='🌍',layout='wide',in
 apply_page_style()
 
 render_page_header(
-    "🌍 Literary Atlas",
-    "Explore your reading journey through authors' birthplaces.",
+    "Literary Atlas",
+    "A journey through literature and geography...",
+    illustration="literary_atlas",
+    illustration_size=220,
 )
-st.page_link(
-    "pages/1_Reading_Density.py",
-    label="🌍 Explore reading density",
-)
-st.page_link(
-    "pages/2_Author_Review.py",
-    label="📚 Review author birthplaces",
-)
-st.page_link(
-    "pages/3_Reading_Statistics.py",
-    label="📊 Explore reading statistics",
-)
+
+# st.page_link(
+#     "pages/1_Reading_Density.py",
+#     label="🌍 Explore reading density",
+# )
+# st.page_link(
+#     "pages/2_Author_Review.py",
+#     label="📚 Review author birthplaces",
+# )
+# st.page_link(
+#     "pages/3_Reading_Statistics.py",
+#     label="📊 Explore reading statistics",
+# )
 
 # Load the literary map data from SQLite.
 source = database_path()
