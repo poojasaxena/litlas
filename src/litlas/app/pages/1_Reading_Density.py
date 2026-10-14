@@ -4,8 +4,6 @@ from copy import deepcopy
 from math import log1p
 
 import folium
-import pycountry
-import requests
 import streamlit as st
 from branca.colormap import LinearColormap
 from streamlit_folium import st_folium
