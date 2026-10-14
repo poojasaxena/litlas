@@ -1,19 +1,18 @@
 """Minimal interactive literary map. Run: streamlit run app.py"""
-from html import escape
-from pathlib import Path
+
 import pandas as pd
 import streamlit as st
 import folium
-from folium.plugins import MarkerCluster
+
 from streamlit_folium import st_folium
 from countryinfo import CountryInfo
 import pycountry
+import requests
 from litlas.processing.core import load_config
 from litlas.app.popups import flag, pop_html
-from litlas.app.ui import apply_page_style
 from litlas.database.connection import database_path
 from litlas.database.repository import load_read_books
-import requests
+from litlas.app.ui import apply_page_style, render_page_header
 
 
 ## Configuration constants for the map and flag display
@@ -40,8 +39,10 @@ def load_country_boundaries():
 st.set_page_config(page_title='Literary Atlas',page_icon='🌍',layout='wide',initial_sidebar_state='collapsed')
 apply_page_style()
 
-st.title('🌍 Literary Atlas')
-st.caption('A world of books, mapped by author birthplaces')
+render_page_header(
+    "🌍 Literary Atlas",
+    "Explore your reading journey through authors' birthplaces.",
+)
 st.page_link(
     "pages/1_Reading_Density.py",
     label="🌍 Explore reading density",
@@ -50,7 +51,10 @@ st.page_link(
     "pages/2_Author_Review.py",
     label="📚 Review author birthplaces",
 )
-
+st.page_link(
+    "pages/3_Reading_Statistics.py",
+    label="📊 Explore reading statistics",
+)
 
 # Load the literary map data from SQLite.
 source = database_path()

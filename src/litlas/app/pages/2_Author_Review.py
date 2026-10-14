@@ -19,7 +19,7 @@ apply_page_style()
 st.title("📚 Author Birthplace Review")
 st.caption("Verify an author's country of birth and save it to SQLite.")
 
-st.page_link("app.py", label="← Back to Literary Atlas")
+st.page_link("main.py", label="← Back to Literary Atlas")
 
 include_provisional = st.checkbox(
     "Include provisional country assignments",

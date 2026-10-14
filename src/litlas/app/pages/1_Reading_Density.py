@@ -18,6 +18,7 @@ from litlas.database.repository import (
     get_country_reading_density,
     load_read_books,
 )
+from litlas.app.ui import apply_page_style, render_page_header
 
 st.set_page_config(
     page_title="Reading Density · Litlas",
@@ -27,10 +28,10 @@ st.set_page_config(
 )
 apply_page_style()
 
-st.title("🌍 Reading Density")
-st.caption(
+render_page_header(
+    "🌍 Reading Density",
     "Countries shaded by the number of unique literary works "
-    "you've read, based on authors' birthplaces."
+    "you've read, based on authors' birthplaces.",
 )
 
 # st.page_link("app.py", label="← Literary Atlas")
