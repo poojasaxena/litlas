@@ -13,7 +13,7 @@ from litlas.app.popups import flag, pop_html
 from litlas.database.connection import database_path
 from litlas.database.repository import load_read_books
 from litlas.app.ui import apply_page_style, render_page_header
-
+from litlas.app.map_style import apply_map_style
 
 ## Configuration constants for the map and flag display
 config = load_config()
@@ -66,6 +66,7 @@ if not source.is_file():
     st.warning("Litlas database not found. Initialise and import the database first.")
     st.stop()
 
+
 try:
     books = load_read_books()
 except Exception as exc:
@@ -94,12 +95,13 @@ def locate(iso):
 m = folium.Map(
     location=[15, 0],
     zoom_start=2,
-    tiles="OpenStreetMap",
+    tiles=None,
     control_scale=True,
     prefer_canvas=False,
     world_copy_jump=True,
     zoom_control=True,
 )
+apply_map_style(m)
 
 m.fit_bounds([[-55, -170], [75, 180]])
 read_countries = set(mapped["ISO3"].unique())
@@ -111,18 +113,14 @@ folium.GeoJson(
     name="Countries explored",
     style_function=lambda feature: {
         "fillColor": (
-            COUNTRY_FILL
+            "#B5A17F"
             if feature["properties"].get("ISO3166-1-Alpha-3") in read_countries
-            else "transparent"
+            else "#F6F0E6"
         ),
-        "fillOpacity": (
-            COUNTRY_OPACITY
-            if feature["properties"].get("ISO3166-1-Alpha-3") in read_countries
-            else 0
-        ),
-        "color": "#8A9A9F",
-        "weight": 0.4,
-        "opacity": 0.5,
+        "fillOpacity": 1,
+        "color": "#C9BBA6",
+        "weight": 0.5,
+        "opacity": 1,
     },
 ).add_to(m)
 
@@ -167,9 +165,31 @@ for iso,group in mapped.groupby('ISO3',sort=True):
     placed+=1
 folium.LayerControl(position='topright').add_to(m)
 st_folium(m,height=MAP_HEIGHT,use_container_width=True,returned_objects=[],key='literarymap')
+frame_css = {
+    "Minimal Frame": """
+        border: 1px solid #B7A48A;
+        border-radius: 3px;
+        box-shadow: 0 2px 5px rgba(85, 63, 42, 0.08);
+    """,
+    "Vintage Card": """
+        border: 1px solid #B7A48A;
+        border-radius: 12px;
+        box-shadow: 0 10px 24px rgba(85, 63, 42, 0.16);
+    """,
+    "Mounted Parchment": """
+        border: 1px solid #B7A48A;
+        border-radius: 4px;
+        box-shadow:
+            0 0 0 6px #F3EDE3,
+            0 0 0 7px #B7A48A,
+            0 9px 22px 7px rgba(85, 63, 42, 0.13);
+    """,
+}
+
 if mapped.empty:
     st.info('No author birth countries assigned yet. Run `litlas-prepare` in your terminal, then refresh this page.')
 elif placed==0:
     st.warning('Authors have country codes, but map coordinates were unavailable. Check Vault/Personal/Learning/Library/authors.csv.')
+
 missing=books.loc[~books['ISO3'].astype(bool),'Author'].nunique()
 st.caption(f'{len(books)} read books · {books["Author"].nunique()} authors · {placed} mapped countries · {missing} authors still without a mapped birth country. Birth-country matches are provisional until reviewed.')

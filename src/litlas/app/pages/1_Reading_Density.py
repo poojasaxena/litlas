@@ -9,7 +9,6 @@ import requests
 import streamlit as st
 from branca.colormap import LinearColormap
 from streamlit_folium import st_folium
-from branca.element import Element
 from litlas.app.popups import pop_html
 from litlas.app.ui import apply_page_style
 from litlas.processing.core import load_config
@@ -19,6 +18,7 @@ from litlas.database.repository import (
     load_read_books,
 )
 from litlas.app.ui import apply_page_style, render_page_header
+from litlas.app.map_style import apply_map_style
 
 st.set_page_config(
     page_title="Reading Density · Litlas",
@@ -29,9 +29,13 @@ st.set_page_config(
 apply_page_style()
 
 render_page_header(
-    "🌍 Reading Density",
-    "Countries shaded by the number of unique literary works "
-    "you've read, based on authors' birthplaces.",
+    "Reading Density",
+    "Where the pages I've turned meet the places they came from...",
+    illustration="reading_density",
+    illustration_size=175,
+    illustration_top=-35,
+    illustration_left=0,
+    heading_gap=20,
 )
 
 # st.page_link("app.py", label="← Literary Atlas")
@@ -62,34 +66,17 @@ max_count = max(counts.values())
 # overwhelming countries represented by just a few works.
 # Colour palettes, ordered from low to high reading density.
 PALETTES = {
-    "Cream → Gold → Terracotta": [
-        "#f5eac9",
-        "#e8c76c",
-        "#d99b5a",
-        "#bb6e50",
-        "#7b3d45",
-    ],
-    "Yellow → Teal → Deep Blue": [
-        "#f4e7a1",
-        "#c7dfad",
-        "#78bca9",
-        "#397e92",
-        "#254c70",
-    ],
-    "Mint → Yellow → Forest Green": [
-        "#cceadd",
-        "#e6e59a",
-        "#dfb965",
-        "#75a886",
-        "#235b49",
+    "Antique Parchment": [
+        "#F3E6CA",
+        "#E3C895",
+        "#C9A678",
+        "#A98160",
+        "#855C45",
+        "#603E33",
     ],
 }
 
-palette_name = st.sidebar.selectbox(
-    "Map colour palette",
-    options=list(PALETTES),
-    index=0,
-)
+palette_name = "Antique Parchment"
 
 colors = LinearColormap(
     colors=PALETTES[palette_name],
@@ -176,46 +163,24 @@ for feature in geojson["features"]:
 m = folium.Map(
     location=[15, 0],
     zoom_start=2,
-    tiles="OpenStreetMap",
+    tiles=None,
     control_scale=True,
     world_copy_jump=True,
 )
-
-
-m.get_root().header.add_child(Element("""
-<style>
-    /* Remove popup pointer */
-    .leaflet-popup-tip-container,
-    .leaflet-popup-tip {
-        display: none !important;
-    }
-
-    /* Remove tooltip pointer */
-    .leaflet-tooltip::before,
-    .leaflet-tooltip::after {
-        display: none !important;
-    }
-
-    /* Keep popup corners rounded */
-    .leaflet-popup-content-wrapper {
-        border-radius: 12px !important;
-    }
-</style>
-"""))
+apply_map_style(m)
 
 m.fit_bounds([[-55, -170], [75, 180]])
 
 
 def style_country(feature):
-    props = feature["properties"]
-    count = props["litlas_works"]
+    count = feature["properties"]["litlas_works"]
 
     return {
-        "fillColor": (colors(log1p(count)) if count > 0 else "#f0f0f0"),
-        "fillOpacity": 0.8 if count > 0 else 0.25,
-        "color": "transparent",
-        "weight": 0,
-        "opacity": 0,
+        "fillColor": (colors(log1p(count)) if count > 0 else "#F6F0E6"),
+        "fillOpacity": 1,
+        "color": "#C9BBA6",
+        "weight": 0.5,
+        "opacity": 1,
     }
 
 

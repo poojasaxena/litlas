@@ -31,6 +31,10 @@ def apply_page_style():
                 padding-bottom: 1rem !important;
                 max-width: 1550px;
             }
+            /* Warm paper background for Litlas */
+            .stApp {
+                background-color: #FAF7F1 !important;
+            }
 
             h1 {
                 margin-top: 0 !important;
@@ -128,6 +132,9 @@ def render_page_header(
     subtitle: str,
     illustration: str | None = None,
     illustration_size: int = 110,
+    illustration_top: int = -45,
+    illustration_left: int = 0,
+    heading_gap: int = 5,
 ) -> None:
     """Render the shared vintage Litlas heading."""
 
@@ -156,10 +163,13 @@ def render_page_header(
                 f'<img class="litlas-page-illustration" '
                 f'src="data:image/png;base64,{encoded}" '
                 f'style="width:{illustration_size}px;'
-                f'height:{illustration_size}px;" '
+                f'height:{illustration_size}px;'
+                f'top:{illustration_top}px;'
+                f'left:{illustration_left}px;" '
                 f'alt="">'
             )
-            left_padding = illustration_size + 5
+
+            left_padding = illustration_left + illustration_size + heading_gap
 
     st.markdown(
         f"""
