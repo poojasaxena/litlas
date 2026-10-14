@@ -19,6 +19,7 @@ from litlas.database.repository import (
 )
 from litlas.app.ui import apply_page_style, render_page_header
 from litlas.app.map_style import apply_map_style
+from litlas.processing.countries import country_name
 
 st.set_page_config(
     page_title="Reading Density · Litlas",
@@ -130,22 +131,12 @@ for feature in geojson["features"]:
     iso = props.get("ISO3166-1-Alpha-3", "")
     count = int(counts.get(iso, 0))
 
-    country = pycountry.countries.get(alpha_3=iso)
-    name = (
-        country.name
-        if country
-        else props.get("ADMIN") or props.get("name") or "Unknown territory"
-    )
+    fallback = props.get("ADMIN") or props.get("name")
 
-    if name == "-99":
-        name = "Unknown territory"
+    if fallback == "-99":
+        fallback = None
 
-    if iso == "KOR":
-        name = "South Korea"
-    elif iso == "PRK":
-        name = "North Korea"
-    elif iso == "RUS":
-        name = "Russia"
+    name = country_name(iso, fallback=fallback)
 
     props["litlas_country"] = name
     props["litlas_works"] = count

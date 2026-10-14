@@ -14,6 +14,7 @@ from litlas.database.connection import database_path
 from litlas.database.repository import load_read_books
 from litlas.app.ui import apply_page_style, render_page_header
 from litlas.app.map_style import apply_map_style
+from litlas.processing.countries import country_name
 
 ## Configuration constants for the map and flag display
 config = load_config()
@@ -126,13 +127,10 @@ folium.GeoJson(
 
 # cluster=MarkerCluster(name='Countries',disableClusteringAtZoom=4,showCoverageOnHover=False).add_to(m)
 placed=0
-for iso,group in mapped.groupby('ISO3',sort=True):
+for iso, group in mapped.groupby('ISO3',sort=True):
     position=locate(iso)
     if not position: continue
-    c=pycountry.countries.get(alpha_3=iso)
-    name=(c.name if c else iso)
-    if iso=='USA':name='United States'
-    if iso=='GBR':name='United Kingdom'
+    name = country_name(iso)
 
     html = f"""
     <div style="
