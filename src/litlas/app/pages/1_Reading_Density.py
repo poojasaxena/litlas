@@ -20,6 +20,7 @@ from litlas.database.repository import (
 from litlas.app.ui import apply_page_style, render_page_header
 from litlas.app.map_style import apply_map_style
 from litlas.processing.countries import country_name
+from litlas.processing.countries import country_name, load_country_boundaries
 
 st.set_page_config(
     page_title="Reading Density · Litlas",
@@ -38,20 +39,6 @@ render_page_header(
     illustration_left=0,
     heading_gap=20,
 )
-
-# st.page_link("app.py", label="← Literary Atlas")
-
-
-@st.cache_data
-def load_boundaries():
-    url = (
-        "https://raw.githubusercontent.com/"
-        "datasets/geo-countries/master/data/countries.geojson"
-    )
-    response = requests.get(url, timeout=30)
-    response.raise_for_status()
-    return response.json()
-
 
 density = get_country_reading_density()
 books = load_read_books()
@@ -122,7 +109,7 @@ def country_popup(country_books, country_name, count):
     )
 
 
-geojson = deepcopy(load_boundaries())
+geojson = deepcopy(load_country_boundaries())
 
 books_by_country = {iso: group for iso, group in books.groupby("ISO3")}
 

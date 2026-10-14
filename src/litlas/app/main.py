@@ -7,7 +7,6 @@ import folium
 from streamlit_folium import st_folium
 from countryinfo import CountryInfo
 import pycountry
-import requests
 from litlas.processing.core import load_config
 from litlas.app.popups import flag, pop_html
 from litlas.database.connection import database_path
@@ -15,6 +14,7 @@ from litlas.database.repository import load_read_books
 from litlas.app.ui import apply_page_style, render_page_header
 from litlas.app.map_style import apply_map_style
 from litlas.processing.countries import country_name
+from litlas.processing.countries import country_name, load_country_boundaries
 
 ## Configuration constants for the map and flag display
 config = load_config()
@@ -24,17 +24,6 @@ FLAG_SIZE = map_config.get("flag_size", 14)
 MAP_HEIGHT = map_config.get("height", 800)
 COUNTRY_FILL = map_config.get("country_fill", "#82BFA0")
 COUNTRY_OPACITY = map_config.get("country_opacity", 0.25)
-
-
-@st.cache_data
-def load_country_boundaries():
-    url = (
-        "https://raw.githubusercontent.com/"
-        "datasets/geo-countries/master/data/countries.geojson"
-    )
-    response = requests.get(url, timeout=30)
-    response.raise_for_status()
-    return response.json()
 
 
 st.set_page_config(page_title='Literary Atlas',page_icon='🌍',layout='wide',initial_sidebar_state='collapsed')
