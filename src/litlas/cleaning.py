@@ -28,7 +28,7 @@ BILINGUAL_SERIES = re.compile(
 )
 
 
-def clean_title(title: str, remove_subtitles: bool = False) -> str:
+def _clean_title_base(title, remove_subtitles=False):
     """Clean display text without altering the original title."""
     if not isinstance(title, str):
         return ""
@@ -54,4 +54,30 @@ def clean_title(title: str, remove_subtitles: bool = False) -> str:
     if remove_subtitles:
         title = title.split(":", maxsplit=1)[0].strip()
 
+    # Remove everything from the first opening parenthesis or square bracket.
+    title = re.split(r"\s*[\(\[]", title, maxsplit=1)[0].strip()
+
     return title
+
+
+def clean_title(title, remove_subtitles=False):
+    """Clean display titles without modifying Goodreads originals."""
+
+    original = str(title)
+    lower = original.casefold()
+
+    bilingual_markers = (
+        "(spanish edition)",
+        "(bilingual tales)",
+        "(bilingual edition)",
+        "(listos para aprender",
+    )
+
+    if " / " in original and any(marker in lower for marker in bilingual_markers):
+        # Keep the original Spanish title, not its translation.
+        original = original.split(" / ", 1)[0]
+
+    return _clean_title_base(
+        original,
+        remove_subtitles=remove_subtitles,
+    )

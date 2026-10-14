@@ -43,6 +43,10 @@ st.markdown('''<style>
         </style>''',unsafe_allow_html=True)
 st.title('🌍 Literary Atlas')
 st.caption('A world of books, mapped by where their authors were born.')
+st.page_link(
+    "pages/1_Author_Review.py",
+    label="📚 Review author birthplaces",
+)
 
 # Load the literary map data from SQLite.
 source = database_path()
