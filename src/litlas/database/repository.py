@@ -88,6 +88,27 @@ def get_author_books(author_id):
         ]
 
 
+def get_country_reading_density():
+    """Count unique literary works by author's birth country."""
+
+    query = """
+        SELECT
+            a.iso3 AS iso3,
+            COUNT(DISTINCT b.work_id) AS works
+        FROM books AS b
+        JOIN authors AS a ON a.id = b.author_id
+        WHERE b.shelf = 'read'
+          AND b.excluded_from_display = 0
+          AND COALESCE(a.iso3, '') != ''
+        GROUP BY a.iso3
+        ORDER BY works DESC
+    """
+
+    with connect() as db:
+        return pd.read_sql_query(query, db)
+    
+
+
 def refresh_display_titles():
     """Reapply title-cleaning rules to existing Goodreads titles."""
 
