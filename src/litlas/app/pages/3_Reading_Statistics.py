@@ -1,11 +1,15 @@
 """Reading statistics for Litlas."""
 
 import streamlit as st
+import plotly.graph_objects as go
 
 from litlas.app.ui import apply_page_style, render_page_header
 from litlas.database.repository import get_country_reading_density
 from litlas.processing.countries import country_name
-import plotly.graph_objects as go
+from litlas.database.repository import (
+    get_country_reading_density,
+    get_reading_summary,
+)
 
 st.set_page_config(
     page_title="Reading Statistics · Litlas",
@@ -25,6 +29,20 @@ render_page_header(
     illustration_left=0,
     heading_gap=20,
 )
+
+
+summary = get_reading_summary()
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.metric("Books read", summary["works"])
+
+with col2:
+    st.metric("Authors", summary["authors"])
+
+with col3:
+    st.metric("Countries explored", summary["countries"])
 
 density = get_country_reading_density()
 

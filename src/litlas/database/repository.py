@@ -158,7 +158,24 @@ def refresh_display_titles():
 
     return updated
 
+def get_reading_summary():
+    """Return overall statistics for displayed read books."""
 
+    query = """
+        SELECT
+            COUNT(*) AS books,
+            COUNT(DISTINCT work_id) AS works,
+            COUNT(DISTINCT author_id) AS authors,
+            COUNT(DISTINCT NULLIF(a.iso3, '')) AS countries
+        FROM books AS b
+        JOIN authors AS a ON a.id = b.author_id
+        WHERE b.shelf = 'read'
+          AND b.excluded_from_display = 0
+    """
+
+    with connect() as db:
+        return dict(db.execute(query).fetchone())
+    
 def verify_author_country(author_id, country, iso3):
     """Save a manually verified country without overwriting prior verification."""
 
