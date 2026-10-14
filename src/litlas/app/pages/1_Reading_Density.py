@@ -18,7 +18,7 @@ from litlas.database.repository import (
     load_read_books,
 )
 from litlas.app.ui import apply_page_style, render_page_header
-from litlas.app.map_style import apply_map_style
+from litlas.app.map_style import create_litlas_map
 from litlas.processing.countries import country_name
 from litlas.processing.countries import country_name, load_country_boundaries
 
@@ -138,16 +138,7 @@ for feature in geojson["features"]:
             f"<strong>{escape(str(name))}</strong>" "<div>No mapped works</div>"
         )
 
-m = folium.Map(
-    location=[15, 0],
-    zoom_start=2,
-    tiles=None,
-    control_scale=True,
-    world_copy_jump=True,
-)
-apply_map_style(m)
-
-m.fit_bounds([[-55, -170], [75, 180]])
+m = create_litlas_map()
 
 
 def style_country(feature):

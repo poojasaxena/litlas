@@ -10,7 +10,7 @@ from litlas.app.popups import flag, pop_html
 from litlas.database.connection import database_path
 from litlas.database.repository import load_read_books
 from litlas.app.ui import apply_page_style, render_page_header
-from litlas.app.map_style import apply_map_style
+from litlas.app.map_style import create_litlas_map
 from litlas.processing.countries import (
     country_name,
     country_coordinates,
@@ -77,11 +77,14 @@ m = folium.Map(
     world_copy_jump=True,
     zoom_control=True,
 )
-apply_map_style(m)
 
-m.fit_bounds([[-55, -170], [75, 180]])
+m = create_litlas_map()
+
+## Highlight countries that have been read
 read_countries = set(mapped["ISO3"].unique())
 
+
+## Load country boundaries for the map
 geojson = load_country_boundaries()
 
 folium.GeoJson(

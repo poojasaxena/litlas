@@ -44,3 +44,22 @@ def apply_map_style(m: folium.Map) -> None:
         }
     </style>
     """))
+
+
+def create_litlas_map() -> folium.Map:
+    """Create a Litlas map with shared settings and styling."""
+
+    m = folium.Map(
+        location=[15, 0],
+        zoom_start=2,
+        tiles=None,
+        control_scale=True,
+        prefer_canvas=False,
+        world_copy_jump=True,
+        zoom_control=True,
+    )
+
+    apply_map_style(m)
+    m.fit_bounds([[-55, -170], [75, 180]])
+
+    return m
