@@ -69,25 +69,25 @@ def get_authors_for_review(include_provisional=False):
 
 
 def get_author_books(author_id):
-    """Get an author's books to help verify their identity."""
+    """Get an author's displayed read books to help verify identity."""
 
     with connect() as db:
         return [
             dict(row)
             for row in db.execute(
                 """
-            SELECT
-                b.original_title AS title,
-                b.rating AS rating
-            FROM books AS b
-            WHERE b.author_id = ?
-              AND b.shelf = 'read'
-            ORDER BY b.original_title COLLATE NOCASE
-            """,
+                SELECT
+                    b.original_title AS title,
+                    b.rating AS rating
+                FROM books AS b
+                WHERE b.author_id = ?
+                  AND b.shelf = 'read'
+                  AND b.excluded_from_display = 0
+                ORDER BY b.original_title COLLATE NOCASE
+                """,
                 (author_id,),
             )
         ]
-
 
 def get_country_reading_density():
     """Count unique literary works by author's birth country."""

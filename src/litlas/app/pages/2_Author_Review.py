@@ -3,21 +3,31 @@
 import pycountry
 import streamlit as st
 
+from litlas.processing.countries import country_name
+
 from litlas.database.repository import (
     get_authors_for_review,
     get_author_books,
     verify_author_country,
 )
-from litlas.app.ui import apply_page_style
+from litlas.app.ui import apply_page_style, render_page_header, litlas_info
 
 st.set_page_config(
     page_title="Author Review · Litlas",
     page_icon="📚",
-    layout="centered",
+    layout="wide",
 )
 apply_page_style()
-st.title("📚 Author Birthplace Review")
-st.caption("Verify an author's country of birth and save it to SQLite.")
+
+render_page_header(
+    "Author Review",
+    "Discovering the people and places behind the stories...",
+    illustration="reading_statistics",
+    illustration_size=190,
+    illustration_top=-35,
+    illustration_left=0,
+    heading_gap=20,
+)
 
 st.page_link("main.py", label="← Back to Literary Atlas")
 
@@ -29,27 +39,34 @@ include_provisional = st.checkbox(
 authors = get_authors_for_review(include_provisional=include_provisional)
 
 if not authors:
-    st.success("No authors awaiting review in this category.")
+    if include_provisional:
+        st.success("All available author birthplaces have been reviewed.")
+    else:
+        litlas_info(
+            "No authors have missing birth countries. "
+            "Enable 'Include provisional country assignments' "
+            "to review unverified birthplace matches."
+        )
     st.stop()
 
 st.metric("Authors awaiting review", len(authors))
 
-# Remember position between Streamlit reruns.
-if "review_index" not in st.session_state:
-    st.session_state.review_index = 0
-
-index = min(st.session_state.review_index, len(authors) - 1)
-
+# Authors currently eligible for review.
 author_ids = [author["id"] for author in authors]
 author_lookup = {author["id"]: author for author in authors}
+
+# Keep the selected author valid when the review queue changes.
+if st.session_state.get("review_author_id") not in author_ids:
+    st.session_state.review_author_id = author_ids[0]
 
 author_id = st.selectbox(
     "Select author",
     options=author_ids,
-    index=index,
     format_func=lambda aid: (
-        f"{author_lookup[aid]['name']} " f"({author_lookup[aid]['book_count']} books)"
+        f"{author_lookup[aid]['name']} "
+        f"({author_lookup[aid]['book_count']} books)"
     ),
+    key="review_author_id",
 )
 
 author = author_lookup[author_id]
@@ -87,7 +104,7 @@ COUNTRY_NAMES = {
 }
 
 countries = sorted(
-    [(COUNTRY_NAMES.get(c.alpha_3, c.name), c.alpha_3) for c in pycountry.countries],
+    [(country_name(c.alpha_3), c.alpha_3) for c in pycountry.countries],
     key=lambda item: item[0].casefold(),
 )
 
@@ -120,11 +137,19 @@ with left:
 
         verify_author_country(author_id, country, iso3)
 
-        # The saved author disappears from the review queue.
-        st.session_state.review_index = selected_index
+        # Advance to the next author in the remaining queue.
+        remaining = [aid for aid in author_ids if aid != author_id]
+
+        if remaining:
+            next_index = min(selected_index, len(remaining) - 1)
+            st.session_state.review_author_id = remaining[next_index]
+        else:
+            st.session_state.pop("review_author_id", None)
+
         st.rerun()
 
 with right:
     if st.button("Skip", use_container_width=True):
-        st.session_state.review_index = (selected_index + 1) % len(authors)
+        next_index = (selected_index + 1) % len(author_ids)
+        st.session_state.review_author_id = author_ids[next_index]
         st.rerun()

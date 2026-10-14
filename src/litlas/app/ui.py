@@ -15,6 +15,8 @@ def load_logo_path() -> Path | None:
     return path if path.is_file() else None
 
 
+
+
 def apply_page_style():
     """Apply consistent styling across all Litlas pages."""
 
@@ -31,11 +33,39 @@ def apply_page_style():
                 padding-bottom: 1rem !important;
                 max-width: 1550px;
             }
+
             /* Warm paper background for Litlas */
             .stApp {
                 background-color: #FAF7F1 !important;
             }
 
+            /* Vintage styling for Streamlit information messages */
+            div[data-testid="stAlert"] {
+                background-color: #F0E6D7 !important;
+                border: 1px solid #D4C1A7 !important;
+                border-radius: 8px !important;
+            }
+
+            /* Remove Streamlit's inner blue background */
+            div[data-testid="stAlert"] > div,
+            div[data-testid="stAlert"] [data-baseweb="notification"] {
+                background-color: transparent !important;
+                border-color: transparent !important;
+            }
+
+            /* Alert text and icons */
+            div[data-testid="stAlert"] p,
+            div[data-testid="stAlert"] svg {
+                color: #58412F !important;
+                fill: #58412F !important;
+            }
+
+            /* Distinct information icon in antique bronze */
+            div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
+                color: #A47B43 !important;
+                font-size: 25px !important;
+            }
+            
             h1 {
                 margin-top: 0 !important;
                 padding-top: 0 !important;
@@ -61,6 +91,7 @@ def apply_page_style():
                 pointer-events: none;
                 z-index: 2;
             }
+
             /* Vintage illustration */
             .litlas-page-illustration {
                 position: absolute;
@@ -114,6 +145,46 @@ def apply_page_style():
         unsafe_allow_html=True,
     )
 
+def litlas_info(message: str) -> None:
+    """Display a vintage-styled informational message."""
+    st.markdown(
+        f"""
+        <div style="
+            display:flex;
+            align-items:center;
+            gap:14px;
+            padding:18px 20px;
+            background:#F0E6D7;
+            border:1px solid #D4C1A7;
+            border-radius:8px;
+            color:#58412F;
+            font-family:Georgia,serif;
+            font-style:italic;
+            font-size: 0.95rem;
+            font-weight: 400;
+            color: #81776E;
+        ">
+            <span style="
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                flex-shrink:0;
+                width:25px;
+                height:25px;
+                border:2px solid #A47B43;
+                border-radius:50%;
+                color:#A47B43;
+                font-size:17px;
+                font-weight:bold;
+                font-family:Georgia,serif;
+                font-style:italic;
+            ">i</span>
+            <span>{escape(message)}</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+  
 
 def load_illustration_path(name: str) -> Path | None:
     """Resolve a page illustration from the Vault."""
