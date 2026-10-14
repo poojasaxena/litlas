@@ -18,7 +18,12 @@ from litlas.database.repository import (
     load_read_books,
 )
 from litlas.app.ui import apply_page_style, render_page_header
-from litlas.app.map_style import create_litlas_map
+from litlas.app.map_style import (
+    create_litlas_map,
+    LAND_COLOR,
+    BORDER_COLOR,
+    DENSITY_COLORS,
+)
 from litlas.processing.countries import country_name
 from litlas.processing.countries import country_name, load_country_boundaries
 
@@ -67,10 +72,11 @@ PALETTES = {
 palette_name = "Antique Parchment"
 
 colors = LinearColormap(
-    colors=PALETTES[palette_name],
+    colors=DENSITY_COLORS,
     vmin=0,
     vmax=log1p(max_count),
 )
+
 config = load_config()
 height = config.get("map", {}).get("height", 800)
 
@@ -145,9 +151,13 @@ def style_country(feature):
     count = feature["properties"]["litlas_works"]
 
     return {
-        "fillColor": (colors(log1p(count)) if count > 0 else "#F6F0E6"),
+        "fillColor": (
+            colors(log1p(count))
+            if count > 0
+            else LAND_COLOR
+        ),
         "fillOpacity": 1,
-        "color": "#C9BBA6",
+        "color": BORDER_COLOR,
         "weight": 0.5,
         "opacity": 1,
     }

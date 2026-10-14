@@ -3,16 +3,30 @@
 
 import folium
 from branca.element import Element
+from string import Template
 
+# Shared vintage map palette
+OCEAN_COLOR = "#E6DDD0"
+LAND_COLOR = "#F6F0E6"
+BORDER_COLOR = "#C9BBA6"
+EXPLORED_COLOR = "#B5A17F"
+
+DENSITY_COLORS = [
+    "#F3E6CA",
+    "#E3C895",
+    "#C9A678",
+    "#A98160",
+    "#855C45",
+    "#603E33",
+]
 
 def apply_map_style(m: folium.Map) -> None:
     """Apply Litlas's vintage map and popup styling."""
 
-    m.get_root().header.add_child(Element("""
+    m.get_root().header.add_child(Element(Template("""
     <style>
-        /* Parchment ocean */
         .leaflet-container {
-            background-color: #E6DDD0 !important;
+            background-color: $ocean_color !important;
         }
 
         /* Popup body */
@@ -43,7 +57,7 @@ def apply_map_style(m: folium.Map) -> None:
             display: none !important;
         }
     </style>
-    """))
+    """).substitute(ocean_color=OCEAN_COLOR)))
 
 
 def create_litlas_map() -> folium.Map:

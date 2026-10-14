@@ -10,12 +10,19 @@ from litlas.app.popups import flag, pop_html
 from litlas.database.connection import database_path
 from litlas.database.repository import load_read_books
 from litlas.app.ui import apply_page_style, render_page_header
-from litlas.app.map_style import create_litlas_map
+from litlas.app.map_style import (
+    create_litlas_map,
+    LAND_COLOR,
+    BORDER_COLOR,
+    EXPLORED_COLOR,
+)
 from litlas.processing.countries import (
     country_name,
     country_coordinates,
     load_country_boundaries,
 )
+
+
 ## Configuration constants for the map and flag display
 config = load_config()
 map_config = config.get("map", {})
@@ -92,12 +99,12 @@ folium.GeoJson(
     name="Countries explored",
     style_function=lambda feature: {
         "fillColor": (
-            "#B5A17F"
+            EXPLORED_COLOR
             if feature["properties"].get("ISO3166-1-Alpha-3") in read_countries
-            else "#F6F0E6"
+            else LAND_COLOR
         ),
         "fillOpacity": 1,
-        "color": "#C9BBA6",
+        "color": BORDER_COLOR,
         "weight": 0.5,
         "opacity": 1,
     },
