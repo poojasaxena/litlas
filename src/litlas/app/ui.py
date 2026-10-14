@@ -182,28 +182,3 @@ def render_page_header(
         """,
         unsafe_allow_html=True,
     )
-
-
-def render_page_header_deprecated(title: str, subtitle: str) -> None:
-    """Render the shared Litlas header."""
-
-    logo = load_logo_path()
-
-    if logo:
-        encoded = base64.b64encode(logo.read_bytes()).decode("ascii")
-
-        st.markdown(
-            f'<img class="litlas-logo" '
-            f'src="data:image/png;base64,{encoded}" '
-            f'alt="Personal signature">',
-            unsafe_allow_html=True,
-        )
-
-    st.title(title)
-    st.caption(subtitle)
-
-    # Reserve enough space to prevent the logo overlapping page content.
-    st.markdown(
-        '<div style="height: 75px;"></div>',
-        unsafe_allow_html=True,
-    )

@@ -55,22 +55,6 @@ if density.empty:
 counts = dict(zip(density["iso3"], density["works"]))
 max_count = max(counts.values())
 
-# A logarithmic scale keeps high-volume countries from
-# overwhelming countries represented by just a few works.
-# Colour palettes, ordered from low to high reading density.
-PALETTES = {
-    "Antique Parchment": [
-        "#F3E6CA",
-        "#E3C895",
-        "#C9A678",
-        "#A98160",
-        "#855C45",
-        "#603E33",
-    ],
-}
-
-palette_name = "Antique Parchment"
-
 colors = LinearColormap(
     colors=DENSITY_COLORS,
     vmin=0,

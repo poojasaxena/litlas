@@ -29,9 +29,6 @@ map_config = config.get("map", {})
 
 FLAG_SIZE = map_config.get("flag_size", 14)
 MAP_HEIGHT = map_config.get("height", 800)
-COUNTRY_FILL = map_config.get("country_fill", "#82BFA0")
-COUNTRY_OPACITY = map_config.get("country_opacity", 0.25)
-
 
 st.set_page_config(page_title='Literary Atlas',page_icon='🌍',layout='wide',initial_sidebar_state='collapsed')
 apply_page_style()
@@ -148,26 +145,6 @@ for iso, group in mapped.groupby('ISO3',sort=True):
     placed+=1
 folium.LayerControl(position='topright').add_to(m)
 st_folium(m,height=MAP_HEIGHT,use_container_width=True,returned_objects=[],key='literarymap')
-frame_css = {
-    "Minimal Frame": """
-        border: 1px solid #B7A48A;
-        border-radius: 3px;
-        box-shadow: 0 2px 5px rgba(85, 63, 42, 0.08);
-    """,
-    "Vintage Card": """
-        border: 1px solid #B7A48A;
-        border-radius: 12px;
-        box-shadow: 0 10px 24px rgba(85, 63, 42, 0.16);
-    """,
-    "Mounted Parchment": """
-        border: 1px solid #B7A48A;
-        border-radius: 4px;
-        box-shadow:
-            0 0 0 6px #F3EDE3,
-            0 0 0 7px #B7A48A,
-            0 9px 22px 7px rgba(85, 63, 42, 0.13);
-    """,
-}
 
 if mapped.empty:
     st.info('No author birth countries assigned yet. Run `litlas-prepare` in your terminal, then refresh this page.')
