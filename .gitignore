@@ -11,6 +11,7 @@ dist/
 .venv/
 venv/
 env/
+.envrc
 
 # Streamlit
 .streamlit/secrets.toml
