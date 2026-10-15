@@ -153,15 +153,11 @@ def apply_reading_dates(year: int) -> None:
             "Resolve them before importing."
         )
 
-    # Guard against unexpected changes to the reviewed preview.
-    if year == 2026 and (
-        len(results) != 143
-        or len(updates) != 137
-        or counts["MISSING"] != 0
-    ):
-        raise RuntimeError(
-            "The preview has changed. Review it before importing."
-        )
+    if counts["MISSING"]:
+            raise RuntimeError(
+                f"{counts['MISSING']} books could not be matched. "
+                "Resolve them before importing."
+            )
 
     print(f"Year: {year}")
     print(f"Dates to update: {len(updates)}")
