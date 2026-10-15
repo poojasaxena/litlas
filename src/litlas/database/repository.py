@@ -179,7 +179,55 @@ def get_books_read_by_year():
     with connect() as db:
         return pd.read_sql_query(query, db)
     
+def get_page_statistics():
+    """Return page totals and the longest and shortest read books."""
 
+    with connect() as db:
+        summary = db.execute("""
+            SELECT
+                COUNT(*) AS total_books,
+                COUNT(COALESCE(pages_override, pages)) AS books_with_pages,
+                SUM(COALESCE(pages_override, pages)) AS total_pages
+            FROM books
+            WHERE shelf = 'read'
+              AND excluded_from_display = 0
+        """).fetchone()
+
+        longest = db.execute("""
+            SELECT
+                b.display_title AS title,
+                a.name AS author,
+                COALESCE(b.pages_override, b.pages) AS pages
+            FROM books b
+            JOIN authors a ON a.id = b.author_id
+            WHERE b.shelf = 'read'
+              AND b.excluded_from_display = 0
+              AND COALESCE(b.pages_override, b.pages) IS NOT NULL
+            ORDER BY pages DESC, title
+            LIMIT 1
+        """).fetchone()
+
+        shortest = db.execute("""
+            SELECT
+                b.display_title AS title,
+                a.name AS author,
+                COALESCE(b.pages_override, b.pages) AS pages
+            FROM books b
+            JOIN authors a ON a.id = b.author_id
+            WHERE b.shelf = 'read'
+              AND b.excluded_from_display = 0
+              AND COALESCE(b.pages_override, b.pages) IS NOT NULL
+            ORDER BY pages ASC, title
+            LIMIT 1
+        """).fetchone()
+
+    return {
+        "total_books": summary["total_books"],
+        "books_with_pages": summary["books_with_pages"],
+        "total_pages": summary["total_pages"] or 0,
+        "longest": dict(longest) if longest else None,
+        "shortest": dict(shortest) if shortest else None,
+    }
 
 def get_top_authors(limit=10):
     """Return most-read authors and their average personal ratings."""

@@ -24,6 +24,9 @@ CREATE TABLE IF NOT EXISTS books (
     goodreads_id TEXT PRIMARY KEY,
     author_id INTEGER NOT NULL,
     work_id TEXT,
+    pages INTEGER CHECK (pages IS NULL OR pages > 0),
+    pages_override INTEGER
+        CHECK (pages_override IS NULL OR pages_override > 0),
     original_title TEXT NOT NULL,
     display_title TEXT NOT NULL,
     volume_label TEXT,
@@ -51,3 +54,20 @@ CREATE INDEX IF NOT EXISTS idx_authors_country
 def initialize_database():
     with connect() as db:
         db.executescript(SCHEMA)
+
+        columns = {
+            row["name"]
+            for row in db.execute("PRAGMA table_info(books)")
+        }
+
+        if "pages" not in columns:
+            db.execute(
+                "ALTER TABLE books ADD COLUMN pages INTEGER "
+                "CHECK (pages IS NULL OR pages > 0)"
+            )
+
+        if "pages_override" not in columns:
+            db.execute(
+                "ALTER TABLE books ADD COLUMN pages_override INTEGER "
+                "CHECK (pages_override IS NULL OR pages_override > 0)"
+            )

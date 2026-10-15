@@ -18,6 +18,7 @@ def import_goodreads(source=None):
         "My Rating",
         "Exclusive Shelf",
         "Date Read",
+        "Number of Pages",
     }
     missing = required - set(books.columns)
     if missing:
@@ -52,6 +53,33 @@ def import_goodreads(source=None):
     ):
         raise ValueError("Invalid Goodreads ratings")
 
+    # Goodreads uses blank values for unknown page counts.
+    # Store these as NULL in SQLite.
+    # Blank and zero mean the page count is unavailable.
+    raw_pages = relevant["Number of Pages"].str.strip()
+
+    pages = pd.to_numeric(
+        raw_pages.replace("", pd.NA),
+        errors="coerce",
+    )
+
+    invalid_pages = (
+        raw_pages.ne("")
+        & (
+            pages.isna()
+            | (pages < 0)
+            | (pages % 1 != 0)
+        )
+    )
+
+    if invalid_pages.any():
+        raise ValueError(
+            "Invalid Goodreads page counts:\n"
+            + relevant.loc[
+                invalid_pages, ["Book Id", "Title", "Number of Pages"]
+            ].to_string(index=False)
+        )
+
     remove_subtitles = load_config().get("cleaning", {}).get("remove_subtitles", False)
 
     added = 0
@@ -63,21 +91,31 @@ def import_goodreads(source=None):
             row["goodreads_id"] for row in db.execute("SELECT goodreads_id FROM books")
         }
 
-        for book in books.to_dict("records"):
+        for book in relevant.to_dict("records"):
             book_id = book["Book Id"]
             rating = float(book["My Rating"] or 0)
             shelf = book["Exclusive Shelf"]
             date_read = book["Date Read"]
 
+            raw_pages = book["Number of Pages"].strip()
+
+            page_count = int(raw_pages) if raw_pages else None
+
+            if page_count == 0:
+                page_count = None
+
             if book_id in existing:
-                # Update reading information, not curated metadata.
+                # Update Goodreads data, preserving local page corrections.
                 db.execute(
                     """
                     UPDATE books
-                    SET rating = ?, shelf = ?, date_read = ?
+                    SET rating = ?,
+                        shelf = ?,
+                        date_read = ?,
+                        pages = ?
                     WHERE goodreads_id = ?
                     """,
-                    (rating, shelf, date_read, book_id),
+                    (rating, shelf, date_read, page_count, book_id),
                 )
                 updated += 1
                 continue
@@ -122,9 +160,9 @@ def import_goodreads(source=None):
                 INSERT INTO books (
                     goodreads_id, author_id, work_id,
                     original_title, display_title,
-                    rating, shelf, date_read
+                    rating, shelf, date_read, pages
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     book_id,
@@ -135,6 +173,7 @@ def import_goodreads(source=None):
                     rating,
                     shelf,
                     date_read,
+                    page_count,
                 ),
             )
 

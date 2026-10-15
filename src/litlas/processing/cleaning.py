@@ -56,7 +56,8 @@ def _clean_title_base(title, remove_subtitles=False):
 
     # Remove everything from the first opening parenthesis or square bracket.
     title = re.split(r"\s*[\(\[]", title, maxsplit=1)[0].strip()
-
+    title = title.split("/", 1)[0].strip()
+    
     return title
 
 
