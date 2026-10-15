@@ -71,17 +71,29 @@ def preview_reading_dates(year: int) -> list[dict]:
             if pd.notna(row["Author"]) else None
         )
 
-        matches = [
-            book for book in books
-            if title in (
-                normalize(book["display_title"]),
-                normalize(book["original_title"]),
-            )
-            and (
-                author is None
-                or normalize(book["author"]) == author
-            )
-        ]
+        # Prefer Goodreads ID when supplied; otherwise match title and author.
+        raw_id = row.get("Goodreads ID")
+
+        if pd.notna(raw_id) and str(raw_id).strip():
+            goodreads_id = str(raw_id).strip()
+
+            # Spreadsheet software may represent numeric IDs as 24280.0.
+            if goodreads_id.endswith(".0"):
+                goodreads_id = goodreads_id[:-2]
+
+            matches = [
+                book for book in books
+                if str(book["goodreads_id"]) == goodreads_id
+            ]
+        else:
+            matches = [
+                book for book in books
+                if title in (
+                    normalize(book["display_title"]),
+                    normalize(book["original_title"]),
+                )
+                and (author is None or normalize(book["author"]) == author)
+            ]
 
         if len(matches) == 0:
             status = "MISSING"
