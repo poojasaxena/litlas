@@ -494,7 +494,18 @@ def set_author_favourite(author_id: int, tier: int) -> None:
 
         if cursor.rowcount == 0:
             raise ValueError("Author not found.")
-    
+
+def get_favourite_authors():
+    """Return all classified authors, grouped by literary tier."""
+    with connect() as db:
+        return db.execute(
+            """
+            SELECT id, name, favourite_tier
+            FROM authors
+            WHERE favourite_tier BETWEEN 1 AND 3
+            ORDER BY favourite_tier, name COLLATE NOCASE
+            """
+        ).fetchall()
 
 def verify_author_country(author_id, country, iso3):
     """Save a manually verified country without overwriting prior verification."""

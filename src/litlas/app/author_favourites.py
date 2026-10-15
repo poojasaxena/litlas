@@ -6,8 +6,8 @@ import streamlit as st
 from litlas.database.repository import (
     get_authors_for_favourites,
     set_author_favourite,
+    get_favourite_authors,
 )
-
 
 FAVOURITE_TIERS = {
     0: "Not selected",
@@ -97,3 +97,68 @@ def render_author_favourites():
         st.success(
             f"Saved: {saved[1]} — {saved[2]}"
         )
+
+def render_favourite_collection():
+    """Display all three literary categories compactly."""
+
+    import html
+
+    authors = get_favourite_authors()
+
+    categories = {
+        1: ("✦", "Exceptional"),
+        2: ("♥", "Favourites"),
+        3: ("❦", "Good authors"),
+    }
+
+    sections = []
+
+    for tier, (symbol, title) in categories.items():
+        names = [
+            " ".join(row["name"].split())
+            for row in authors
+            if row["favourite_tier"] == tier
+        ]
+
+        names_html = (
+            " · ".join(html.escape(name) for name in names)
+            if names
+            else "No authors yet"
+        )
+
+        sections.append(f"""
+            <div style="
+                padding: 10px 0 12px;
+                border-bottom: 1px solid #D4C1A7;
+            ">
+                <div style="
+                    display: flex;
+                    align-items: baseline;
+                    gap: 12px;
+                    margin-bottom: 6px;
+                ">
+                    <span style="
+                        font-family: Georgia, serif;
+                        font-size: 19px;
+                        font-weight: bold;
+                        color: #58412F;
+                    ">{symbol} {title}</span>
+
+                    <span style="
+                        font-size: 12px;
+                        color: #81776E;
+                    ">{len(names)} authors</span>
+                </div>
+
+                <div style="
+                    font-size: 15px;
+                    line-height: 1.65;
+                    color: #58412F;
+                ">{names_html}</div>
+            </div>
+        """)
+
+    st.markdown(
+        " ".join(" ".join(section.split()) for section in sections),
+        unsafe_allow_html=True,
+    )

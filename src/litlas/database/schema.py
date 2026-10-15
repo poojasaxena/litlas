@@ -10,7 +10,9 @@ CREATE TABLE IF NOT EXISTS authors (
     wikidata_id TEXT,
     status TEXT NOT NULL DEFAULT 'unresolved',
     source TEXT,
-    last_lookup_at TEXT
+    last_lookup_at TEXT,
+    favourite_tier INTEGER NOT NULL DEFAULT 0
+        CHECK (favourite_tier BETWEEN 0 AND 3)
 );
 
 CREATE TABLE IF NOT EXISTS works (
