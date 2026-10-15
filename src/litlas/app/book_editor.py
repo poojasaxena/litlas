@@ -3,6 +3,7 @@
 
 import pandas as pd
 import streamlit as st
+from html import escape
 
 from litlas.database.repository import (
     get_editable_books,
@@ -98,15 +99,11 @@ def render_book_editor():
             "Unrated",
         )
 
+
         with st.form(
             "edit_book_form",
             clear_on_submit=False,
         ):
-            title = st.text_input(
-                "Display title",
-                value=str(row["display_title"]),
-            )
-
             rating_label = st.selectbox(
                 "My rating",
                 rating_labels,
@@ -115,14 +112,9 @@ def render_book_editor():
 
             original_rating = float(row["rating"])
             st.caption(
-                f"Goodreads rating: {original_rating:g} ★"
+                f"Original Goodreads rating: {original_rating:g} ★"
                 if original_rating
-                else "Goodreads rating: Unrated"
-            )
-
-            use_rating_override = st.checkbox(
-                "Save rating as my Litlas correction",
-                value=rating_is_override,
+                else "Original Goodreads rating: Unrated"
             )
 
             current_pages = row["effective_pages"]
@@ -138,33 +130,42 @@ def render_book_editor():
                 ),
             )
 
-            use_pages_override = st.checkbox(
-                "Save pages as my Litlas correction",
-                value=pd.notna(row["pages_override"]),
-            )
-
             submitted = st.form_submit_button(
-                "Save changes",
+                "Save to Litlas",
+                type="secondary",
                 use_container_width=True,
             )
 
         if submitted:
+            # Save only values that differ from Goodreads.
+            # Existing overrides remain in place when unchanged.
+            selected_rating = RATING_OPTIONS[rating_label]
+
             rating_override = (
-                RATING_OPTIONS[rating_label]
-                if use_rating_override
+                selected_rating
+                if (
+                    selected_rating != float(row["rating"])
+                    or pd.notna(row["rating_override"])
+                )
                 else None
             )
 
+            original_pages = row["pages"]
+
             pages_override = (
                 int(pages)
-                if use_pages_override
+                if (
+                    pd.isna(original_pages)
+                    or int(pages) != int(original_pages)
+                    or pd.notna(row["pages_override"])
+                )
                 else None
             )
 
             try:
                 update_book_details(
                     goodreads_id=selected_id,
-                    display_title=title,
+                    display_title=str(row["display_title"]),
                     rating_override=rating_override,
                     pages_override=pages_override,
                 )
@@ -172,5 +173,16 @@ def render_book_editor():
             except ValueError as exc:
                 st.error(str(exc))
             else:
-                st.success("Book details saved.")
+                st.session_state["book_editor_saved"] = (
+                    selected_id,
+                    str(row["display_title"]),
+                )
                 st.rerun()
+
+        saved = st.session_state.get("book_editor_saved")
+
+        if saved and saved[0] == selected_id:
+            with st.container(key="litlas_saved_confirmation"):
+                st.markdown(
+                    f"✓ **Saved:** {escape(saved[1])}"
+                )

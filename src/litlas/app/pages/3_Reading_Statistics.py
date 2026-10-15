@@ -31,6 +31,7 @@ st.set_page_config(
 )
 
 apply_page_style()
+
 render_book_editor()
 
 st.markdown("""

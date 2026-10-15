@@ -304,14 +304,21 @@ def update_book_details(
 
 
 def get_top_authors(limit=10):
-    """Return most-read authors and their average personal ratings."""
+    """Return most-read authors using effective Litlas ratings."""
 
     query = """
         SELECT
             a.name AS author,
             COUNT(*) AS books,
-            COUNT(NULLIF(b.rating, 0)) AS rated_books,
-            ROUND(AVG(NULLIF(b.rating, 0)), 2) AS avg_rating
+            COUNT(
+                NULLIF(COALESCE(b.rating_override, b.rating), 0)
+            ) AS rated_books,
+            ROUND(
+                AVG(
+                    NULLIF(COALESCE(b.rating_override, b.rating), 0)
+                ),
+                2
+            ) AS avg_rating
         FROM books AS b
         JOIN authors AS a ON a.id = b.author_id
         WHERE b.shelf = 'read'
@@ -323,24 +330,26 @@ def get_top_authors(limit=10):
 
     with connect() as db:
         return pd.read_sql_query(query, db, params=(limit,))
-        
+
+
 def get_rating_distribution():
-    """Count displayed read books by personal rating."""
+    """Count read books by effective personal rating."""
 
     query = """
         SELECT
-            rating,
+            COALESCE(b.rating_override, b.rating) AS rating,
             COUNT(*) AS books
-        FROM books
-        WHERE shelf = 'read'
-          AND excluded_from_display = 0
-          AND rating > 0
-        GROUP BY rating
+        FROM books AS b
+        WHERE b.shelf = 'read'
+          AND b.excluded_from_display = 0
+          AND COALESCE(b.rating_override, b.rating) > 0
+        GROUP BY COALESCE(b.rating_override, b.rating)
         ORDER BY rating
     """
 
     with connect() as db:
         return pd.read_sql_query(query, db)
+
     
 def get_reading_summary():
     """Return overall statistics for displayed read books."""
