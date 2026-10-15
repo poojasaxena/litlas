@@ -229,6 +229,80 @@ def get_page_statistics():
         "shortest": dict(shortest) if shortest else None,
     }
 
+
+
+def get_editable_books():
+    """Return tracked books for the Library Editor."""
+
+    query = """
+        SELECT
+            b.goodreads_id,
+            b.display_title,
+            b.original_title,
+            a.name AS author,
+            b.rating,
+            b.rating_override,
+            COALESCE(b.rating_override, b.rating) AS effective_rating,
+            b.pages,
+            b.pages_override,
+            COALESCE(b.pages_override, b.pages) AS effective_pages
+        FROM books AS b
+        JOIN authors AS a ON a.id = b.author_id
+        WHERE b.shelf = 'read'
+          AND b.excluded_from_display = 0
+        ORDER BY a.name COLLATE NOCASE, b.display_title COLLATE NOCASE
+    """
+
+    with connect() as db:
+        return pd.read_sql_query(query, db)
+
+
+def update_book_details(
+    goodreads_id,
+    display_title,
+    rating_override,
+    pages_override,
+):
+    """Save locally curated book details without changing Goodreads data."""
+
+    display_title = display_title.strip()
+
+    if not display_title:
+        raise ValueError("Book title cannot be empty.")
+
+    if rating_override is not None:
+        rating_override = float(rating_override)
+        if not 0 <= rating_override <= 5:
+            raise ValueError("Rating must be between 0 and 5.")
+
+    if pages_override is not None:
+        pages_override = int(pages_override)
+        if pages_override <= 0:
+            raise ValueError("Page count must be positive.")
+
+    with connect() as db:
+        cursor = db.execute(
+            """
+            UPDATE books
+            SET display_title = ?,
+                rating_override = ?,
+                pages_override = ?
+            WHERE goodreads_id = ?
+              AND shelf = 'read'
+              AND excluded_from_display = 0
+            """,
+            (
+                display_title,
+                rating_override,
+                pages_override,
+                goodreads_id,
+            ),
+        )
+
+        if cursor.rowcount != 1:
+            raise ValueError("Book not found or excluded.")
+
+
 def get_top_authors(limit=10):
     """Return most-read authors and their average personal ratings."""
 

@@ -17,7 +17,7 @@ from litlas.database.repository import (
     get_page_statistics,
 )
 from litlas.processing.countries import country_name
-
+from litlas.app.book_editor import render_book_editor
 
 # ---------------------------------------------------------
 # Page setup
@@ -31,6 +31,7 @@ st.set_page_config(
 )
 
 apply_page_style()
+render_book_editor()
 
 st.markdown("""
 <style>

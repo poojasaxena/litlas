@@ -32,6 +32,8 @@ CREATE TABLE IF NOT EXISTS books (
     volume_label TEXT,
     rating REAL NOT NULL DEFAULT 0
         CHECK (rating BETWEEN 0 AND 5),
+    rating_override REAL
+        CHECK (rating_override IS NULL OR rating_override BETWEEN 0 AND 5),
     shelf TEXT,
     date_read TEXT,
     excluded_from_display INTEGER NOT NULL DEFAULT 0
@@ -70,4 +72,10 @@ def initialize_database():
             db.execute(
                 "ALTER TABLE books ADD COLUMN pages_override INTEGER "
                 "CHECK (pages_override IS NULL OR pages_override > 0)"
+            )
+            
+        if "rating_override" not in columns:
+            db.execute(
+                "ALTER TABLE books ADD COLUMN rating_override REAL "
+                "CHECK (rating_override IS NULL OR rating_override BETWEEN 0 AND 5)"
             )
