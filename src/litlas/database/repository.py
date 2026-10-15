@@ -495,7 +495,43 @@ def set_author_favourite(author_id: int, tier: int) -> None:
         if cursor.rowcount == 0:
             raise ValueError("Author not found.")
 
+def delete_author(author_id: int) -> str:
+    """Delete an author only when no books or works reference them."""
 
+    with connect() as db:
+        db.execute("BEGIN IMMEDIATE")
+
+        author = db.execute(
+            "SELECT name FROM authors WHERE id = ?",
+            (author_id,),
+        ).fetchone()
+
+        if author is None:
+            raise ValueError("Author not found.")
+
+        books = db.execute(
+            "SELECT COUNT(*) FROM books WHERE author_id = ?",
+            (author_id,),
+        ).fetchone()[0]
+
+        works = db.execute(
+            "SELECT COUNT(*) FROM works WHERE author_id = ?",
+            (author_id,),
+        ).fetchone()[0]
+
+        if books or works:
+            raise ValueError(
+                f"Cannot delete {author['name']}: "
+                f"{books} book(s) and {works} work(s) are linked."
+            )
+
+        db.execute(
+            "DELETE FROM authors WHERE id = ?",
+            (author_id,),
+        )
+
+        return author["name"]
+    
 def update_author_details(
     author_id: int,
     name: str,

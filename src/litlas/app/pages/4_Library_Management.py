@@ -293,6 +293,17 @@ st.markdown(
         color: #FFF9F1 !important;
     }
 
+    /* Destructive action — Delete Author */
+    .st-key-author_delete_button button {
+        background: #653B35 !important;
+        border-color: #653B35 !important;
+        color: #FFF9F1 !important;
+    }
+
+    .st-key-author_delete_button button:hover {
+        background: #4E2B27 !important;
+        border-color: #4E2B27 !important;
+    }
     </style>
     """,
     unsafe_allow_html=True,

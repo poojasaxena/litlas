@@ -7,6 +7,7 @@ from html import escape
 from litlas.database.repository import (
     add_author,
     update_author_details,
+    delete_author,
 )
 from litlas.processing.countries import (
     COUNTRY_NAMES,
@@ -67,6 +68,26 @@ def render_author_details():
     if pending_name is not None:
         st.session_state["author_details_name"] = pending_name
 
+    deleted_message = st.session_state.get("author_deleted_message")
+
+    if deleted_message:
+        st.markdown(
+            f"""
+            <div style="
+                background:#E8DCC8;
+                border:1px solid #CDAE86;
+                border-radius:8px;
+                padding:12px 16px;
+                font-family:Georgia,serif;
+                font-size:15px;
+                color:#6E4B3A;
+            ">
+                ✓ {escape(deleted_message)}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
     name = st.text_input(
         "Author name",
         placeholder="Find or enter an author...",
@@ -120,11 +141,14 @@ def render_author_details():
                     placeholder="Select country...",
                 )
 
-            submitted = st.form_submit_button(
-                "Save Changes",
-                type="secondary",
-                use_container_width=True,
-            )
+            save_col, delete_col = st.columns([1, 1], gap="large")
+
+            with save_col:
+                submitted = st.form_submit_button(
+                    "Save Changes",
+                    type="secondary",
+                    use_container_width=True,
+                )
 
         if submitted:
             try:
@@ -148,6 +172,10 @@ def render_author_details():
                 st.rerun()
 
         # Outside 'if submitted' — persists after rerun.
+
+        # -----------------------------------------
+        # SAVED CONFIRMATION
+        # -----------------------------------------
         saved = st.session_state.get("author_details_saved")
 
         if saved and saved[0] == author_id:
@@ -169,7 +197,65 @@ def render_author_details():
                 unsafe_allow_html=True,
             )
 
+        # -----------------------------------------
+        # DELETE AUTHOR
+        # -----------------------------------------
+        # Independent of whether this author was saved.
+
+        delete_left, delete_right = st.columns([3, 1])
+
+        with delete_right:
+            with st.form(
+                f"delete_request_form_{author_id}",
+                border=False,
+            ):
+                delete_requested = st.form_submit_button(
+                    "Delete Author",
+                    type="secondary",
+                    use_container_width=True,
+                    key="author_delete_button",
+                )
+
+        if delete_requested:
+            st.session_state["author_delete_pending"] = author_id
+
+        if st.session_state.get("author_delete_pending") == author_id:
+            st.caption(
+                f"Permanently delete {author['name']} from Litlas?"
+            )
+
+            confirm = st.checkbox(
+                "Yes, I want to delete this author",
+                key=f"author_delete_confirm_{author_id}",
+            )
+
+            with st.form(
+                f"delete_author_form_{author_id}",
+                border=False,
+            ):
+                delete_submitted = st.form_submit_button(
+                    "Confirm Deletion",
+                    disabled=not confirm,
+                    type="secondary",
+                    use_container_width=True,
+                )
+
+            if delete_submitted:
+                try:
+                    deleted_name = delete_author(author_id)
+                except ValueError as exc:
+                    st.error(str(exc))
+                else:
+                    st.session_state["author_details_pending_name"] = ""
+                    st.session_state.pop("author_details_saved", None)
+                    st.session_state.pop("author_delete_pending", None)
+                    st.session_state["author_deleted_message"] = (
+                        f"Deleted: {deleted_name}"
+                    )
+                    st.rerun()
+
         return
+
 
     # POSSIBLE DUPLICATE: require explicit confirmation.
     if possible:
