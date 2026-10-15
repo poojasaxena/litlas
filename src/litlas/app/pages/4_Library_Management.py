@@ -4,6 +4,9 @@ import streamlit as st
 
 from litlas.app.ui import apply_page_style, render_page_header
 from litlas.app.book_editor import render_book_editor_contents
+from pathlib import Path
+
+ADD_BOOK_ICON = "/home/pooja-saxena/PoojaVault/Personal/Life/Creative/ImageBank/Inspiration/vintage/stack_antique_books.png"
 
 st.set_page_config(
     page_title="Library Management · Litlas",
@@ -42,18 +45,18 @@ st.markdown(
     """
     <style>
     /* Library Management buttons */
-    div[data-testid="stButton"] button[kind="secondary"] {
+    div[data-testid="stButton"] button:is([kind="secondary"], [kind="primary"]){
         background: #E8DCC9;
         border: 1px solid #C5AA87;
         border-radius: 8px;
-        height: 20px !important;
+        height: 100px !important;
         min-height: 100px !important;
         width: 100%;
         box-shadow: none;
     }
 
     /* Stack the inner icon-and-label wrapper vertically */
-    div[data-testid="stButton"] button[kind="secondary"]
+    div[data-testid="stButton"] button:is([kind="secondary"], [kind="primary"])
     span[data-has-shortcut="false"] {
         display: flex !important;
         flex-direction: column !important;
@@ -63,15 +66,15 @@ st.markdown(
     }
 
     /* Enlarge the emoji itself */
-    div[data-testid="stButton"] button[kind="secondary"]
+    div[data-testid="stButton"] button:is([kind="secondary"], [kind="primary"])
     span[data-has-shortcut="false"] > span:first-child,
-    div[data-testid="stButton"] button[kind="secondary"]
+    div[data-testid="stButton"] button:is([kind="secondary"], [kind="primary"])
     span[data-has-shortcut="false"] > span:first-child span {
         font-size: 55px !important;
         line-height: 1 !important;
     }
     /* Button label */
-    div[data-testid="stButton"] button[kind="secondary"] p {
+    div[data-testid="stButton"] button:is([kind="secondary"], [kind="primary"]) p {
         font-family: Georgia, serif !important;
         font-size: 17px !important;
         color: #58412F !important;
@@ -81,15 +84,26 @@ st.markdown(
     }
 
     /* Hover */
-    div[data-testid="stButton"] button[kind="secondary"]:hover {
+    div[data-testid="stButton"] button:is([kind="secondary"], [kind="primary"]):hover {
         background: #DDC9AE;
         border-color: #A47B43;
     }
 
-    /* Establish a positioning reference */
-    div[data-testid="stButton"] button[kind="secondary"] {
-        position: relative !important;
+    /* Selected Library Management button */
+    div[data-testid="stButton"] button[kind="primary"] {
+        background: #D6C0A3 !important;
+        border: 1px solid #A47B43 !important;
+        border-radius: 8px !important;
+        color: #58412F !important;
     }
+
+    /* Selected button hover */
+    div[data-testid="stButton"] button[kind="primary"]:hover {
+        background: #DDC9AE !important;
+        border-color: #A47B43 !important;
+        color: #58412F !important;
+    }
+
 
     /* Edit a Book — bronze Save button */
     [data-testid="stFormSubmitButton"] button {
@@ -119,8 +133,11 @@ st.markdown(
         display: flex;
         justify-content: center;
     }
-    /* Position the label near the bottom */
-    div[data-testid="stButton"] button[kind="secondary"]
+
+    /* Keep labels in exactly the same position,
+    whether a tool is selected or not */
+    div[data-testid="stButton"]
+    button:is([kind="secondary"], [kind="primary"])
     [data-testid="stMarkdownContainer"] p {
         position: absolute !important;
         bottom: 2px !important;
@@ -129,12 +146,13 @@ st.markdown(
         margin: 0 !important;
         text-align: center !important;
     }
+
     /* Vintage Library Management editor */
     .st-key-litlas_editor_card {
         background: #F7F0E4 !important;
         border: 1px solid #D4C1A7 !important;
         border-radius: 10px !important;
-        padding: 16px 20px !important;
+        padding: 16px 20px 28px !important;
     }
 
     /* Litlas vintage selectboxes */
@@ -239,17 +257,19 @@ columns = st.columns(5, gap="small")
 
 for column, (name, symbol) in zip(columns, TOOLS):
     with column:
+        selected = st.session_state.library_tool == name
+
         if st.button(
             name,
             icon=symbol,
             key=f"tool_{name}",
+            type="primary" if selected else "secondary",
             use_container_width=True,
         ):
             st.session_state.library_tool = (
-                None
-                if st.session_state.library_tool == name
-                else name
+                None if selected else name
             )
+            st.rerun()
 
 
 selected_tool = st.session_state.library_tool
