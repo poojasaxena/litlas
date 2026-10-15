@@ -1,12 +1,17 @@
 """Library Management workspace for Litlas."""
 
 import streamlit as st
+import base64
+from pathlib import Path
 
 from litlas.app.ui import apply_page_style, render_page_header
 from litlas.app.book_editor import render_book_editor_contents
 from pathlib import Path
 
-ADD_BOOK_ICON = "/home/pooja-saxena/PoojaVault/Personal/Life/Creative/ImageBank/Inspiration/vintage/stack_antique_books.png"
+ADD_BOOK_ICON = "/home/pooja-saxena/PoojaVault/Personal/Life/Creative/ImageBank/Inspiration/vintage/stack_antique_books-transparent.png"
+
+def image_to_base64(path: str) -> str:
+    return base64.b64encode(Path(path).read_bytes()).decode("ascii")
 
 st.set_page_config(
     page_title="Library Management · Litlas",
@@ -244,6 +249,40 @@ st.markdown(
         border-color: #A47B43 !important;
         box-shadow: 0 0 0 1px #A47B43 !important;
     }
+
+    /* Hide only the original Add a Book emoji */
+    .st-key-tool_Add-a-Book
+    span[data-has-shortcut="false"] > span:first-child {
+        visibility: hidden;
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+add_book_icon_b64 = image_to_base64(ADD_BOOK_ICON)
+
+st.markdown(
+    f"""
+    <style>
+    /* Vintage stacked books on the Add a Book button */
+    .st-key-tool_add_book
+    span[data-has-shortcut="false"] > span:first-child {{
+        font-size: 0 !important;
+        display: block !important;
+        width: 70px !important;
+        height: 65px !important;
+        background-image: url("data:image/png;base64,{add_book_icon_b64}") !important;
+        background-position: center !important;
+        background-repeat: no-repeat !important;
+        background-size: contain !important;
+    }}
+
+    .st-key-tool_add_book
+    span[data-has-shortcut="false"] > span:first-child span {{
+        visibility: hidden !important;
+    }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -252,7 +291,7 @@ st.markdown(
 if "library_tool" not in st.session_state:
     st.session_state.library_tool = None
 
-## Five buttons for Library Management tools in a single row
+
 columns = st.columns(5, gap="small")
 
 for column, (name, symbol) in zip(columns, TOOLS):
@@ -262,15 +301,12 @@ for column, (name, symbol) in zip(columns, TOOLS):
         if st.button(
             name,
             icon=symbol,
-            key=f"tool_{name}",
+            key="tool_add_book" if name == "Add a Book" else f"tool_{name}",
             type="primary" if selected else "secondary",
             use_container_width=True,
         ):
-            st.session_state.library_tool = (
-                None if selected else name
-            )
+            st.session_state.library_tool = None if selected else name
             st.rerun()
-
 
 selected_tool = st.session_state.library_tool
 
