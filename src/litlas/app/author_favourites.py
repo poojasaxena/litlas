@@ -1,0 +1,99 @@
+
+"""Manage personal literary favourites in Litlas."""
+
+import streamlit as st
+
+from litlas.database.repository import (
+    get_authors_for_favourites,
+    set_author_favourite,
+)
+
+
+FAVOURITE_TIERS = {
+    0: "Not selected",
+    1: "✦  Exceptional",
+    2: "♥  Favourites",
+    3: "❦  Good authors",
+}
+
+
+def render_author_favourites():
+    """Select an author and assign a literary category."""
+
+    authors = get_authors_for_favourites()
+
+    if not authors:
+        st.info("No authors available.")
+        return
+
+    author_options = {
+        int(row["id"]): {
+            "name": row["name"],
+            "tier": int(row["favourite_tier"]),
+        }
+        for row in authors
+    }
+
+    if "favourite_tier_editor" not in st.session_state:
+        st.session_state["favourite_tier_editor"] = 0
+
+    def load_author_category():
+        author_id = st.session_state["favourite_author_editor"]
+
+        st.session_state["favourite_tier_editor"] = (
+            author_options[author_id]["tier"]
+            if author_id is not None
+            else 0
+        )
+
+        st.session_state.pop("favourite_saved", None)
+
+    # Outside the form: selecting an author updates the category.
+    author_id = st.selectbox(
+        "Author",
+        options=list(author_options),
+        format_func=lambda value: author_options[value]["name"],
+        index=None,
+        placeholder="Find an author...",
+        key="favourite_author_editor",
+        on_change=load_author_category,
+    )
+
+    if author_id is None:
+        return
+
+    with st.form("favourite_author_form", border=False):
+        st.selectbox(
+            "Literary category",
+            options=list(FAVOURITE_TIERS),
+            format_func=lambda tier: FAVOURITE_TIERS[tier],
+            key="favourite_tier_editor",
+        )
+
+        submitted = st.form_submit_button(
+            "Save Category",
+            type="secondary",
+            use_container_width=True,
+        )
+
+    if submitted:
+        tier = st.session_state["favourite_tier_editor"]
+
+        try:
+            set_author_favourite(author_id, tier)
+        except ValueError as exc:
+            st.error(str(exc))
+        else:
+            st.session_state["favourite_saved"] = (
+                author_id,
+                author_options[author_id]["name"],
+                FAVOURITE_TIERS[tier],
+            )
+            st.rerun()
+
+    saved = st.session_state.get("favourite_saved")
+
+    if saved and saved[0] == author_id:
+        st.success(
+            f"Saved: {saved[1]} — {saved[2]}"
+        )

@@ -4,6 +4,7 @@ import streamlit as st
 import base64
 from pathlib import Path
 
+from litlas.app.author_favourites import render_author_favourites
 from litlas.app.book_add import render_add_book
 from litlas.app.ui import apply_page_style, render_page_header
 from litlas.app.book_editor import render_book_editor_contents
@@ -369,6 +370,18 @@ if selected_tool:
             ):
                 render_add_book()
 
+    elif selected_tool == "Favourites":
+        st.subheader("Favourites")
+        st.caption("A special place for the authors you treasure.")
+
+        editor_col, _ = st.columns([2, 1], gap="large")
+
+        with editor_col:
+            with st.container(
+                border=True,
+                key="litlas_editor_card",
+            ):
+                render_author_favourites()
     else:
         st.subheader(selected_tool)
         st.caption(

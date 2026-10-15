@@ -463,35 +463,38 @@ def get_reading_summary():
     with connect() as db:
         return dict(db.execute(query).fetchone())
 
+    
 def get_authors_for_favourites():
-    """Return authors and their favourite status."""
+    """Retrieve authors and their personal literary categories."""
     with connect() as db:
         return db.execute(
             """
-            SELECT id, name, is_favourite
+            SELECT id, name, favourite_tier
             FROM authors
             ORDER BY name COLLATE NOCASE
             """
         ).fetchall()
 
 
-def set_author_favourite(author_id: int, favourite: bool) -> None:
-    """Save an author's favourite status."""
+def set_author_favourite(author_id: int, tier: int) -> None:
+    """Save an author's literary category."""
+
+    if tier not in (0, 1, 2, 3):
+        raise ValueError("Invalid favourite category.")
+
     with connect() as db:
         cursor = db.execute(
             """
             UPDATE authors
-            SET is_favourite = ?
+            SET favourite_tier = ?
             WHERE id = ?
             """,
-            (int(favourite), author_id),
+            (tier, author_id),
         )
 
         if cursor.rowcount == 0:
             raise ValueError("Author not found.")
-
-        db.commit()
-
+    
 
 def verify_author_country(author_id, country, iso3):
     """Save a manually verified country without overwriting prior verification."""
