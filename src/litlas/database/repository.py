@@ -495,6 +495,121 @@ def set_author_favourite(author_id: int, tier: int) -> None:
         if cursor.rowcount == 0:
             raise ValueError("Author not found.")
 
+
+def update_author_details(
+    author_id: int,
+    name: str,
+    country: str,
+    iso3: str,
+) -> None:
+    """Correct an existing author's name and country."""
+
+    name = " ".join(name.split())
+
+    if not name:
+        raise ValueError("Author name cannot be empty.")
+
+    if not country or not iso3:
+        raise ValueError("Please select a country.")
+
+    with connect() as db:
+        db.execute("BEGIN IMMEDIATE")
+
+        authors = db.execute(
+            "SELECT id, name FROM authors"
+        ).fetchall()
+
+        for author in authors:
+            if author["id"] == author_id:
+                continue
+
+            existing = " ".join(author["name"].split()).casefold()
+
+            if existing == name.casefold():
+                raise ValueError(
+                    f"Another author already uses this name: "
+                    f"{author['name']}"
+                )
+
+        cursor = db.execute(
+            """
+            UPDATE authors
+            SET name = ?,
+                country = ?,
+                iso3 = ?,
+                status = 'manual',
+                source = 'manual correction'
+            WHERE id = ?
+            """,
+            (name, country, iso3, author_id),
+        )
+
+        if cursor.rowcount != 1:
+            raise ValueError("Author not found.")
+        
+
+def add_author(name: str, country: str, iso3: str,
+               confirm_similar: bool = False) -> int:
+    """Add an author with duplicate protection."""
+
+    from difflib import SequenceMatcher
+
+    name = " ".join(name.split())
+
+    if not name:
+        raise ValueError("Author name cannot be empty.")
+
+    if not country or not iso3:
+        raise ValueError("Please select a country.")
+
+    normalized = name.casefold()
+
+    with connect() as db:
+        # Serialize the duplicate check and insertion.
+        db.execute("BEGIN IMMEDIATE")
+
+        existing = db.execute(
+            "SELECT id, name FROM authors"
+        ).fetchall()
+
+        for author in existing:
+            existing_name = " ".join(
+                author["name"].split()
+            ).casefold()
+
+            if normalized == existing_name:
+                raise ValueError(
+                    f"Author already exists: {author['name']}"
+                )
+
+            similarity = SequenceMatcher(
+                None, normalized, existing_name
+            ).ratio()
+
+            if similarity >= 0.80 and not confirm_similar:
+                raise ValueError(
+                    f"Similar author found: {author['name']}. "
+                    "Please confirm this is a different person."
+                )
+
+        cursor = db.execute(
+            """
+            INSERT INTO authors
+                (name, country, iso3, status, source)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                name,
+                country,
+                iso3,
+                "manual",
+                "manual entry",
+            ),
+        )
+
+        return cursor.lastrowid
+
+
 def get_favourite_authors():
     """Return all classified authors, grouped by literary tier."""
     with connect() as db:

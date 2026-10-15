@@ -8,6 +8,7 @@ from litlas.app.author_favourites import (
     render_author_favourites,
     render_favourite_collection,
 )
+from litlas.app.author_details import render_author_details
 from litlas.app.book_add import render_add_book
 from litlas.app.ui import apply_page_style, render_page_header
 from litlas.app.book_editor import render_book_editor_contents
@@ -59,7 +60,8 @@ st.markdown(
        1. LIBRARY MANAGEMENT NAVIGATION
        ========================================== */
 
-    div[data-testid="stButton"] button:is([kind="secondary"], [kind="primary"]) {
+    div[data-testid="stButton"]:not(.st-key-author_details_add)
+        button:is([kind="secondary"], [kind="primary"]){
         position: relative !important;
         background: #E8DCC9;
         border: 1px solid #C5AA87;
@@ -187,7 +189,7 @@ st.markdown(
         box-shadow: 0 0 0 1px #A47B43 !important;
     }
 
-    /* Book title — React Aria text input */
+    /* All text inputs — vintage ivory styling */
     .st-key-litlas_editor_card
     [data-testid="stTextInputRootElement"] {
         background: #FFFCF7 !important;
@@ -206,7 +208,7 @@ st.markdown(
         box-shadow: none !important;
     }
 
-    /* Bronze focus for Book title */
+    /* Bronze focus for all text inputs */
     .st-key-litlas_editor_card
     [data-testid="stTextInputRootElement"]:focus-within {
         border-color: #A47B43 !important;
@@ -219,7 +221,13 @@ st.markdown(
         color: #81776E !important;
     }
 
-
+    /* Browser autofill — preserve the vintage ivory background */
+    .st-key-litlas_editor_card
+    [data-testid="stTextInputField"]:is(:-webkit-autofill, :autofill) {
+        -webkit-box-shadow: 0 0 0 1000px #FFFCF7 inset !important;
+        -webkit-text-fill-color: #58412F !important;
+        caret-color: #58412F !important;
+    }
     /* ==========================================
        4. DROPDOWN LISTS
        ========================================== */
@@ -391,19 +399,15 @@ if selected_tool:
             st.markdown("### My Literary Collection")
             render_favourite_collection()
 
+    elif selected_tool == "Author Details":
+        st.subheader("Author Details")
+        st.caption("Find, correct, or add authors to your literary atlas.")
 
-    # elif selected_tool == "Favourites":
-    #     st.subheader("Favourites")
-    #     st.caption("A special place for the authors you treasure.")
+        editor_col, _ = st.columns([2, 1], gap="large")
 
-    #     editor_col, _ = st.columns([2, 1], gap="large")
-
-    #     with editor_col:
-    #         with st.container(
-    #             border=True,
-    #             key="litlas_editor_card",
-    #         ):
-    #             render_author_favourites()
+        with editor_col:
+            with st.container(border=True, key="litlas_editor_card"):
+                render_author_details()
     else:
         st.subheader(selected_tool)
         st.caption(
