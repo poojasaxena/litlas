@@ -3,7 +3,7 @@
 import streamlit as st
 
 from litlas.app.ui import apply_page_style, render_page_header
-
+from litlas.app.book_editor import render_book_editor_contents
 
 st.set_page_config(
     page_title="Library Management · Litlas",
@@ -43,8 +43,8 @@ st.markdown(
     <style>
     /* Library Management buttons */
     div[data-testid="stButton"] button[kind="secondary"] {
-        background: #F5EFE4;
-        border: 1px solid #D4C1A7;
+        background: #E8DCC9;
+        border: 1px solid #C5AA87;
         border-radius: 8px;
         height: 20px !important;
         min-height: 100px !important;
@@ -82,7 +82,7 @@ st.markdown(
 
     /* Hover */
     div[data-testid="stButton"] button[kind="secondary"]:hover {
-        background: #EDE3D4;
+        background: #DDC9AE;
         border-color: #A47B43;
     }
 
@@ -91,6 +91,34 @@ st.markdown(
         position: relative !important;
     }
 
+    /* Edit a Book — bronze Save button */
+    [data-testid="stFormSubmitButton"] button {
+        background: #8B634B !important;
+        border: 1px solid #8B634B !important;
+        color: #FFF9F1 !important;
+        font-family: Georgia, serif !important;
+        font-size: 15px !important;
+        border-radius: 6px !important;
+        width: 200px !important;
+        min-height: 42px !important;
+    }
+
+    /* Slightly reduce the space below the Save button */
+    [data-testid="stForm"] {
+        padding-bottom: 12px !important;
+    }
+
+    [data-testid="stFormSubmitButton"] button:hover {
+        background: #6E4B3A !important;
+        border-color: #6E4B3A !important;
+        color: #FFF9F1 !important;
+    }
+
+    /* Align the button to the right */
+    [data-testid="stFormSubmitButton"] {
+        display: flex;
+        justify-content: center;
+    }
     /* Position the label near the bottom */
     div[data-testid="stButton"] button[kind="secondary"]
     [data-testid="stMarkdownContainer"] p {
@@ -100,6 +128,103 @@ st.markdown(
         width: 100% !important;
         margin: 0 !important;
         text-align: center !important;
+    }
+    /* Vintage Library Management editor */
+    .st-key-litlas_editor_card {
+        background: #F7F0E4 !important;
+        border: 1px solid #D4C1A7 !important;
+        border-radius: 10px !important;
+        padding: 16px 20px !important;
+    }
+
+    /* Litlas vintage selectboxes */
+    .st-key-litlas_editor_card
+    [data-testid="stSelectbox"] .react-aria-ComboBox [role="group"] {
+        background: #FFFCF7 !important;
+        border: 1px solid #D4C1A7 !important;
+        border-radius: 7px !important;
+    }
+
+    /* Author and book input text */
+    .st-key-litlas_editor_card
+    [data-testid="stSelectbox"] .react-aria-ComboBox input {
+        background: transparent !important;
+        color: #58412F !important;
+    }
+
+    /* Dropdown arrow area */
+    .st-key-litlas_editor_card
+    [data-testid="stSelectbox"] .react-aria-ComboBox button {
+        background: transparent !important;
+        color: #58412F !important;
+    }
+
+    /* Bronze focus instead of red */
+    .st-key-litlas_editor_card
+    [data-testid="stSelectbox"] .react-aria-ComboBox [role="group"]:focus-within {
+        border-color: #A47B43 !important;
+        box-shadow: 0 0 0 1px #A47B43 !important;
+    }
+
+    /* Opened dropdown panel (the floating list) */
+    div[role="listbox"] {
+        background: #FFFCF7 !important;
+        border: 1px solid #D4C1A7 !important;
+        border-radius: 10px !important;
+        box-shadow: 0 4px 14px rgba(88, 65, 47, 0.10) !important;
+        color: #58412F !important;
+    }
+
+    /* Each option row */
+    div[role="option"] {
+        background: #FFFCF7 !important;
+        color: #58412F !important;
+        font-family: Georgia, serif !important;
+        font-size: 16px !important;
+        padding: 10px 14px !important;
+    }
+
+    /* Hover / keyboard focus */
+    div[role="option"]:hover,
+    div[role="option"][data-focused="true"],
+    div[role="option"][aria-selected="true"] {
+        background: #F0E6D7 !important;
+        color: #58412F !important;
+    }
+
+    /* Optional: scrollbar inside the list */
+    div[role="listbox"]::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    div[role="listbox"]::-webkit-scrollbar-thumb {
+        background: #D4C1A7;
+        border-radius: 8px;
+    }
+
+    div[role="listbox"]::-webkit-scrollbar-track {
+        background: #FFF9F1;
+    }
+
+    /* Number of Pages — vintage ivory background */
+    .st-key-litlas_editor_card [data-testid="stNumberInput"] [data-testid="stNumberInputContainer"],
+    .st-key-litlas_editor_card [data-testid="stNumberInput"] input,
+    .st-key-litlas_editor_card [data-testid="stNumberInput"] button {
+        background: #FFFCF7 !important;
+        color: #58412F !important;
+    }
+
+    /* Warm border around the entire number field */
+    .st-key-litlas_editor_card [data-testid="stNumberInputContainer"] {
+        border: 1px solid #D4C1A7 !important;
+        border-radius: 7px !important;
+        overflow: hidden;
+    }
+
+    /* Bronze focus */
+    .st-key-litlas_editor_card [data-testid="stNumberInputContainer"]:focus-within {
+        border-color: #A47B43 !important;
+        box-shadow: 0 0 0 1px #A47B43 !important;
     }
     </style>
     """,
@@ -130,9 +255,29 @@ for column, (name, symbol) in zip(columns, TOOLS):
 selected_tool = st.session_state.library_tool
 
 if selected_tool:
-    st.divider()
-    st.subheader(selected_tool)
-
-    st.caption(
-        f"The {selected_tool} workspace will appear here."
+    st.markdown(
+        "<hr style='margin: 8px 0 12px; border: none; "
+        "border-top: 1px solid #D4C1A7;'>",
+        unsafe_allow_html=True,
     )
+
+
+    if selected_tool == "Edit a Book":
+        st.subheader("Edit a Book")
+        st.caption("Revise your personal book ratings and page counts.")
+
+        editor_col, _ = st.columns([2, 1], gap="large")
+
+        with editor_col:
+            with st.container(
+                border=True,
+                key="litlas_editor_card",
+            ):
+                render_book_editor_contents(show_heading=False)
+
+
+    else:
+        st.subheader(selected_tool)
+        st.caption(
+            f"The {selected_tool} workspace will appear here."
+        )

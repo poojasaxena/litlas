@@ -22,23 +22,27 @@ RATING_OPTIONS = {
     "5 ★": 5.0,
 }
 
+def render_book_editor_contents(show_heading=True):
+    """Render the book editor in the current location."""
 
-def render_book_editor():
-    """Render the Library Editor inside Streamlit's sidebar."""
+    books = get_editable_books()
 
-    with st.sidebar:
+    if books.empty:
+        st.info("No books available for editing.")
+        return
+
+    if show_heading:
         st.subheader("Library Editor")
         st.caption("Edit your personal reading records.")
 
-        books = get_editable_books()
+    authors = sorted(books["author"].dropna().unique())
 
-        if books.empty:
-            st.info("No books available for editing.")
-            return
+    # -------------------------------------------------
+    # Row 1: author + book selectors
+    # -------------------------------------------------
+    select_col1, select_col2 = st.columns([1, 1], gap="large")
 
-        # Choose an author first to keep the book list manageable.
-        authors = sorted(books["author"].dropna().unique())
-
+    with select_col1:
         selected_author = st.selectbox(
             "Author",
             authors,
@@ -47,20 +51,19 @@ def render_book_editor():
             key="editor_author",
         )
 
-        if selected_author is None:
-            return
+    if selected_author is None:
+        return
 
-        author_books = books[
-            books["author"] == selected_author
-        ].copy()
+    author_books = books[
+        books["author"] == selected_author
+    ].copy()
 
-        book_options = {
-            str(row["goodreads_id"]): (
-                f'{row["display_title"]}'
-            )
-            for _, row in author_books.iterrows()
-        }
+    book_options = {
+        str(row["goodreads_id"]): str(row["display_title"])
+        for _, row in author_books.iterrows()
+    }
 
+    with select_col2:
         selected_id = st.selectbox(
             "Book",
             options=list(book_options),
@@ -70,119 +73,299 @@ def render_book_editor():
             key="editor_book",
         )
 
-        if selected_id is None:
-            return
+    if selected_id is None:
+        return
 
-        row = author_books[
-            author_books["goodreads_id"] == selected_id
-        ].iloc[0]
+    row = author_books[
+        author_books["goodreads_id"] == selected_id
+    ].iloc[0]
 
-        # Preserve the distinction between a missing override
-        # and an explicitly chosen unrated (0-star) value.
-        stored_rating = row["rating_override"]
+    stored_rating = row["rating_override"]
 
-        if pd.isna(stored_rating):
-            current_rating = float(row["rating"])
-            rating_is_override = False
-        else:
-            current_rating = float(stored_rating)
-            rating_is_override = True
+    if pd.isna(stored_rating):
+        current_rating = float(row["rating"])
+    else:
+        current_rating = float(stored_rating)
 
-        rating_labels = list(RATING_OPTIONS)
+    rating_labels = list(RATING_OPTIONS)
 
-        current_label = next(
-            (
-                label
-                for label, value in RATING_OPTIONS.items()
-                if value == current_rating
-            ),
-            "Unrated",
-        )
+    current_label = next(
+        (
+            label
+            for label, value in RATING_OPTIONS.items()
+            if value == current_rating
+        ),
+        "Unrated",
+    )
 
+    current_pages = row["effective_pages"]
+    original_rating = float(row["rating"])
+    original_pages = row["pages"]
 
-        with st.form(
-            "edit_book_form",
-            clear_on_submit=False,
-        ):
+    # -------------------------------------------------
+    # Row 2: rating + pages + save
+    # -------------------------------------------------
+    with st.form("edit_book_form", clear_on_submit=False, border=False):
+        form_col1, form_col2 = st.columns(2, gap="large")
+        
+
+        with form_col1:
             rating_label = st.selectbox(
                 "My rating",
                 rating_labels,
                 index=rating_labels.index(current_label),
             )
 
-            original_rating = float(row["rating"])
             st.caption(
                 f"Original Goodreads rating: {original_rating:g} ★"
                 if original_rating
                 else "Original Goodreads rating: Unrated"
             )
 
-            current_pages = row["effective_pages"]
-
+        with form_col2:
             pages = st.number_input(
                 "Number of pages",
                 min_value=1,
                 step=1,
-                value=(
-                    int(current_pages)
-                    if pd.notna(current_pages)
-                    else 1
-                ),
+                value=int(current_pages) if pd.notna(current_pages) else 1,
             )
 
-            submitted = st.form_submit_button(
-                "Save to Litlas",
-                type="secondary",
-                use_container_width=True,
-            )
-
-        if submitted:
-            # Save only values that differ from Goodreads.
-            # Existing overrides remain in place when unchanged.
-            selected_rating = RATING_OPTIONS[rating_label]
-
-            rating_override = (
-                selected_rating
-                if (
-                    selected_rating != float(row["rating"])
-                    or pd.notna(row["rating_override"])
-                )
-                else None
-            )
-
-            original_pages = row["pages"]
-
-            pages_override = (
-                int(pages)
-                if (
-                    pd.isna(original_pages)
-                    or int(pages) != int(original_pages)
-                    or pd.notna(row["pages_override"])
-                )
-                else None
-            )
-
-            try:
-                update_book_details(
-                    goodreads_id=selected_id,
-                    display_title=str(row["display_title"]),
-                    rating_override=rating_override,
-                    pages_override=pages_override,
-                )
-
-            except ValueError as exc:
-                st.error(str(exc))
+            if pd.notna(original_pages):
+                st.caption(f"Imported page count: {int(original_pages)}")
             else:
-                st.session_state["book_editor_saved"] = (
-                    selected_id,
-                    str(row["display_title"]),
-                )
-                st.rerun()
+                st.caption("Imported page count: missing")
 
-        saved = st.session_state.get("book_editor_saved")
+        submitted = st.form_submit_button(
+            "Save to Litlas",
+            type="secondary",
+            use_container_width=True,
+        )
 
-        if saved and saved[0] == selected_id:
-            with st.container(key="litlas_saved_confirmation"):
-                st.markdown(
-                    f"✓ **Saved:** {escape(saved[1])}"
-                )
+
+    if submitted:
+        selected_rating = RATING_OPTIONS[rating_label]
+
+        rating_override = (
+            selected_rating
+            if (
+                selected_rating != float(row["rating"])
+                or pd.notna(row["rating_override"])
+            )
+            else None
+        )
+
+        pages_override = (
+            int(pages)
+            if (
+                pd.isna(original_pages)
+                or int(pages) != int(original_pages)
+                or pd.notna(row["pages_override"])
+            )
+            else None
+        )
+
+        try:
+            update_book_details(
+                goodreads_id=selected_id,
+                display_title=str(row["display_title"]),
+                rating_override=rating_override,
+                pages_override=pages_override,
+            )
+        except ValueError as exc:
+            st.error(str(exc))
+        else:
+            st.session_state["book_editor_saved"] = (
+                selected_id,
+                book_options[selected_id],
+            )
+            st.rerun()
+
+    saved = st.session_state.get("book_editor_saved")
+
+    if saved and saved[0] == selected_id:
+        st.markdown(
+            f"""
+            <div style="
+                background:#E8DCC8;
+                border:1px solid #CDAE86;
+                border-radius:8px;
+                padding:12px 16px;
+                margin-top:14px;
+                font-family:Georgia,serif;
+                font-size:15px;
+                color:#6E4B3A;
+            ">
+                ✓ Saved: {saved[1]}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+def render_book_editor_contents_sidebar(show_heading=True):
+    """Render the Library Editor inside Streamlit's sidebar."""
+
+    if show_heading:
+        st.subheader("Library Editor")
+        st.caption("Edit your personal reading records.")
+
+    books = get_editable_books()
+
+    if books.empty:
+        st.info("No books available for editing.")
+        return
+
+    # Choose an author first to keep the book list manageable.
+    authors = sorted(books["author"].dropna().unique())
+
+    selected_author = st.selectbox(
+        "Author",
+        authors,
+        index=None,
+        placeholder="Find an author...",
+        key="editor_author",
+    )
+
+    if selected_author is None:
+        return
+
+    author_books = books[
+        books["author"] == selected_author
+    ].copy()
+
+    book_options = {
+        str(row["goodreads_id"]): (
+            f'{row["display_title"]}'
+        )
+        for _, row in author_books.iterrows()
+    }
+
+    selected_id = st.selectbox(
+        "Book",
+        options=list(book_options),
+        format_func=lambda book_id: book_options[book_id],
+        index=None,
+        placeholder="Select a book...",
+        key="editor_book",
+    )
+
+    if selected_id is None:
+        return
+
+    row = author_books[
+        author_books["goodreads_id"] == selected_id
+    ].iloc[0]
+
+    # Preserve the distinction between a missing override
+    # and an explicitly chosen unrated (0-star) value.
+    stored_rating = row["rating_override"]
+
+    if pd.isna(stored_rating):
+        current_rating = float(row["rating"])
+        rating_is_override = False
+    else:
+        current_rating = float(stored_rating)
+        rating_is_override = True
+
+    rating_labels = list(RATING_OPTIONS)
+
+    current_label = next(
+        (
+            label
+            for label, value in RATING_OPTIONS.items()
+            if value == current_rating
+        ),
+        "Unrated",
+    )
+
+
+    with st.form(
+        "edit_book_form",
+        clear_on_submit=False,
+    ):
+        rating_label = st.selectbox(
+            "My rating",
+            rating_labels,
+            index=rating_labels.index(current_label),
+        )
+
+        original_rating = float(row["rating"])
+        st.caption(
+            f"Original Goodreads rating: {original_rating:g} ★"
+            if original_rating
+            else "Original Goodreads rating: Unrated"
+        )
+
+        current_pages = row["effective_pages"]
+
+        pages = st.number_input(
+            "Number of pages",
+            min_value=1,
+            step=1,
+            value=(
+                int(current_pages)
+                if pd.notna(current_pages)
+                else 1
+            ),
+        )
+
+        submitted = st.form_submit_button(
+            "Save to Litlas",
+            type="secondary",
+            use_container_width=True,
+        )
+
+    if submitted:
+        # Save only values that differ from Goodreads.
+        # Existing overrides remain in place when unchanged.
+        selected_rating = RATING_OPTIONS[rating_label]
+
+        rating_override = (
+            selected_rating
+            if (
+                selected_rating != float(row["rating"])
+                or pd.notna(row["rating_override"])
+            )
+            else None
+        )
+
+        original_pages = row["pages"]
+
+        pages_override = (
+            int(pages)
+            if (
+                pd.isna(original_pages)
+                or int(pages) != int(original_pages)
+                or pd.notna(row["pages_override"])
+            )
+            else None
+        )
+
+        try:
+            update_book_details(
+                goodreads_id=selected_id,
+                display_title=str(row["display_title"]),
+                rating_override=rating_override,
+                pages_override=pages_override,
+            )
+
+        except ValueError as exc:
+            st.error(str(exc))
+        else:
+            st.session_state["book_editor_saved"] = (
+                selected_id,
+                str(row["display_title"]),
+            )
+            st.rerun()
+
+    saved = st.session_state.get("book_editor_saved")
+
+    if saved and saved[0] == selected_id:
+        with st.container(key="litlas_saved_confirmation"):
+            st.markdown(
+                f"✓ **Saved:** {escape(saved[1])}"
+            )
+
+def render_book_editor():
+    """Render the editor in the Reading Statistics sidebar."""
+    with st.sidebar:
+        render_book_editor_contents(show_heading=True)
