@@ -350,6 +350,100 @@ def get_rating_distribution():
     with connect() as db:
         return pd.read_sql_query(query, db)
 
+from uuid import uuid4
+
+
+
+from uuid import uuid4
+
+
+def add_book(
+    author_id: int,
+    title: str,
+    rating: float = 0,
+    pages: int | None = None,
+    shelf: str = "read",
+    date_read: str | None = None,
+) -> str:
+    """Add a book independently of Goodreads."""
+
+    title = title.strip()
+
+    if not title:
+        raise ValueError("Book title cannot be empty.")
+
+    if rating not in (0, 1, 2, 3, 3.5, 4, 4.5, 5):
+        raise ValueError("Invalid rating.")
+
+    if pages is not None and pages <= 0:
+        raise ValueError("Page count must be positive.")
+
+    if shelf not in ("read", "currently-reading", "to-read"):
+        raise ValueError("Invalid reading status.")
+
+    record_id = uuid4().hex
+    book_id = f"litlas:{record_id}"
+    work_id = f"litlas:{record_id}"
+
+    with connect() as db:
+        author = db.execute(
+            "SELECT id FROM authors WHERE id = ?",
+            (author_id,),
+        ).fetchone()
+
+        if author is None:
+            raise ValueError("Selected author does not exist.")
+
+        # A literary work must exist for country statistics
+        # and unique-work counting.
+        db.execute(
+            """
+            INSERT INTO works (id, title, author_id)
+            VALUES (?, ?, ?)
+            """,
+            (work_id, title, author_id),
+        )
+
+        # Goodreads rating is integer-valued in the schema.
+        # Preserve half-star ratings as Litlas overrides.
+        base_rating = int(rating) if float(rating).is_integer() else 0
+        rating_override = rating if rating != base_rating else None
+
+        db.execute(
+            """
+            INSERT INTO books (
+                goodreads_id,
+                author_id,
+                work_id,
+                original_title,
+                display_title,
+                rating,
+                rating_override,
+                pages,
+                shelf,
+                date_read,
+                excluded_from_display
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+            """,
+            (
+                book_id,
+                author_id,
+                work_id,
+                title,
+                title,
+                base_rating,
+                rating_override,
+                pages,
+                shelf,
+                date_read,
+            ),
+        )
+
+        db.commit()
+
+    return book_id
+
     
 def get_reading_summary():
     """Return overall statistics for displayed read books."""
@@ -368,7 +462,37 @@ def get_reading_summary():
 
     with connect() as db:
         return dict(db.execute(query).fetchone())
-    
+
+def get_authors_for_favourites():
+    """Return authors and their favourite status."""
+    with connect() as db:
+        return db.execute(
+            """
+            SELECT id, name, is_favourite
+            FROM authors
+            ORDER BY name COLLATE NOCASE
+            """
+        ).fetchall()
+
+
+def set_author_favourite(author_id: int, favourite: bool) -> None:
+    """Save an author's favourite status."""
+    with connect() as db:
+        cursor = db.execute(
+            """
+            UPDATE authors
+            SET is_favourite = ?
+            WHERE id = ?
+            """,
+            (int(favourite), author_id),
+        )
+
+        if cursor.rowcount == 0:
+            raise ValueError("Author not found.")
+
+        db.commit()
+
+
 def verify_author_country(author_id, country, iso3):
     """Save a manually verified country without overwriting prior verification."""
 

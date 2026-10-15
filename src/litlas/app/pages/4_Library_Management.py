@@ -4,6 +4,7 @@ import streamlit as st
 import base64
 from pathlib import Path
 
+from litlas.app.book_add import render_add_book
 from litlas.app.ui import apply_page_style, render_page_header
 from litlas.app.book_editor import render_book_editor_contents
 from pathlib import Path
@@ -46,11 +47,16 @@ TOOLS = [
 ]
 
 
+
 st.markdown(
     """
     <style>
-    /* Library Management buttons */
-    div[data-testid="stButton"] button:is([kind="secondary"], [kind="primary"]){
+    /* ==========================================
+       1. LIBRARY MANAGEMENT NAVIGATION
+       ========================================== */
+
+    div[data-testid="stButton"] button:is([kind="secondary"], [kind="primary"]) {
+        position: relative !important;
         background: #E8DCC9;
         border: 1px solid #C5AA87;
         border-radius: 8px;
@@ -60,8 +66,9 @@ st.markdown(
         box-shadow: none;
     }
 
-    /* Stack the inner icon-and-label wrapper vertically */
-    div[data-testid="stButton"] button:is([kind="secondary"], [kind="primary"])
+    /* Icon above the label */
+    div[data-testid="stButton"]
+    button:is([kind="secondary"], [kind="primary"])
     span[data-has-shortcut="false"] {
         display: flex !important;
         flex-direction: column !important;
@@ -70,47 +77,193 @@ st.markdown(
         gap: 22px !important;
     }
 
-    /* Enlarge the emoji itself */
-    div[data-testid="stButton"] button:is([kind="secondary"], [kind="primary"])
+    /* Large navigation icons */
+    div[data-testid="stButton"]
+    button:is([kind="secondary"], [kind="primary"])
     span[data-has-shortcut="false"] > span:first-child,
-    div[data-testid="stButton"] button:is([kind="secondary"], [kind="primary"])
+    div[data-testid="stButton"]
+    button:is([kind="secondary"], [kind="primary"])
     span[data-has-shortcut="false"] > span:first-child span {
         font-size: 55px !important;
         line-height: 1 !important;
     }
-    /* Button label */
-    div[data-testid="stButton"] button:is([kind="secondary"], [kind="primary"]) p {
+
+    /* Navigation labels */
+    div[data-testid="stButton"]
+    button:is([kind="secondary"], [kind="primary"])
+    [data-testid="stMarkdownContainer"] p {
+        position: absolute !important;
+        bottom: 2px !important;
+        left: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        text-align: center !important;
         font-family: Georgia, serif !important;
         font-size: 17px !important;
         color: #58412F !important;
-        margin: 0 !important;
-        text-align: center;
-        transform: translateY(1px);
     }
 
     /* Hover */
-    div[data-testid="stButton"] button:is([kind="secondary"], [kind="primary"]):hover {
-        background: #DDC9AE;
-        border-color: #A47B43;
+    div[data-testid="stButton"]
+    button:is([kind="secondary"], [kind="primary"]):hover {
+        background: #DDC9AE !important;
+        border-color: #A47B43 !important;
     }
 
-    /* Selected Library Management button */
+    /* Selected navigation card */
     div[data-testid="stButton"] button[kind="primary"] {
         background: #D6C0A3 !important;
-        border: 1px solid #A47B43 !important;
-        border-radius: 8px !important;
-        color: #58412F !important;
-    }
-
-    /* Selected button hover */
-    div[data-testid="stButton"] button[kind="primary"]:hover {
-        background: #DDC9AE !important;
         border-color: #A47B43 !important;
         color: #58412F !important;
     }
 
 
-    /* Edit a Book — bronze Save button */
+    /* ==========================================
+       2. VINTAGE EDITOR CARD
+       ========================================== */
+
+    .st-key-litlas_editor_card {
+        background: #F7F0E4 !important;
+        border: 1px solid #D4C1A7 !important;
+        border-radius: 10px !important;
+        padding: 16px 20px 28px !important;
+    }
+
+
+    /* ==========================================
+       3. INPUT FIELDS
+       ========================================== */
+
+    /* Selectboxes */
+    .st-key-litlas_editor_card
+    [data-testid="stSelectbox"]
+    .react-aria-ComboBox [role="group"] {
+        background: #FFFCF7 !important;
+        border: 1px solid #D4C1A7 !important;
+        border-radius: 7px !important;
+    }
+
+    .st-key-litlas_editor_card
+    [data-testid="stSelectbox"]
+    .react-aria-ComboBox input,
+    .st-key-litlas_editor_card
+    [data-testid="stSelectbox"]
+    .react-aria-ComboBox button {
+        background: transparent !important;
+        color: #58412F !important;
+    }
+
+    .st-key-litlas_editor_card
+    [data-testid="stSelectbox"]
+    .react-aria-ComboBox [role="group"]:focus-within {
+        border-color: #A47B43 !important;
+        box-shadow: 0 0 0 1px #A47B43 !important;
+    }
+
+    /* Number of pages */
+    .st-key-litlas_editor_card
+    [data-testid="stNumberInputContainer"] {
+        background: #FFFCF7 !important;
+        border: 1px solid #D4C1A7 !important;
+        border-radius: 7px !important;
+        overflow: hidden;
+    }
+
+    .st-key-litlas_editor_card
+    [data-testid="stNumberInput"] input,
+    .st-key-litlas_editor_card
+    [data-testid="stNumberInput"] button {
+        background: #FFFCF7 !important;
+        color: #58412F !important;
+    }
+
+    .st-key-litlas_editor_card
+    [data-testid="stNumberInputContainer"]:focus-within {
+        border-color: #A47B43 !important;
+        box-shadow: 0 0 0 1px #A47B43 !important;
+    }
+
+    /* Book title — React Aria text input */
+    .st-key-litlas_editor_card
+    [data-testid="stTextInputRootElement"] {
+        background: #FFFCF7 !important;
+        border: 1px solid #D4C1A7 !important;
+        border-radius: 7px !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
+
+    .st-key-litlas_editor_card
+    [data-testid="stTextInputField"] {
+        background: transparent !important;
+        color: #58412F !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Bronze focus for Book title */
+    .st-key-litlas_editor_card
+    [data-testid="stTextInputRootElement"]:focus-within {
+        border-color: #A47B43 !important;
+        outline: none !important;
+        box-shadow: 0 0 0 1px #A47B43 !important;
+    }
+
+    .st-key-litlas_editor_card
+    [data-testid="stTextInputField"]::placeholder {
+        color: #81776E !important;
+    }
+
+
+    /* ==========================================
+       4. DROPDOWN LISTS
+       ========================================== */
+
+    div[role="listbox"] {
+        background: #FFFCF7 !important;
+        border: 1px solid #D4C1A7 !important;
+        border-radius: 10px !important;
+        box-shadow: 0 4px 14px rgba(88, 65, 47, 0.10) !important;
+    }
+
+    div[role="option"] {
+        background: #FFFCF7 !important;
+        color: #58412F !important;
+        font-family: Georgia, serif !important;
+        font-size: 16px !important;
+        padding: 10px 14px !important;
+    }
+
+    div[role="option"]:hover,
+    div[role="option"][data-focused="true"],
+    div[role="option"][aria-selected="true"] {
+        background: #F0E6D7 !important;
+    }
+
+    div[role="listbox"]::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    div[role="listbox"]::-webkit-scrollbar-thumb {
+        background: #D4C1A7;
+        border-radius: 8px;
+    }
+
+
+    /* ==========================================
+       5. SAVE BUTTON
+       ========================================== */
+
+    [data-testid="stForm"] {
+        padding-bottom: 12px !important;
+    }
+
+    [data-testid="stFormSubmitButton"] {
+        display: flex;
+        justify-content: center;
+    }
+
     [data-testid="stFormSubmitButton"] button {
         background: #8B634B !important;
         border: 1px solid #8B634B !important;
@@ -122,138 +275,10 @@ st.markdown(
         min-height: 42px !important;
     }
 
-    /* Slightly reduce the space below the Save button */
-    [data-testid="stForm"] {
-        padding-bottom: 12px !important;
-    }
-
     [data-testid="stFormSubmitButton"] button:hover {
         background: #6E4B3A !important;
         border-color: #6E4B3A !important;
         color: #FFF9F1 !important;
-    }
-
-    /* Align the button to the right */
-    [data-testid="stFormSubmitButton"] {
-        display: flex;
-        justify-content: center;
-    }
-
-    /* Keep labels in exactly the same position,
-    whether a tool is selected or not */
-    div[data-testid="stButton"]
-    button:is([kind="secondary"], [kind="primary"])
-    [data-testid="stMarkdownContainer"] p {
-        position: absolute !important;
-        bottom: 2px !important;
-        left: 0 !important;
-        width: 100% !important;
-        margin: 0 !important;
-        text-align: center !important;
-    }
-
-    /* Vintage Library Management editor */
-    .st-key-litlas_editor_card {
-        background: #F7F0E4 !important;
-        border: 1px solid #D4C1A7 !important;
-        border-radius: 10px !important;
-        padding: 16px 20px 28px !important;
-    }
-
-    /* Litlas vintage selectboxes */
-    .st-key-litlas_editor_card
-    [data-testid="stSelectbox"] .react-aria-ComboBox [role="group"] {
-        background: #FFFCF7 !important;
-        border: 1px solid #D4C1A7 !important;
-        border-radius: 7px !important;
-    }
-
-    /* Author and book input text */
-    .st-key-litlas_editor_card
-    [data-testid="stSelectbox"] .react-aria-ComboBox input {
-        background: transparent !important;
-        color: #58412F !important;
-    }
-
-    /* Dropdown arrow area */
-    .st-key-litlas_editor_card
-    [data-testid="stSelectbox"] .react-aria-ComboBox button {
-        background: transparent !important;
-        color: #58412F !important;
-    }
-
-    /* Bronze focus instead of red */
-    .st-key-litlas_editor_card
-    [data-testid="stSelectbox"] .react-aria-ComboBox [role="group"]:focus-within {
-        border-color: #A47B43 !important;
-        box-shadow: 0 0 0 1px #A47B43 !important;
-    }
-
-    /* Opened dropdown panel (the floating list) */
-    div[role="listbox"] {
-        background: #FFFCF7 !important;
-        border: 1px solid #D4C1A7 !important;
-        border-radius: 10px !important;
-        box-shadow: 0 4px 14px rgba(88, 65, 47, 0.10) !important;
-        color: #58412F !important;
-    }
-
-    /* Each option row */
-    div[role="option"] {
-        background: #FFFCF7 !important;
-        color: #58412F !important;
-        font-family: Georgia, serif !important;
-        font-size: 16px !important;
-        padding: 10px 14px !important;
-    }
-
-    /* Hover / keyboard focus */
-    div[role="option"]:hover,
-    div[role="option"][data-focused="true"],
-    div[role="option"][aria-selected="true"] {
-        background: #F0E6D7 !important;
-        color: #58412F !important;
-    }
-
-    /* Optional: scrollbar inside the list */
-    div[role="listbox"]::-webkit-scrollbar {
-        width: 10px;
-    }
-
-    div[role="listbox"]::-webkit-scrollbar-thumb {
-        background: #D4C1A7;
-        border-radius: 8px;
-    }
-
-    div[role="listbox"]::-webkit-scrollbar-track {
-        background: #FFF9F1;
-    }
-
-    /* Number of Pages — vintage ivory background */
-    .st-key-litlas_editor_card [data-testid="stNumberInput"] [data-testid="stNumberInputContainer"],
-    .st-key-litlas_editor_card [data-testid="stNumberInput"] input,
-    .st-key-litlas_editor_card [data-testid="stNumberInput"] button {
-        background: #FFFCF7 !important;
-        color: #58412F !important;
-    }
-
-    /* Warm border around the entire number field */
-    .st-key-litlas_editor_card [data-testid="stNumberInputContainer"] {
-        border: 1px solid #D4C1A7 !important;
-        border-radius: 7px !important;
-        overflow: hidden;
-    }
-
-    /* Bronze focus */
-    .st-key-litlas_editor_card [data-testid="stNumberInputContainer"]:focus-within {
-        border-color: #A47B43 !important;
-        box-shadow: 0 0 0 1px #A47B43 !important;
-    }
-
-    /* Hide only the original Add a Book emoji */
-    .st-key-tool_Add-a-Book
-    span[data-has-shortcut="false"] > span:first-child {
-        visibility: hidden;
     }
 
     </style>
@@ -331,6 +356,18 @@ if selected_tool:
             ):
                 render_book_editor_contents(show_heading=False)
 
+    elif selected_tool == "Add a Book":
+        st.subheader("Add a Book")
+        st.caption("Add books directly to your literary collection.")
+
+        editor_col, _ = st.columns([2, 1], gap="large")
+
+        with editor_col:
+            with st.container(
+                border=True,
+                key="litlas_editor_card",
+            ):
+                render_add_book()
 
     else:
         st.subheader(selected_tool)
