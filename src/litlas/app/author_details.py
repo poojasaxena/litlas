@@ -8,6 +8,7 @@ from litlas.database.repository import (
     add_author,
     update_author_details,
     delete_author,
+    get_author_dependencies,
 )
 from litlas.processing.countries import (
     COUNTRY_NAMES,
@@ -59,46 +60,81 @@ def find_author_matches(name: str):
 
 
 def render_author_details():
-    """Find, add, or correct authors."""
+    """Find, add, correct, or safely delete authors."""
 
-    # Apply a corrected name before the search widget is created.
+    # --------------------------------------------------
+    # Persistent vintage confirmation
+    # --------------------------------------------------
+    def show_confirmation(message):
+        st.markdown(
+            (
+                '<div style="background:#E8DCC8;'
+                'border:1px solid #CDAE86;'
+                'border-radius:8px;padding:12px 16px;'
+                'margin-top:10px;font-family:Georgia,serif;'
+                'font-size:15px;color:#6E4B3A;">'
+                f'✓ {escape(message)}</div>'
+            ),
+            unsafe_allow_html=True,
+        )
+
+    # After deletion, clear the search field BEFORE creating it.
     pending_name = st.session_state.pop(
         "author_details_pending_name", None
     )
     if pending_name is not None:
         st.session_state["author_details_name"] = pending_name
 
-    deleted_message = st.session_state.get("author_deleted_message")
+    # --------------------------------------------------
+    # Remember which existing author is being edited.
+    #
+    # This is important: correcting an author's name
+    # must not turn them into a new author.
+    # --------------------------------------------------
+    def author_name_changed():
+        entered = st.session_state["author_details_name"]
 
-    if deleted_message:
-        st.markdown(
-            f"""
-            <div style="
-                background:#E8DCC8;
-                border:1px solid #CDAE86;
-                border-radius:8px;
-                padding:12px 16px;
-                font-family:Georgia,serif;
-                font-size:15px;
-                color:#6E4B3A;
-            ">
-                ✓ {escape(deleted_message)}
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        if not entered.strip():
+            st.session_state["author_details_selected_id"] = None
+        else:
+            exact, _ = find_author_matches(entered)
+
+            if exact:
+                st.session_state["author_details_selected_id"] = (
+                    int(exact[0]["id"])
+                )
+            # When there is no exact match, retain the
+            # previously selected ID for name corrections.
+
+        st.session_state.pop("author_deleted_message", None)
 
     name = st.text_input(
         "Author name",
         placeholder="Find or enter an author...",
         key="author_details_name",
+        on_change=author_name_changed,
     ).strip()
 
     if not name:
-        st.caption("Enter an author's name to find or add them.")
+        deleted_message = st.session_state.get(
+            "author_deleted_message"
+        )
+        if deleted_message:
+            show_confirmation(deleted_message)
+        else:
+            st.caption("Find an existing author or enter a new name.")
         return
 
     exact, possible = find_author_matches(name)
+
+    selected_id = st.session_state.get(
+        "author_details_selected_id"
+    )
+
+    # Recover exact matches, including on initial page load.
+    if exact:
+        selected_id = int(exact[0]["id"])
+        st.session_state["author_details_selected_id"] = selected_id
 
     country_codes = sorted(
         {country.alpha_3 for country in pycountry.countries}
@@ -106,105 +142,66 @@ def render_author_details():
         key=lambda code: country_name(code).casefold(),
     )
 
-    # EXISTING AUTHOR: allow corrections.
-    if exact:
-        author = exact[0]
+    # --------------------------------------------------
+    # EXISTING AUTHOR
+    # --------------------------------------------------
+    if selected_id is not None:
+        with connect() as db:
+            author = db.execute(
+                """
+                SELECT id, name, country, iso3
+                FROM authors
+                WHERE id = ?
+                """,
+                (selected_id,),
+            ).fetchone()
+
+        if author is None:
+            st.session_state["author_details_selected_id"] = None
+            st.warning("This author no longer exists.")
+            return
+
         author_id = int(author["id"])
+        books, works = get_author_dependencies(author_id)
+        deletion_blocked = bool(books or works)
 
         st.caption("Existing author — edit details below.")
 
-        with st.form(
-            f"edit_author_form_{author_id}",
-            border=False,
-        ):
-            col1, col2 = st.columns(2, gap="large")
+        # The search field above doubles as the editable
+        # author name. No duplicate name field.
+        current_iso3 = author["iso3"]
+        country_index = (
+            country_codes.index(current_iso3)
+            if current_iso3 in country_codes
+            else None
+        )
 
-            with col1:
-                corrected_name = st.text_input(
-                    "Correct author name",
-                    value=author["name"],
-                )
+        iso3 = st.selectbox(
+            "Country",
+            options=country_codes,
+            index=country_index,
+            format_func=country_name,
+            placeholder="Select country...",
+            key=f"author_country_{author_id}",
+        )
 
-            with col2:
-                current_iso3 = author["iso3"]
-                country_index = (
-                    country_codes.index(current_iso3)
-                    if current_iso3 in country_codes
-                    else None
-                )
+        # Two actions, one compact row.
+        save_col, delete_col = st.columns(
+            2, gap="large"
+        )
 
-                corrected_iso3 = st.selectbox(
-                    "Country",
-                    options=country_codes,
-                    index=country_index,
-                    format_func=country_name,
-                    placeholder="Select country...",
-                )
-
-            save_col, delete_col = st.columns([1, 1], gap="large")
-
-            with save_col:
-                submitted = st.form_submit_button(
+        with save_col:
+            with st.form(
+                f"save_author_form_{author_id}",
+                border=False,
+            ):
+                save_submitted = st.form_submit_button(
                     "Save Changes",
                     type="secondary",
                     use_container_width=True,
                 )
 
-        if submitted:
-            try:
-                update_author_details(
-                    author_id=author_id,
-                    name=corrected_name,
-                    country=country_name(corrected_iso3)
-                    if corrected_iso3 else "",
-                    iso3=corrected_iso3 or "",
-                )
-            except ValueError as exc:
-                st.error(str(exc))
-            else:
-                saved_name = " ".join(corrected_name.split())
-
-                st.session_state["author_details_pending_name"] = saved_name
-                st.session_state["author_details_saved"] = (
-                    author_id,
-                    saved_name,
-                )
-                st.rerun()
-
-        # Outside 'if submitted' — persists after rerun.
-
-        # -----------------------------------------
-        # SAVED CONFIRMATION
-        # -----------------------------------------
-        saved = st.session_state.get("author_details_saved")
-
-        if saved and saved[0] == author_id:
-            st.markdown(
-                f"""
-                <div style="
-                    background:#E8DCC8;
-                    border:1px solid #CDAE86;
-                    border-radius:8px;
-                    padding:12px 16px;
-                    margin-top:14px;
-                    font-family:Georgia,serif;
-                    font-size:15px;
-                    color:#6E4B3A;
-                ">
-                    ✓ Saved: {escape(saved[1])}
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-        # -----------------------------------------
-        # DELETE AUTHOR
-        # -----------------------------------------
-        # Independent of whether this author was saved.
-
-        delete_left, delete_right = st.columns([3, 1])
-
-        with delete_right:
+        with delete_col:
             with st.form(
                 f"delete_request_form_{author_id}",
                 border=False,
@@ -212,33 +209,72 @@ def render_author_details():
                 delete_requested = st.form_submit_button(
                     "Delete Author",
                     type="secondary",
+                    disabled=deletion_blocked,
                     use_container_width=True,
                     key="author_delete_button",
                 )
 
-        if delete_requested:
+        # Save changes.
+        if save_submitted:
+            try:
+                update_author_details(
+                    author_id=author_id,
+                    name=name,
+                    country=country_name(iso3) if iso3 else "",
+                    iso3=iso3 or "",
+                )
+            except ValueError as exc:
+                st.error(str(exc))
+            else:
+                st.session_state["author_details_saved"] = (
+                    author_id,
+                    " ".join(name.split()),
+                )
+                st.session_state.pop(
+                    "author_delete_pending", None
+                )
+                st.rerun()
+
+        # Explain disabled deletion in one small line.
+        if deletion_blocked:
+            st.caption(
+                f"Deletion unavailable: {books} book(s) "
+                f"and {works} work(s) are linked."
+            )
+
+        # --------------------------------------------------
+        # DELETE CONFIRMATION — only for unlinked authors
+        # --------------------------------------------------
+        if delete_requested and not deletion_blocked:
             st.session_state["author_delete_pending"] = author_id
 
-        if st.session_state.get("author_delete_pending") == author_id:
-            st.caption(
-                f"Permanently delete {author['name']} from Litlas?"
+        if (
+            not deletion_blocked
+            and st.session_state.get("author_delete_pending")
+            == author_id
+        ):
+            confirm_col, button_col = st.columns(
+                2, gap="large", vertical_alignment="bottom"
             )
 
-            confirm = st.checkbox(
-                "Yes, I want to delete this author",
-                key=f"author_delete_confirm_{author_id}",
-            )
-
-            with st.form(
-                f"delete_author_form_{author_id}",
-                border=False,
-            ):
-                delete_submitted = st.form_submit_button(
-                    "Confirm Deletion",
-                    disabled=not confirm,
-                    type="secondary",
-                    use_container_width=True,
+            with confirm_col:
+                confirmed = st.checkbox(
+                    f"Yes, permanently delete {author['name']}",
+                    key=f"confirm_delete_{author_id}",
                 )
+
+            with button_col:
+                with st.form(
+                    f"confirm_delete_form_{author_id}",
+                    border=False,
+                ):
+                    delete_submitted = st.form_submit_button(
+                        "Confirm Deletion",
+                        disabled=not confirmed,
+                        type="secondary",
+                        use_container_width=True,
+                        key="author_confirm_delete_button",
+                    )
 
             if delete_submitted:
                 try:
@@ -247,6 +283,7 @@ def render_author_details():
                     st.error(str(exc))
                 else:
                     st.session_state["author_details_pending_name"] = ""
+                    st.session_state["author_details_selected_id"] = None
                     st.session_state.pop("author_details_saved", None)
                     st.session_state.pop("author_delete_pending", None)
                     st.session_state["author_deleted_message"] = (
@@ -254,10 +291,15 @@ def render_author_details():
                     )
                     st.rerun()
 
+        saved = st.session_state.get("author_details_saved")
+        if saved and saved[0] == author_id:
+            show_confirmation(f"Saved: {saved[1]}")
+
         return
 
-
-    # POSSIBLE DUPLICATE: require explicit confirmation.
+    # --------------------------------------------------
+    # POSSIBLE DUPLICATE
+    # --------------------------------------------------
     if possible:
         st.warning("Possible matching authors:")
 
@@ -275,7 +317,9 @@ def render_author_details():
         st.caption("No matching author found.")
         confirmed = True
 
+    # --------------------------------------------------
     # NEW AUTHOR
+    # --------------------------------------------------
     iso3 = st.selectbox(
         "Country",
         options=country_codes,
@@ -304,6 +348,7 @@ def render_author_details():
         except ValueError as exc:
             st.error(str(exc))
         else:
+            st.session_state["author_details_selected_id"] = author_id
             st.session_state["author_details_saved"] = (
                 author_id,
                 name,

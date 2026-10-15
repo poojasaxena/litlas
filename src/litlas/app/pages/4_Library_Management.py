@@ -304,6 +304,25 @@ st.markdown(
         background: #4E2B27 !important;
         border-color: #4E2B27 !important;
     }
+
+    /* Both destructive actions use the darker burgundy */
+    .st-key-author_delete_button button,
+    .st-key-author_confirm_delete_button button {
+        background: #653B35 !important;
+        border-color: #653B35 !important;
+        color: #FFF9F1 !important;
+    }
+
+    .st-key-author_delete_button button:hover,
+    .st-key-author_confirm_delete_button button:hover {
+        background: #4E2B27 !important;
+        border-color: #4E2B27 !important;
+    }
+
+    /* Keep disabled confirmation visually distinct */
+    .st-key-author_confirm_delete_button button:disabled {
+        opacity: 0.45 !important;
+    }
     </style>
     """,
     unsafe_allow_html=True,

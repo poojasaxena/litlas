@@ -531,7 +531,23 @@ def delete_author(author_id: int) -> str:
         )
 
         return author["name"]
-    
+
+
+def get_author_dependencies(author_id: int) -> tuple[int, int]:
+    """Count books and works linked to an author."""
+    with connect() as db:
+        books = db.execute(
+            "SELECT COUNT(*) FROM books WHERE author_id = ?",
+            (author_id,),
+        ).fetchone()[0]
+
+        works = db.execute(
+            "SELECT COUNT(*) FROM works WHERE author_id = ?",
+            (author_id,),
+        ).fetchone()[0]
+
+    return books, works
+
 def update_author_details(
     author_id: int,
     name: str,

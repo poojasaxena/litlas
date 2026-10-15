@@ -1,5 +1,5 @@
 """
-litlas.core — Goodreads reading data and persistent birthplace metadata.
+litlas.processing.core — Goodreads reading data and persistent birthplace metadata.
 """
 
 from pathlib import Path
@@ -81,6 +81,9 @@ def enriched_books_path(folder=None):
     root = Path(folder) if folder else library_dir()
     return root / load_config()["paths"]["litlas"] / "books_enriched.csv"
 
+def reading_dates_dir() -> Path:
+    """Return the directory containing yearly reading-date files."""
+    return library_dir() / load_config()["paths"]["reading_date"]
 
 def iso3(name):
     if not isinstance(name,str) or not name.strip(): return ''
