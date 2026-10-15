@@ -158,6 +158,50 @@ def refresh_display_titles():
 
     return updated
 
+def get_books_read_by_year():
+    """Count displayed read books by recorded reading year."""
+
+    query = """
+        SELECT
+            SUBSTR(date_read, 1, 4) AS year,
+            COUNT(*) AS books
+        FROM books
+        WHERE shelf = 'read'
+          AND excluded_from_display = 0
+          AND date_read IS NOT NULL
+          AND TRIM(date_read) != ''
+          AND SUBSTR(date_read, 1, 4) GLOB '[0-9][0-9][0-9][0-9]'
+          AND SUBSTR(date_read, 5, 1) IN ('/', '-')
+        GROUP BY SUBSTR(date_read, 1, 4)
+        ORDER BY year
+    """
+
+    with connect() as db:
+        return pd.read_sql_query(query, db)
+    
+
+
+def get_top_authors(limit=10):
+    """Return most-read authors and their average personal ratings."""
+
+    query = """
+        SELECT
+            a.name AS author,
+            COUNT(*) AS books,
+            COUNT(NULLIF(b.rating, 0)) AS rated_books,
+            ROUND(AVG(NULLIF(b.rating, 0)), 2) AS avg_rating
+        FROM books AS b
+        JOIN authors AS a ON a.id = b.author_id
+        WHERE b.shelf = 'read'
+          AND b.excluded_from_display = 0
+        GROUP BY a.id, a.name
+        ORDER BY books DESC, avg_rating DESC, a.name COLLATE NOCASE
+        LIMIT ?
+    """
+
+    with connect() as db:
+        return pd.read_sql_query(query, db, params=(limit,))
+        
 def get_rating_distribution():
     """Count displayed read books by personal rating."""
 
