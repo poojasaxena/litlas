@@ -30,49 +30,76 @@ render_page_header(
 # ---------------------------------------------------------
 
 TOOLS = [
-    ("📖", "Edit a Book", "Ratings, pages and titles"),
-    ("⊕", "Add a Book", "Independent of Goodreads"),
-    ("♡", "Favourite Authors", "Your personal selections"),
-    ("⌾", "Author Details", "Birthplaces and countries"),
-    ("↻", "Goodreads Import", "Refresh source records"),
+    ("Edit a Book", "📖"),
+    ("Add a Book", "📚"),
+    ("Favourites", "🤎"),
+    ("Author Details", "✒️"),
+    ("Goodreads", "📜"),
 ]
+
 
 st.markdown(
     """
     <style>
-    /* Library Management bricks */
+    /* Library Management buttons */
     div[data-testid="stButton"] button[kind="secondary"] {
-        background:#F5EFE4;
-        border:1px solid #D4C1A7;
-        color:#58412F;
-        border-radius:8px;
-        min-height:72px;
-        width:100%;
-        font-family:Georgia,serif;
-        font-size:21px;
-        font-weight:500;
-        box-shadow:none;
+        background: #F5EFE4;
+        border: 1px solid #D4C1A7;
+        border-radius: 8px;
+        height: 20px !important;
+        min-height: 100px !important;
+        width: 100%;
+        box-shadow: none;
     }
 
-    /* Larger symbols and consistent button typography */
+    /* Stack the inner icon-and-label wrapper vertically */
+    div[data-testid="stButton"] button[kind="secondary"]
+    span[data-has-shortcut="false"] {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 22px !important;
+    }
+
+    /* Enlarge the emoji itself */
+    div[data-testid="stButton"] button[kind="secondary"]
+    span[data-has-shortcut="false"] > span:first-child,
+    div[data-testid="stButton"] button[kind="secondary"]
+    span[data-has-shortcut="false"] > span:first-child span {
+        font-size: 55px !important;
+        line-height: 1 !important;
+    }
+    /* Button label */
     div[data-testid="stButton"] button[kind="secondary"] p {
-        font-family:Georgia,serif;
-        font-size:21px;
-        line-height:1.3;
-        color:#58412F;
+        font-family: Georgia, serif !important;
+        font-size: 17px !important;
+        color: #58412F !important;
+        margin: 0 !important;
+        text-align: center;
+        transform: translateY(1px);
     }
 
     /* Hover */
     div[data-testid="stButton"] button[kind="secondary"]:hover {
-        background:#EDE3D4;
-        border-color:#A47B43;
-        color:#58412F;
+        background: #EDE3D4;
+        border-color: #A47B43;
     }
 
-    div[data-testid="stButton"] button[kind="secondary"]:hover {
-        background:#EDE3D4;
-        border-color:#A47B43;
-        color:#58412F;
+    /* Establish a positioning reference */
+    div[data-testid="stButton"] button[kind="secondary"] {
+        position: relative !important;
+    }
+
+    /* Position the label near the bottom */
+    div[data-testid="stButton"] button[kind="secondary"]
+    [data-testid="stMarkdownContainer"] p {
+        position: absolute !important;
+        bottom: 2px !important;
+        left: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        text-align: center !important;
     }
     </style>
     """,
@@ -82,23 +109,23 @@ st.markdown(
 if "library_tool" not in st.session_state:
     st.session_state.library_tool = None
 
-for start in range(0, len(TOOLS), 2):
-    columns = st.columns(2, gap="small")
+## Five buttons for Library Management tools in a single row
+columns = st.columns(5, gap="small")
 
-    for column, (symbol, name, description) in zip(
-        columns, TOOLS[start:start + 2]
-    ):
-        with column:
-            if st.button(
-                f"{symbol}  {name}\n{description}",
-                key=f"tool_{start}_{name}",
-                use_container_width=True,
-            ):
-                st.session_state.library_tool = (
-                    None
-                    if st.session_state.library_tool == name
-                    else name
-                )
+for column, (name, symbol) in zip(columns, TOOLS):
+    with column:
+        if st.button(
+            name,
+            icon=symbol,
+            key=f"tool_{name}",
+            use_container_width=True,
+        ):
+            st.session_state.library_tool = (
+                None
+                if st.session_state.library_tool == name
+                else name
+            )
+
 
 selected_tool = st.session_state.library_tool
 
