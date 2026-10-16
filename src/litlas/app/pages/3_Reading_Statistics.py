@@ -83,6 +83,20 @@ st.markdown("""
     line-height: 1.35;
     margin-top: 4px;
 }
+
+/* Reading Statistics — summary metrics */
+
+[data-testid="stMetricLabel"] {
+    font-family: Georgia, serif !important;
+    color: #96785D !important;
+}
+
+[data-testid="stMetricValue"] {
+    font-family: Georgia, serif !important;
+    color: #6E4B3A !important;
+    font-weight: 700 !important;
+    font-size: 2rem !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -106,10 +120,10 @@ summary = get_reading_summary()
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric("Books read", summary["books"])
+    st.metric("Books devoured", summary["books"])
 
 with col2:
-    st.metric("Authors", summary["authors"])
+    st.metric("Authors discovered", summary["authors"])
 
 with col3:
     st.metric("Countries explored", summary["countries"])
@@ -432,14 +446,6 @@ most_read_col, favourite_col = st.columns([1, 1], gap="large")
 # Get a sufficiently large pool of authors, not just the
 # ten most-read, so favourite rankings are not biased.
 all_authors = get_top_authors(limit=10000)
-st.write(
-    all_authors[
-        all_authors["author"].str.contains(
-            "Steinbeck|Towles", case=False, na=False
-        )
-    ][["author", "books", "rated_books", "avg_rating"]]
-)
-
 
 # ---------------------------------------------------------
 # Most-read authors: quantity
