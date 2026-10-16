@@ -26,17 +26,42 @@ def normalize(value: str) -> str:
         .replace("‘", "'")
     )
 
+def resolve_reading_dates_file(source: str | int) -> Path:
+    """Locate a reading-date ODS file using a year or filename."""
 
-def preview_reading_dates(year: int) -> list[dict]:
-    """Compare yearly ODS reading dates with SQLite without modifying it."""
+    source = str(source).strip()
 
-    file = reading_dates_dir() / f"Book_Read_Dates_{year}.ods"
+    if source.isdigit():
+        filename = f"Book_Read_Dates_{source}.ods"
+    else:
+        filename = source
 
-    if not file.exists():
-        raise FileNotFoundError(f"Reading-date file not found: {file}")
+    if Path(filename).name != filename or not filename.endswith(".ods"):
+        raise ValueError("Provide a year or an ODS filename.")
+
+    file = reading_dates_dir() / filename
+
+    if not file.is_file():
+        raise FileNotFoundError(
+            f"Reading-date file not found: {file}"
+        )
+
+    return file
+
+def preview_reading_dates(
+    source: str | int,
+    strict_id: bool = False,
+) -> list[dict]:
+    """Compare ODS reading dates with SQLite without modifying it."""
+
+    file = resolve_reading_dates_file(source)
 
     df = pd.read_excel(file, engine="odf")
 
+    if strict_id and "Goodread Id" not in df.columns:
+        raise ValueError(
+            "Strict ID mode requires a 'Goodread Id' column."
+        )
     required = {"Book name", "Date Read"}
     missing_columns = required - set(df.columns)
 
@@ -48,6 +73,13 @@ def preview_reading_dates(year: int) -> list[dict]:
     if "Author" not in df.columns:
         df["Author"] = None
 
+    if strict_id:
+        df = df.loc[
+            df["Goodread Id"].notna()
+            & df["Goodread Id"].astype(str).str.strip().ne("")
+        ].copy()
+
+        print(f"Strict ID mode: checking {len(df)} rows with Goodreads IDs.")
     with connect() as db:
         books = db.execute(
             """
@@ -72,19 +104,29 @@ def preview_reading_dates(year: int) -> list[dict]:
         )
 
         # Prefer Goodreads ID when supplied; otherwise match title and author.
-        raw_id = row.get("Goodreads ID")
+        raw_id = row.get("Goodread Id")
 
         if pd.notna(raw_id) and str(raw_id).strip():
             goodreads_id = str(raw_id).strip()
 
-            # Spreadsheet software may represent numeric IDs as 24280.0.
             if goodreads_id.endswith(".0"):
                 goodreads_id = goodreads_id[:-2]
 
             matches = [
                 book for book in books
                 if str(book["goodreads_id"]) == goodreads_id
+                and (
+                    not strict_id
+                    or title in (
+                        normalize(book["display_title"]),
+                        normalize(book["original_title"]),
+                    )
+                )
             ]
+
+        elif strict_id:
+            matches = []
+
         else:
             matches = [
                 book for book in books
@@ -146,10 +188,13 @@ def preview_reading_dates(year: int) -> list[dict]:
     return results
 
 
-def apply_reading_dates(year: int) -> None:
+def apply_reading_dates(
+    source: str | int,
+    strict_id: bool = False,
+) -> None:
     """Apply verified ODS reading dates to SQLite, with a backup."""
 
-    results = preview_reading_dates(year)
+    results = preview_reading_dates(source, strict_id=strict_id)
 
     counts = Counter(row["status"] for row in results)
 
@@ -171,7 +216,7 @@ def apply_reading_dates(year: int) -> None:
                 "Resolve them before importing."
             )
 
-    print(f"Year: {year}")
+    print(f"Source: {resolve_reading_dates_file(source).name}")
     print(f"Dates to update: {len(updates)}")
     print(f"Unmatched books: {counts['MISSING']}")
 
@@ -239,32 +284,47 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Preview or import Litlas reading dates."
     )
+
     parser.add_argument(
-        "year",
-        type=int,
+        "source",
         nargs="?",
-        default=2026,
+        default="2026",
+        help="Year or ODS filename inside the Reading_Dates folder.",
     )
+
     parser.add_argument(
         "--apply",
         action="store_true",
         help="Back up SQLite and apply reading dates.",
     )
 
+    parser.add_argument(
+        "--strict-id",
+        action="store_true",
+        help="Require both Goodreads ID and book title to match SQLite.",
+    )
     args = parser.parse_args()
 
     if args.apply:
-        apply_reading_dates(args.year)
+        apply_reading_dates(
+            args.source,
+            strict_id=args.strict_id,
+        )
     else:
-        results = preview_reading_dates(args.year)
+        results = preview_reading_dates(
+            args.source,
+            strict_id=args.strict_id,
+        )
 
         print("\nReading dates preview:")
+
         for status, count in sorted(
             Counter(row["status"] for row in results).items()
         ):
             print(f"{status:<12} {count}")
 
         print("\nRecords needing review:")
+
         for row in results:
             if row["status"] in (
                 "MISSING", "AMBIGUOUS", "DUPLICATE"
