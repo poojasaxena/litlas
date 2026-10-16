@@ -7,6 +7,7 @@ from pathlib import Path
 from io import BytesIO
 from PIL import Image
 import numpy as np
+from PIL import ImageFilter
 import pandas as pd
 import plotly.graph_objects as go
 import base64
@@ -40,9 +41,35 @@ def _image_to_data_uri(path: Path) -> str:
     encoded = base64.b64encode(path.read_bytes()).decode("ascii")
     return f"data:image/png;base64,{encoded}"
 
+def _starburst_glow(source: str, blur_radius: int = 14) -> str:
+    """Create a soft luminous glow from the coloured starburst PNG."""
+    encoded = source.split(",", 1)[1]
+    image = Image.open(BytesIO(base64.b64decode(encoded))).convert("RGBA")
+
+    # Blur the transparency as well as the coloured light.
+    glow = image.filter(ImageFilter.GaussianBlur(blur_radius))
+
+    buffer = BytesIO()
+    glow.save(buffer, format="PNG")
+
+    return (
+        "data:image/png;base64,"
+        + base64.b64encode(buffer.getvalue()).decode("ascii")
+    )
+
 def default_constellation_csv() -> Path:
     return Path(__file__).resolve().parents[3] / "data" / "constellation_books.csv"
 
+def _star_luminosity(significance: str) -> float:
+    """
+    Controls how strongly a star glows.
+    Keep this independent from size so stars can be bright without becoming huge.
+    """
+    return {
+        "treasure": 1.00,
+        "memorable": 0.78,
+        "notable": 0.58,
+    }.get(significance, 0.70)
 
 def _starburst_source(
     image: Image.Image,
@@ -114,13 +141,11 @@ def _starburst_source(
     pixels[:, :, :3] = result
 
     # Tier influences luminosity without changing star colour.
-    luminosity = {
-        "treasure": 1.00,
-        "memorable": 0.92,
-        "notable": 0.82,
-    }[significance]
+    luminosity = _star_luminosity(significance)
 
-    pixels[:, :, 3] = alpha * luminosity
+    pixels[:, :, 3] = np.clip(
+        alpha * luminosity, 0, 255
+    )
 
     output = Image.fromarray(
         np.clip(pixels, 0, 255).astype(np.uint8),
@@ -415,10 +440,8 @@ def build_constellation_figure(
         # 4. Individual book stars
         # -----------------------------------------------------
 
-        for (_, book), (x, y) in zip(
-            group.iterrows(),
-            positions,
-        ):
+        for (_, book), (x, y) in zip(group.iterrows(), positions,):
+
             title = str(book["title"]).strip()
             significance = str(
                 book["significance"]
@@ -436,17 +459,21 @@ def build_constellation_figure(
                 "#E9CC9C",
             )
 
-            # Reuse the same image for matching theme/tier.
             source_key = (color, significance)
 
             if source_key not in star_sources:
-                star_sources[source_key] = _starburst_source(
+                sharp_source = _starburst_source(
                     original_star,
                     color,
                     significance,
                 )
 
-            starburst_source = star_sources[source_key]
+                star_sources[source_key] = (
+                    sharp_source,
+                    _starburst_glow(sharp_source),
+                )
+
+            starburst_source, glow_source = star_sources[source_key]
 
             # -------------------------------------------------
             # 5. Tooltip
@@ -486,8 +513,26 @@ def build_constellation_figure(
 
             # Same size mapping that worked for Lonesome Dove.
             # The PNG is scaled uniformly according to _star_size().
-            image_width = 0.052 * size / 27
-            image_height = 0.125 * size / 27
+            image_width = 0.038 * size / 27
+            image_height = 0.105 * size / 27
+
+            # Soft radiance behind the sharp illustrated star.
+            fig.add_layout_image(
+                dict(
+                    source=glow_source,
+                    xref="x",
+                    yref="y",
+                    x=x,
+                    y=y,
+                    xanchor="center",
+                    yanchor="middle",
+                    sizex=image_width * 1.65,
+                    sizey=image_height * 1.65,
+                    sizing="contain",
+                    opacity=0.42,
+                    layer="below",
+                )
+            )
 
             fig.add_layout_image(
                 dict(
