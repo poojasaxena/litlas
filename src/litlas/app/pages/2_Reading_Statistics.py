@@ -15,6 +15,7 @@ from litlas.database.repository import (
     get_books_read_by_year,
     get_top_authors,
     get_page_statistics,
+    get_books_for_reading_year,
     get_yearly_highlights,
 )
 from litlas.processing.countries import country_name
@@ -109,6 +110,36 @@ st.markdown("""
     font-size: 2rem !important;
     font-weight: 600 !important;
     color: #58412F !important;
+}
+
+/* Literary year dialog — parchment styling */
+div[data-testid="stDialog"] [role="dialog"],
+div[role="dialog"]:has(.st-key-litlas_year_books) {
+    background: #FAF7F1 !important;
+    color: #58412F !important;
+}
+
+/* Dialog title */
+div[role="dialog"]:has(.st-key-litlas_year_books)
+[data-testid="stDialogHeader"] {
+    padding-bottom: 0 !important;
+}
+
+div[role="dialog"]:has(.st-key-litlas_year_books)
+[data-testid="stDialogHeader"] p,
+div[role="dialog"]:has(.st-key-litlas_year_books)
+[data-testid="stDialogHeader"] h2 {
+    font-family: Georgia, serif !important;
+    color: #58412F !important;
+    font-size: 1.2rem !important;
+}
+
+/* Compact scrollable book list */
+.st-key-litlas_year_books {
+    background: #F5EFE4 !important;
+    border: 1px solid #D4C1A7 !important;
+    border-radius: 7px !important;
+    padding: 5px 12px !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -382,6 +413,73 @@ history_col, highlights_col = st.columns([2, 1], gap="large")
 
 history = get_books_read_by_year()
 
+@st.dialog("Books From My Reading Year", width="small")
+def show_year_books(year: str):
+    books = get_books_for_reading_year(year)
+
+    st.markdown(
+        f"""
+        <div style="
+            font-family:Georgia,serif;
+            color:#96785D;
+            font-size:13px;
+            margin:0 0 6px;
+        ">
+            {escape(year)} · {len(books)} books completed
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    with st.container(height=250, key="litlas_year_books"):
+        rows = []
+
+        for _, book in books.iterrows():
+            title = escape(str(book["title"]))
+            author = escape(str(book["author"]))
+
+            rating = float(book["rating"] or 0)
+            stars = "★" * int(rating)
+
+            if rating % 1 >= 0.5:
+                stars += "½"
+
+            if not stars:
+                stars = "—"
+
+            rows.append(
+                f"""
+                <div style="
+                    display:flex;
+                    align-items:baseline;
+                    gap:10px;
+                    padding:5px 2px;
+                    border-bottom:1px solid #E2D5C3;
+                    font-family:Georgia,serif;
+                    font-size:13px;
+                    line-height:1.3;
+                ">
+                    <span style="
+                        flex:1;
+                        min-width:0;
+                        color:#58412F;
+                    ">
+                        <i>{title}</i>
+                        <span style="color:#81776E;">
+                            · {author}
+                        </span>
+                    </span>
+
+                    <span style="
+                        color:#A47B43;
+                        white-space:nowrap;
+                        font-size:12px;
+                    ">{stars}</span>
+                </div>
+                """
+            )
+
+        st.html("\n".join(rows))
 with history_col:
     st.subheader("Books Read Through the Years")
 
@@ -432,11 +530,25 @@ with history_col:
             showlegend=False,
         )
 
-        st.plotly_chart(
+        event = st.plotly_chart(
             fig_history,
             use_container_width=True,
             config={"displayModeBar": False},
+            key="litlas_reading_history",
+            on_select="rerun",
+            selection_mode="points",
         )
+
+        points = event.selection.points
+
+        if points:
+            selected_year = str(points[0]["x"])
+
+            if st.session_state.get("_last_opened_history_year") != selected_year:
+                st.session_state["_last_opened_history_year"] = selected_year
+                show_year_books(selected_year)
+        else:
+            st.session_state["_last_opened_history_year"] = None
 
         dated_books = int(history["books"].sum())
         missing_dates = int(summary["books"]) - dated_books
