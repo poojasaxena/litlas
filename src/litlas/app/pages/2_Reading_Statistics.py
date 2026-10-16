@@ -647,7 +647,7 @@ try:
 
     constellation_fig = build_constellation_figure(
         constellation_df,
-        height=440,
+        height=560,
     )
 
     st.plotly_chart(
