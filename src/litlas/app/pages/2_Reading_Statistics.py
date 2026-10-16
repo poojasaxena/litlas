@@ -409,7 +409,7 @@ with ratings_col:
 # Row 2: Reading history
 # ---------------------------------------------------------
 
-history_col, highlights_col = st.columns([2, 1], gap="large")
+history_col, highlights_col = st.columns([3, 2], gap="large")
 
 history = get_books_read_by_year()
 
@@ -626,7 +626,7 @@ with highlights_col:
 
     st.caption(
         "Highest-rated completed book per year. "
-        "Ties resolved by completion date."
+        "Ties resolved by length, then completion date."
     )
 
 # ---------------------------------------------------------

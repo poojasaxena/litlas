@@ -546,6 +546,7 @@ def get_yearly_highlights():
                     PARTITION BY SUBSTR(b.date_read, 1, 4)
                     ORDER BY
                         COALESCE(b.rating_override, b.rating) DESC,
+                        COALESCE(b.pages_override, b.pages, 0) DESC,
                         REPLACE(b.date_read, '/', '-') DESC,
                         b.display_title COLLATE NOCASE ASC,
                         b.goodreads_id ASC
