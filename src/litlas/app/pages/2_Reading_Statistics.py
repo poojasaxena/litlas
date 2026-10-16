@@ -101,6 +101,14 @@ st.markdown("""
 ) {
     top: 45px !important;
 }
+/* Reading Statistics — section headings */
+[data-testid="stHeading"] h3 {
+    font-family: "Cormorant Garamond", Georgia, serif !important;
+    font-style: italic !important;
+    font-size: 2rem !important;
+    font-weight: 600 !important;
+    color: #58412F !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -307,7 +315,7 @@ with country_col:
 ratings = get_rating_distribution()
 
 with ratings_col:
-    st.subheader("My ratings")
+    st.subheader("Ratings")
 
     if ratings.empty:
         st.info("No rated books available yet.")
@@ -434,8 +442,7 @@ with history_col:
 
         st.caption(
             f"Based on {dated_books} books with recorded reading dates. "
-            f"{missing_dates} books have no usable Date Read value. "
-            "Years reflect recorded completion dates, not dates added to Goodreads."
+            f"{missing_dates} books have no usable Date Read value."
         )
 
 
