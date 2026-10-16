@@ -15,6 +15,7 @@ from litlas.database.repository import (
     get_books_read_by_year,
     get_top_authors,
     get_page_statistics,
+    get_yearly_highlights,
 )
 from litlas.processing.countries import country_name
 
@@ -377,7 +378,7 @@ with ratings_col:
 # Row 2: Reading history
 # ---------------------------------------------------------
 
-history_col, _ = st.columns([2, 1], gap="large")
+history_col, highlights_col = st.columns([2, 1], gap="large")
 
 history = get_books_read_by_year()
 
@@ -445,6 +446,76 @@ with history_col:
             f"{missing_dates} books have no usable Date Read value."
         )
 
+# ---------------------------------------------------------
+# Yearly literary highlights
+# ---------------------------------------------------------
+
+with highlights_col:
+    st.subheader("Literary Highlights")
+
+    highlights = get_yearly_highlights()
+
+    if highlights.empty:
+        st.caption("No rated books with reading dates available.")
+    else:
+        rows = []
+
+        for _, book in highlights.iterrows():
+            year = escape(str(book["year"]))
+            title = escape(str(book["title"]))
+            author = escape(str(book["author"]))
+
+            rating = float(book["rating"])
+            whole_stars = int(rating)
+            stars = "★" * whole_stars
+
+            if rating - whole_stars >= 0.5:
+                stars += "½"
+
+            rows.append(
+                f"""
+                <div style="
+                    display:flex;
+                    align-items:baseline;
+                    gap:10px;
+                    padding:8px 0;
+                    border-bottom:1px solid #E2D5C3;
+                    font-family:Georgia,serif;
+                ">
+                    <span style="
+                        color:#96785D;
+                        font-size:13px;
+                        white-space:nowrap;
+                    ">{year}</span>
+
+                    <span style="
+                        flex:1;
+                        min-width:0;
+                        font-size:13px;
+                        color:#58412F;
+                        line-height:1.5;
+                    ">
+                        <i>{title}</i>
+                        <span style="color:#81776E;">
+                            · {author}
+                        </span>
+                    </span>
+
+                    <span style="
+                        color:#A47B43;
+                        font-size:13px;
+                        white-space:nowrap;
+                    ">{stars}</span>
+                </div>
+                """
+            )
+
+        st.html("\n".join(rows))
+
+    st.caption(
+        "Highest-rated completed book per year. "
+        "Ties resolved by completion date."
+    )
 
 # ---------------------------------------------------------
 # Row 3: Author statistics

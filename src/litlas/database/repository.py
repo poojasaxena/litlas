@@ -532,6 +532,64 @@ def delete_author(author_id: int) -> str:
 
         return author["name"]
 
+def get_yearly_highlights():
+    """Return one highest-rated completed book per reading year."""
+
+    query = """
+        WITH ranked AS (
+            SELECT
+                SUBSTR(b.date_read, 1, 4) AS year,
+                b.display_title AS title,
+                a.name AS author,
+                COALESCE(b.rating_override, b.rating) AS rating,
+                ROW_NUMBER() OVER (
+                    PARTITION BY SUBSTR(b.date_read, 1, 4)
+                    ORDER BY
+                        COALESCE(b.rating_override, b.rating) DESC,
+                        REPLACE(b.date_read, '/', '-') DESC,
+                        b.display_title COLLATE NOCASE ASC,
+                        b.goodreads_id ASC
+                ) AS position
+            FROM books AS b
+            JOIN authors AS a ON a.id = b.author_id
+            WHERE b.shelf = 'read'
+              AND b.excluded_from_display = 0
+              AND b.date_read IS NOT NULL
+              AND SUBSTR(b.date_read, 1, 4)
+                  GLOB '[0-9][0-9][0-9][0-9]'
+              AND SUBSTR(b.date_read, 5, 1) IN ('/', '-')
+              AND COALESCE(b.rating_override, b.rating) > 0
+        )
+        SELECT year, title, author, rating
+        FROM ranked
+        WHERE position = 1
+        ORDER BY year DESC
+    """
+
+    with connect() as db:
+        return pd.read_sql_query(query, db)
+
+def get_books_for_reading_year(year: str):
+    """Return all books completed in a given year."""
+
+    query = """
+        SELECT
+            b.display_title AS title,
+            a.name AS author,
+            b.date_read,
+            COALESCE(b.rating_override, b.rating) AS rating
+        FROM books AS b
+        JOIN authors AS a ON a.id = b.author_id
+        WHERE b.shelf = 'read'
+          AND b.excluded_from_display = 0
+          AND SUBSTR(b.date_read, 1, 4) = ?
+        ORDER BY
+            REPLACE(b.date_read, '/', '-') DESC,
+            b.display_title COLLATE NOCASE
+    """
+
+    with connect() as db:
+        return pd.read_sql_query(query, db, params=(str(year),))
 
 def get_author_dependencies(author_id: int) -> tuple[int, int]:
     """Count books and works linked to an author."""
