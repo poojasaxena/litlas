@@ -149,17 +149,13 @@ def apply_page_style():
                 outline: 2px solid #A47B43 !important;
                 outline-offset: 2px !important;
             }
-            /* Anchor the logo to the page content */
-            [data-testid="stMainBlockContainer"] {
-                position: relative;
-            }
 
             .litlas-logo {
                 position: absolute;
-                top: 0;
+                top: -30px;
                 right: 0;
-                width: 180px;
-                height: 180px;
+                width: 178px;
+                height: 178px;
                 object-fit: contain;
                 pointer-events: none;
                 z-index: 2;
@@ -177,7 +173,7 @@ def apply_page_style():
 
             /* Shared header */
             .litlas-heading {
-                min-height: 170px;
+                min-height: 140px;
             }
 
             /* Literary title */
@@ -212,6 +208,42 @@ def apply_page_style():
                 font-size: 0.95rem;
                 font-style: italic;
                 color: #81776E;
+            }
+
+            /* Litlas header — fixed within Streamlit's scroll area */
+            [data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] {
+                position: relative;
+            }
+
+            /* Allow the header's Streamlit wrapper to remain sticky */
+            [data-testid="stLayoutWrapper"]:has(
+                > .st-key-litlas_sticky_header
+            ) {
+                position: sticky !important;
+                top: 30px !important;
+                z-index: 100 !important;
+                background: #FAF7F1 !important;
+            }
+
+            /* Cover the gap above the sticky header */
+            [data-testid="stLayoutWrapper"]:has(
+                > .st-key-litlas_sticky_header
+            )::before {
+                content: "";
+                position: absolute;
+                top: -45px;
+                left: 0;
+                right: 0;
+                height: 45px;
+                background: #FAF7F1;
+                pointer-events: none;
+            }
+            /* Header content and its positioned illustrations */
+            .st-key-litlas_sticky_header {
+                position: relative !important;
+                background: #FAF7F1 !important;
+                min-height: 140px;
+                padding-bottom: 15px !important;
             }
         </style>
         """,
@@ -280,18 +312,20 @@ def render_page_header(
     illustration_left: int = 0,
     heading_gap: int = 5,
 ) -> None:
-    """Render the shared vintage Litlas heading."""
+    """Render the shared sticky vintage Litlas heading."""
 
+    logo_html = ""
     logo = load_logo_path()
 
     if logo:
-        encoded = base64.b64encode(logo.read_bytes()).decode("ascii")
+        encoded = base64.b64encode(
+            logo.read_bytes()
+        ).decode("ascii")
 
-        st.markdown(
+        logo_html = (
             f'<img class="litlas-logo" '
             f'src="data:image/png;base64,{encoded}" '
-            f'alt="Personal signature">',
-            unsafe_allow_html=True,
+            f'alt="Personal signature">'
         )
 
     image_html = ""
@@ -301,7 +335,9 @@ def render_page_header(
         image_path = load_illustration_path(illustration)
 
         if image_path:
-            encoded = base64.b64encode(image_path.read_bytes()).decode("ascii")
+            encoded = base64.b64encode(
+                image_path.read_bytes()
+            ).decode("ascii")
 
             image_html = (
                 f'<img class="litlas-page-illustration" '
@@ -313,16 +349,24 @@ def render_page_header(
                 f'alt="">'
             )
 
-            left_padding = illustration_left + illustration_size + heading_gap
+            left_padding = (
+                illustration_left
+                + illustration_size
+                + heading_gap
+            )
 
-    st.markdown(
-        f"""
-        {image_html}
-        <div class="litlas-heading"
-             style="padding-left:{left_padding}px;">
-            <h1>{escape(title)}</h1>
-            <p>{escape(subtitle)}</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    # Keep illustrations and heading in the same sticky container.
+    with st.container(key="litlas_sticky_header"):
+        st.markdown(
+            f"""
+            {logo_html}
+            {image_html}
+
+            <div class="litlas-heading"
+                 style="padding-left:{left_padding}px;">
+                <h1>{escape(title)}</h1>
+                <p>{escape(subtitle)}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )

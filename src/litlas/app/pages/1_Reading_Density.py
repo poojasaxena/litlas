@@ -8,7 +8,6 @@ import streamlit as st
 from branca.colormap import LinearColormap
 from streamlit_folium import st_folium
 from litlas.app.popups import pop_html
-from litlas.app.ui import apply_page_style
 from litlas.processing.core import load_config
 from html import escape
 from litlas.database.repository import (
@@ -32,13 +31,23 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 apply_page_style()
+# st.markdown(
+#     """
+#     <style>
+#     .st-key-litlas_sticky_header .litlas-logo {
+#         top: -10px !important;
+#     }
+#     </style>
+#     """,
+#     unsafe_allow_html=True,
+# )
 
 render_page_header(
     "Reading Density",
     "Where the pages I've turned meet the places they came from...",
     illustration="reading_density",
-    illustration_size=175,
-    illustration_top=-35,
+    illustration_size=170,
+    illustration_top=-20,
     illustration_left=0,
     heading_gap=20,
 )

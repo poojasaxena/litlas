@@ -17,7 +17,6 @@ from litlas.database.repository import (
     get_page_statistics,
 )
 from litlas.processing.countries import country_name
-from litlas.app.book_editor import render_book_editor
 
 # ---------------------------------------------------------
 # Page setup
@@ -32,7 +31,6 @@ st.set_page_config(
 
 apply_page_style()
 
-render_book_editor()
 
 st.markdown("""
 <style>
@@ -97,6 +95,12 @@ st.markdown("""
     font-weight: 700 !important;
     font-size: 2rem !important;
 }
+/* Reading Statistics — prevent the header shifting upward */
+[data-testid="stLayoutWrapper"]:has(
+    > .st-key-litlas_sticky_header
+) {
+    top: 45px !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -104,8 +108,8 @@ render_page_header(
     "Reading Statistics",
     "A life in books, told through numbers and patterns...",
     illustration="reading_statistics",
-    illustration_size=175,
-    illustration_top=-35,
+    illustration_size=180,
+    illustration_top=-40,
     illustration_left=0,
     heading_gap=20,
 )
