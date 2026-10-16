@@ -6,7 +6,8 @@ from textwrap import dedent
 
 import plotly.graph_objects as go
 import streamlit as st
-
+from pathlib import Path
+import pandas as pd
 from litlas.app.ui import apply_page_style, render_page_header
 from litlas.database.repository import (
     get_country_reading_density,
@@ -19,7 +20,11 @@ from litlas.database.repository import (
     get_yearly_highlights,
 )
 from litlas.processing.countries import country_name
-
+from litlas.app.constellation import (
+    load_constellation_books,
+    build_constellation_figure,
+    default_constellation_csv,
+)
 # ---------------------------------------------------------
 # Page setup
 # ---------------------------------------------------------
@@ -628,6 +633,25 @@ with highlights_col:
         "Highest-rated completed book per year. "
         "Ties resolved by length, then completion date."
     )
+
+# ---------------------------------------------------------
+# Literary constellation — CSV selections + yearly highlights
+# ---------------------------------------------------------
+
+st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+
+constellation_df = load_constellation_books(default_constellation_csv())
+constellation_fig = build_constellation_figure(
+    constellation_df,
+    title="My Literary Constellation",
+    height=520,
+)
+
+st.plotly_chart(
+    constellation_fig,
+    use_container_width=True,
+    config={"displayModeBar": False},
+)
 
 # ---------------------------------------------------------
 # Row 3: Author statistics
