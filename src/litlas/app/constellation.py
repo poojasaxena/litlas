@@ -14,11 +14,11 @@ from litlas.processing.core import load_config
 
 # Coordinates belong to themes, not individual books.
 THEME_CENTRES = {
-    "Ideas & Society": (0.18, 0.55),
+    "Ideas & Society": (0.18, 0.60),
     "Classics": (0.43, 0.67),
-    "Close to Heart": (0.63, 0.33),
+    "Close to Heart": (0.40, 0.20),
     "Personal Growth": (0.83, 0.66),
-    "Human Nature": (0.86, 0.27),
+    "Human Nature": (0.80, 0.27),
 }
 THEME_COLORS = {
     "Ideas & Society": "#F1C578",
@@ -49,58 +49,78 @@ def _starburst_source(
     color: str,
     significance: str,
 ) -> str:
-    """Tint the illustrated star without washing out its colour."""
+    """Tint a starburst while retaining bright rays and a luminous core."""
 
     pixels = np.asarray(
-        image.convert("RGBA"),
-        dtype=np.float32,
+        image.convert("RGBA"), dtype=np.float32
     ).copy()
 
-    # Colour assigned to the constellation.
+    original = pixels[:, :, :3]
+    alpha = pixels[:, :, 3]
+
     tint = np.array(
         [int(color[i:i + 2], 16) for i in (1, 3, 5)],
         dtype=np.float32,
     )
 
-    # Preserve the original star's light-and-shadow structure.
-    original = pixels[:, :, :3]
+    # Preserve the original image's brightness structure.
     brightness = (
         0.2126 * original[:, :, 0]
         + 0.7152 * original[:, :, 1]
         + 0.0722 * original[:, :, 2]
     ) / 255.0
 
-    # Use the chosen hue throughout the star and its rays.
-    coloured = tint[None, None, :] * (
-        0.30 + 0.70 * brightness[..., None]
+    # Brighter coloured rays, without turning everything white.
+    coloured = (
+        tint[None, None, :]
+        * (0.55 + 0.45 * brightness[..., None])
     )
 
-    # Only a very small central region stays white-hot.
+    # Gradually brighten only the most luminous original pixels.
+    highlight = np.clip(
+        (brightness - 0.65) / 0.35, 0, 1
+    ) ** 2
+
+    # Maximum 45% white blending in the rays.
+    highlight *= 0.45
+
+    result = (
+        coloured * (1 - highlight[..., None])
+        + 255 * highlight[..., None]
+    )
+
+    # Small white-hot centre.
     h, w = brightness.shape
     yy, xx = np.ogrid[:h, :w]
 
     distance = np.sqrt(
-        ((xx - (w - 1) / 2) / w) ** 2
-        + ((yy - (h - 1) / 2) / h) ** 2
+        ((xx - (w - 1) / 2) / (w / 2)) ** 2
+        + ((yy - (h - 1) / 2) / (h / 2)) ** 2
     )
 
-    white_core = (
-        np.clip((0.055 - distance) / 0.055, 0, 1) ** 2
-    ) * np.clip((brightness - 0.75) / 0.25, 0, 1)
+    core = np.clip(
+        (0.12 - distance) / 0.12, 0, 1
+    ) ** 1.5
 
-    pixels[:, :, :3] = (
-        coloured * (1 - white_core[..., None])
-        + 255 * white_core[..., None]
+    core *= np.clip(
+        (brightness - 0.5) / 0.5, 0, 1
     )
 
-    # Personal significance determines luminosity.
+    result = (
+        result * (1 - core[..., None])
+        + 255 * core[..., None]
+    )
+
+    pixels[:, :, :3] = result
+
+    # Tier influences luminosity without changing star colour.
     luminosity = {
         "treasure": 1.00,
-        "memorable": 0.82,
-        "notable": 0.65,
+        "memorable": 0.92,
+        "notable": 0.82,
     }[significance]
 
-    pixels[:, :, 3] *= luminosity
+    pixels[:, :, 3] = alpha * luminosity
 
     output = Image.fromarray(
         np.clip(pixels, 0, 255).astype(np.uint8),
@@ -112,7 +132,6 @@ def _starburst_source(
 
     encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
     return f"data:image/png;base64,{encoded}"
-
 
 
 def load_constellation_books(csv_path: str | Path, library: pd.DataFrame) -> pd.DataFrame:
@@ -329,22 +348,67 @@ def build_constellation_figure(
                 )
             )
 
-        # Constellation heading.
+        # -------------------------------------------------
+        # Constellation heading with curved ornament
+        # -------------------------------------------------
+
+        title_y = min(
+            0.93,
+            cy + (0.15 if n > 1 else 0.13),
+        )
+
+        # Group title
         fig.add_annotation(
             x=cx,
-            y=min(
-                0.93,
-                cy + (0.15 if n > 1 else 0.13),
-            ),
+            y=title_y,
             text=f"<i>{escape(name)}</i>",
             showarrow=False,
-            font=dict(
-                family="Georgia, serif",
-                size=17,
-                color="#F0C884",
-            ),
             xanchor="center",
             yanchor="bottom",
+            font=dict(
+                family="Georgia, serif",
+                size=19,
+                color="#F1C77B",
+            ),
+        )
+
+        # Delicate symmetrical curve directly below title
+        flourish_y = title_y - 0.025
+        half_width = 0.050
+
+        fig.add_shape(
+            type="path",
+            path=(
+                f"M {cx - half_width},{flourish_y + 0.004} "
+                f"C {cx - 0.035},{flourish_y - 0.006} "
+                f"{cx - 0.015},{flourish_y - 0.006} "
+                f"{cx},{flourish_y} "
+                f"C {cx + 0.015},{flourish_y - 0.006} "
+                f"{cx + 0.035},{flourish_y - 0.006} "
+                f"{cx + half_width},{flourish_y + 0.004}"
+            ),
+            xref="x",
+            yref="y",
+            line=dict(
+                color="rgba(225,185,116,0.75)",
+                width=1.0,
+            ),
+            layer="above",
+        )
+
+        # Small decorative centre
+        fig.add_annotation(
+            x=cx,
+            y=flourish_y,
+            text="❦",
+            showarrow=False,
+            xanchor="center",
+            yanchor="middle",
+            font=dict(
+                family="Georgia, serif",
+                size=11,
+                color="#D7AE70",
+            ),
         )
 
         # -----------------------------------------------------
@@ -488,7 +552,7 @@ def build_constellation_figure(
                 )
 
             label_size = (
-                12 if significance == "treasure" else 11
+                16 if significance == "treasure" else 14
             )
 
             fig.add_annotation(
@@ -563,493 +627,6 @@ def build_constellation_figure(
 
     # ---------------------------------------------------------
     # 10. Figure layout
-    # ---------------------------------------------------------
-
-    fig.update_layout(
-        height=height,
-        margin=dict(l=0, r=0, t=0, b=0),
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        showlegend=False,
-        xaxis=dict(
-            visible=False,
-            range=[0, 1],
-            fixedrange=True,
-        ),
-        yaxis=dict(
-            visible=False,
-            range=[0, 1],
-            fixedrange=True,
-        ),
-        dragmode=False,
-        hoverlabel=dict(
-            bgcolor="#FAF7F1",
-            bordercolor="#B89C75",
-            font=dict(
-                family="Georgia, serif",
-                size=13,
-                color="#58412F",
-            ),
-        ),
-    )
-
-    return fig
-
-
-def build_constellation_figure_deprecated(
-    df: pd.DataFrame,
-    height: int = 680,
-) -> go.Figure:
-    """Draw the illustrated literary constellation with a test starburst."""
-
-    fig = go.Figure()
-
-    # ---------------------------------------------------------
-    # 1. Illustrated night-sky background
-    # ---------------------------------------------------------
-
-    config = load_config()
-    background_path = config.get("illustrations", {}).get(
-        "constellation_illustration"
-    )
-
-    if background_path:
-        path = Path(background_path).expanduser()
-
-        if path.is_file():
-            encoded = base64.b64encode(
-                path.read_bytes()
-            ).decode("ascii")
-
-            fig.add_layout_image(
-                dict(
-                    source=f"data:image/png;base64,{encoded}",
-                    xref="paper",
-                    yref="paper",
-                    x=0,
-                    y=1,
-                    xanchor="left",
-                    yanchor="top",
-                    sizex=1,
-                    sizey=1,
-                    sizing="stretch",
-                    opacity=1,
-                    layer="below",
-                )
-            )
-
-    # Gentle veil to improve foreground contrast.
-    fig.add_shape(
-        type="rect",
-        xref="paper",
-        yref="paper",
-        x0=0,
-        y0=0,
-        x1=1,
-        y1=1,
-        fillcolor="rgba(7, 16, 30, 0.18)",
-        line=dict(width=0),
-        layer="below",
-    )
-
-    # ---------------------------------------------------------
-    # 2. Load the illustrated golden star once
-    # ---------------------------------------------------------
-
-    starburst_path = (
-        Path(__file__).resolve().parent
-        / "assets"
-        / "litlas_golden_starburst.png"
-    )
-
-    if not starburst_path.is_file():
-        raise FileNotFoundError(
-            f"Golden starburst image not found: {starburst_path}"
-        )
-
-    starburst_encoded = base64.b64encode(
-        starburst_path.read_bytes()
-    ).decode("ascii")
-
-    starburst_source = (
-        f"data:image/png;base64,{starburst_encoded}"
-    )
-
-    # ---------------------------------------------------------
-    # 3. Constellation groups
-    # ---------------------------------------------------------
-
-    names = list(dict.fromkeys(df["constellation"].tolist()))
-    centres = _group_centres(names)
-
-    for name in names:
-        group = df.loc[
-            df["constellation"] == name
-        ].copy()
-
-        group = group.sort_values(
-            "title",
-            key=lambda s: s.str.casefold(),
-        ).reset_index(drop=True)
-
-        cx, cy = centres[name]
-        n = len(group)
-
-        if n == 1:
-            offsets = [(0.0, 0.0)]
-
-        elif n == 2:
-            offsets = [
-                (-0.055, 0.050),
-                (0.055, -0.050),
-            ]
-
-        else:
-            offsets = [
-                (
-                    0.085
-                    * sqrt((i + 0.45) / n)
-                    * cos(i * pi * (3 - sqrt(5))),
-                    0.095
-                    * sqrt((i + 0.45) / n)
-                    * sin(i * pi * (3 - sqrt(5))),
-                )
-                for i in range(n)
-            ]
-
-        positions = [
-            (cx + dx, cy + dy)
-            for dx, dy in offsets
-        ]
-
-        # Delicate connections between stars.
-        if n > 1:
-            fig.add_trace(
-                go.Scatter(
-                    x=[p[0] for p in positions],
-                    y=[p[1] for p in positions],
-                    mode="lines",
-                    line=dict(
-                        color="rgba(223,185,113,0.36)",
-                        width=1.15,
-                        dash="dot",
-                    ),
-                    hoverinfo="skip",
-                    showlegend=False,
-                )
-            )
-
-        # Constellation heading.
-        fig.add_annotation(
-            x=cx,
-            y=min(
-                0.93,
-                cy + (0.15 if n > 1 else 0.13),
-            ),
-            text=f"<i>{escape(name)}</i>",
-            showarrow=False,
-            font=dict(
-                family="Georgia, serif",
-                size=17,
-                color="#F0C884",
-            ),
-            xanchor="center",
-            yanchor="bottom",
-        )
-
-        # -----------------------------------------------------
-        # 4. Individual books
-        # -----------------------------------------------------
-
-        for (_, book), (x, y) in zip(
-            group.iterrows(),
-            positions,
-        ):
-            title = str(book["title"]).strip()
-            significance = str(
-                book["significance"]
-            ).strip().casefold()
-
-            size = _star_size(
-                significance,
-                book["pages"],
-            )
-
-            color = THEME_COLORS.get(
-                name,
-                "#E9CC9C",
-            )
-
-            # Only Lonesome Dove uses the new PNG.
-            is_lonesome = (
-                title.casefold() == "lonesome dove"
-            )
-
-            # -------------------------------------------------
-            # Existing Plotly glows for other seven books
-            # -------------------------------------------------
-
-            if not is_lonesome:
-                glow_strength = {
-                    "treasure": (0.08, 0.16, 0.26),
-                    "memorable": (0.06, 0.12, 0.20),
-                    "notable": (0.04, 0.08, 0.15),
-                }[significance]
-
-                for extra_size, opacity in zip(
-                    (26, 14, 6),
-                    glow_strength,
-                ):
-                    fig.add_trace(
-                        go.Scatter(
-                            x=[x],
-                            y=[y],
-                            mode="markers",
-                            marker=dict(
-                                size=size + extra_size,
-                                color=color,
-                                opacity=opacity,
-                                line=dict(width=0),
-                            ),
-                            hoverinfo="skip",
-                            showlegend=False,
-                        )
-                    )
-
-            # -------------------------------------------------
-            # Tooltip — identical for PNG and Plotly stars
-            # -------------------------------------------------
-
-            pages_text = (
-                "Unknown"
-                if pd.isna(book["pages"])
-                else f"{int(book['pages']):,}"
-            )
-
-            rating_text = (
-                "Unrated"
-                if pd.isna(book["rating"])
-                or not float(book["rating"])
-                else f"{float(book['rating']):g}/5"
-            )
-
-            note = str(book["note"]).strip()
-
-            tooltip = (
-                f"<b>{escape(title)}</b><br>"
-                f"{escape(str(book['author']))}<br>"
-                f"{escape(str(book['year']))}"
-                f" · {pages_text} pages"
-                f" · {rating_text}<br>"
-                f"{escape(name)}"
-                f" · {significance.title()}"
-            )
-
-            if note:
-                tooltip += f"<br>{escape(note)}"
-
-            # -------------------------------------------------
-            # 5. Star rendering
-            # -------------------------------------------------
-
-            if is_lonesome:
-                # The actual illustrated star image.
-                #
-                # These dimensions are in chart coordinates.
-                # Adjust together after the first test.
-                image_width = 0.052 * size / 27
-                image_height = 0.125 * size / 27
-
-                fig.add_layout_image(
-                    dict(
-                        source=starburst_source,
-                        xref="x",
-                        yref="y",
-                        x=x,
-                        y=y,
-                        xanchor="center",
-                        yanchor="middle",
-                        sizex=image_width,
-                        sizey=image_height,
-                        sizing="contain",
-                        opacity=1,
-                        layer="below",
-                    )
-                )
-
-                # Nearly transparent Plotly marker retains
-                # the interactive tooltip.
-                fig.add_trace(
-                    go.Scatter(
-                        x=[x],
-                        y=[y],
-                        mode="markers",
-                        marker=dict(
-                            symbol="circle",
-                            size=max(size + 12, 32),
-                            color="rgba(255,255,255,0.01)",
-                            line=dict(width=0),
-                        ),
-                        hovertext=[tooltip],
-                        hoverinfo="text",
-                        showlegend=False,
-                    )
-                )
-
-            else:
-                # Original Plotly star for comparison.
-                fig.add_trace(
-                    go.Scatter(
-                        x=[x],
-                        y=[y],
-                        mode="markers",
-                        marker=dict(
-                            symbol="star",
-                            size=size,
-                            color=color,
-                            line=dict(
-                                color="#FFF3D4",
-                                width=1,
-                            ),
-                        ),
-                        hovertext=[tooltip],
-                        hoverinfo="text",
-                        showlegend=False,
-                    )
-                )
-
-                # Bright centre for Plotly stars only.
-                fig.add_trace(
-                    go.Scatter(
-                        x=[x],
-                        y=[y],
-                        mode="markers",
-                        marker=dict(
-                            size=max(2.5, size * 0.16),
-                            color="rgba(255,248,232,0.95)",
-                            line=dict(width=0),
-                        ),
-                        hoverinfo="skip",
-                        showlegend=False,
-                    )
-                )
-
-            # -------------------------------------------------
-            # 6. Book labels
-            # -------------------------------------------------
-
-            right_edge = x >= 0.72
-
-            # The illustrated PNG includes glow and rays,
-            # so give Lonesome Dove a little more space.
-            label_gap = (
-                size / 2 + 18
-                if is_lonesome
-                else size / 2 + 8
-            )
-
-            xshift = (
-                -label_gap if right_edge else label_gap
-            )
-
-            xanchor = (
-                "right" if right_edge else "left"
-            )
-
-            if pd.notna(book["pages"]):
-                pages_short = (
-                    f"<br><span style='font-size:10px'>"
-                    f"{book['year']} · "
-                    f"{int(book['pages'])} pages"
-                    f"</span>"
-                )
-            else:
-                pages_short = (
-                    f"<br><span style='font-size:10px'>"
-                    f"{book['year']}</span>"
-                )
-
-            label_size = (
-                12 if significance == "treasure" else 11
-            )
-
-            fig.add_annotation(
-                x=x,
-                y=y,
-                text=(
-                    f"<i>{escape(title)}</i>"
-                    f"{pages_short}"
-                ),
-                showarrow=False,
-                xshift=xshift,
-                xanchor=xanchor,
-                yanchor="middle",
-                font=dict(
-                    family="Georgia, serif",
-                    size=label_size,
-                    color="#F6DEB3",
-                ),
-                align="left",
-            )
-
-    # ---------------------------------------------------------
-    # 7. Subtitle
-    # ---------------------------------------------------------
-
-    fig.add_annotation(
-        x=0.02,
-        y=0.97,
-        xref="paper",
-        yref="paper",
-        text=(
-            "<i>Some books don’t just fill a year "
-            "— they light up the sky.</i>"
-        ),
-        showarrow=False,
-        xanchor="left",
-        yanchor="top",
-        font=dict(
-            family="Georgia, serif",
-            size=14,
-            color="#DCC8A0",
-        ),
-    )
-
-    # ---------------------------------------------------------
-    # 8. Legend
-    # ---------------------------------------------------------
-
-    # Star size is a combined measure:
-    # 65% significance + 35% log-scaled pages.
-    legend_text = (
-        "<b>What makes a star shine?</b><br>"
-        "65% personal significance<br>"
-        "35% book length"
-    )
-
-    fig.add_annotation(
-        x=0.985,
-        y=0.965,
-        xref="paper",
-        yref="paper",
-        text=legend_text,
-        showarrow=False,
-        xanchor="right",
-        yanchor="top",
-        align="left",
-        bordercolor="rgba(224,188,122,0.45)",
-        borderwidth=1,
-        borderpad=8,
-        bgcolor="rgba(8,18,35,0.35)",
-        font=dict(
-            family="Georgia, serif",
-            size=12,
-            color="#F0DEBA",
-        ),
-    )
-
-    # ---------------------------------------------------------
-    # 9. Plot layout
     # ---------------------------------------------------------
 
     fig.update_layout(
