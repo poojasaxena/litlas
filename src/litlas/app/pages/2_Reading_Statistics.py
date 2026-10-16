@@ -787,7 +787,7 @@ with favourite_col:
                 ["favourite_score", "rated_books", "author"],
                 ascending=[False, False, True],
             )
-            .head(5)
+            .head(4)
             .reset_index(drop=True)
         )
 

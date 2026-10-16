@@ -356,22 +356,42 @@ def build_constellation_figure(
             for dx, dy in offsets
         ]
 
-        # Delicate constellation connections.
         if n > 1:
-            fig.add_trace(
-                go.Scatter(
-                    x=[p[0] for p in positions],
-                    y=[p[1] for p in positions],
-                    mode="lines",
+            for (x0, y0), (x1, y1) in zip(positions[:-1], positions[1:]):
+                # midpoint of the segment
+                mx = (x0 + x1) / 2
+                my = (y0 + y1) / 2
+
+                # direction and perpendicular unit vector
+                dx = x1 - x0
+                dy = y1 - y0
+                seg_len = max((dx**2 + dy**2) ** 0.5, 1e-6)
+
+                px = -dy / seg_len
+                py = dx / seg_len
+
+                # tiny bend amount: just enough to soften the line
+                bend = 0.012
+
+                # control point for a gentle curve
+                cx_curve = mx + px * bend
+                cy_curve = my + py * bend
+
+                fig.add_shape(
+                    type="path",
+                    path=f"M {x0},{y0} Q {cx_curve},{cy_curve} {x1},{y1}",
+                    xref="x",
+                    yref="y",
                     line=dict(
-                        color="rgba(223,185,113,0.36)",
-                        width=1.15,
+                        color="rgba(255, 211, 130, 0.82)",
+                        width=1.25,
                         dash="dot",
                     ),
-                    hoverinfo="skip",
-                    showlegend=False,
+                    layer="above",
                 )
-            )
+
+
+
 
         # -------------------------------------------------
         # Constellation heading with curved ornament
