@@ -1,3 +1,8 @@
+"""
+src.litlas.launcher
+
+Launcher for the Litlas application.
+"""
 import argparse
 import subprocess
 import sys

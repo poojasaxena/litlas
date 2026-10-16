@@ -245,6 +245,86 @@ def apply_page_style():
                 min-height: 140px;
                 padding-bottom: 15px !important;
             }
+            /* Literary chapter navigation */
+
+            /* Navigation links */
+            .st-key-litlas_sticky_header
+            a[data-testid="stPageLink-NavLink"] {
+                background: transparent !important;
+                border: none !important;
+                border-radius: 0 !important;
+                padding: 0 !important;
+                color: #96785D !important;
+            }
+
+            /* Visible labels */
+            .st-key-litlas_sticky_header
+            a[data-testid="stPageLink-NavLink"] p {
+                color: #96785D !important;
+                font-family: Georgia, serif !important;
+                font-size: 13px !important;
+                font-weight: 400 !important;
+            }
+
+            /* Hover */
+            .st-key-litlas_sticky_header
+            a[data-testid="stPageLink-NavLink"]:hover,
+            .st-key-litlas_sticky_header
+            a[data-testid="stPageLink-NavLink"]:hover p {
+                color: #58412F !important;
+                background: transparent !important;
+            }
+
+            /* Active chapter */
+            .st-key-litlas_sticky_header
+            a[data-testid="stPageLink-NavLink"][aria-current="page"],
+            .st-key-litlas_sticky_header
+            a[data-testid="stPageLink-NavLink"][aria-current="page"] p {
+                color: #58412F !important;
+                background: transparent !important;
+                font-weight: 600 !important;
+                text-decoration: underline !important;
+                text-underline-offset: 4px;
+            }
+            /* Compact chapter links */
+            .st-key-litlas_sticky_header
+            a[data-testid="stPageLink-NavLink"] {
+                width: auto !important;
+                min-height: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* Ornamental separators */
+            .st-key-litlas_sticky_header .litlas-chapter-separator {
+                color: #B29A7C !important;
+                font-family: Georgia, serif;
+                font-size: 15px;
+            }
+
+            /* Remove default paragraph margins inside chapter navigation */
+            .st-key-litlas_sticky_header
+            [data-testid="stPageLink"] p,
+            .st-key-litlas_sticky_header .litlas-chapter-separator {
+                margin: 0 !important;
+            }
+            /* Current chapter */
+            .st-key-litlas_sticky_header
+            [data-testid="stPageLink"] a[aria-disabled="true"],
+            .st-key-litlas_sticky_header
+            [data-testid="stPageLink"] a[aria-disabled="true"] p {
+                color: #58412F !important;
+                font-weight: 700 !important;
+                text-decoration: underline !important;
+                text-underline-offset: 4px;
+                opacity: 1 !important;
+                background: transparent !important;
+            }
+            /* Hide Streamlit's sidebar and its expand/collapse controls */
+            [data-testid="stSidebar"],
+            [data-testid="stSidebarCollapsedControl"],
+            [data-testid="stSidebarCollapseButton"] {
+                display: none !important;
+            }
         </style>
         """,
         unsafe_allow_html=True,
@@ -302,6 +382,76 @@ def load_illustration_path(name: str) -> Path | None:
     path = Path(value).expanduser()
     return path if path.is_file() else None
 
+
+def render_chapter_navigation(active_page: str) -> None:
+    """Render the centred literary chapter navigation."""
+
+    pages = [
+        ("Literary Atlas", "main.py", "/"),
+        ("Reading Density", "pages/1_Reading_Density.py", "Reading_Density"),
+        ("Reading Statistics", "pages/2_Reading_Statistics.py", "Reading_Statistics"),
+        ("Library Management", "pages/3_Library_Management.py", "Library_Management"),
+    ]
+
+    active_route = next(
+        route for label, _, route in pages if label == active_page
+    )
+
+    # Highlight the active page using its navigation URL.
+    st.markdown(
+        f"""
+        <style>
+        .st-key-litlas_sticky_header
+        a[data-testid="stPageLink-NavLink"][href="{active_route}"],
+        .st-key-litlas_sticky_header
+        a[data-testid="stPageLink-NavLink"][href="{active_route}"] p {{
+            color: #58412F !important;
+            font-weight: 700 !important;
+            text-decoration: underline !important;
+            text-underline-offset: 4px;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    with st.container(
+        horizontal=True,
+        horizontal_alignment="center",
+        gap="small",
+    ):
+        for index, (label, path, _) in enumerate(pages):
+            if index:
+                st.markdown(
+                    '<span class="litlas-chapter-separator">❦</span>',
+                    unsafe_allow_html=True,
+                )
+
+            st.page_link(path, label=label)
+
+def render_chapter_navigation_deprecated() -> None:
+    """Render Litlas chapter navigation within the shared header."""
+
+    pages = [
+        ("Literary Atlas", "main.py"),
+        ("Reading Density", "pages/1_Reading_Density.py"),
+        ("Reading Statistics", "pages/2_Reading_Statistics.py"),
+        ("Library Management", "pages/3_Library_Management.py"),
+    ]
+
+    columns = st.columns(
+        [1.5, 0.15, 1.6, 0.15, 1.8, 0.15, 2.0],
+        gap="small",
+        vertical_alignment="center",
+    )
+
+    for index, (label, path) in enumerate(pages):
+        with columns[index * 2]:
+            st.page_link(path, label=label, use_container_width=True)
+
+        if index < len(pages) - 1:
+            with columns[index * 2 + 1]:
+                st.markdown("❦")
 
 def render_page_header(
     title: str,
@@ -370,3 +520,4 @@ def render_page_header(
             """,
             unsafe_allow_html=True,
         )
+        render_chapter_navigation(active_page=title)
