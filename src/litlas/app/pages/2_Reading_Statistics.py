@@ -25,6 +25,8 @@ from litlas.app.constellation import (
     build_constellation_figure,
     default_constellation_csv,
 )
+from litlas.database.repository import get_constellation_book_details
+
 # ---------------------------------------------------------
 # Page setup
 # ---------------------------------------------------------
@@ -634,24 +636,28 @@ with highlights_col:
         "Ties resolved by length, then completion date."
     )
 
-# ---------------------------------------------------------
-# Literary constellation — CSV selections + yearly highlights
-# ---------------------------------------------------------
+st.divider()
+st.subheader("My Literary Constellation")
 
-st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+try:
+    constellation_df = load_constellation_books(
+        default_constellation_csv(),
+        get_constellation_book_details(),
+    )
 
-constellation_df = load_constellation_books(default_constellation_csv())
-constellation_fig = build_constellation_figure(
-    constellation_df,
-    title="My Literary Constellation",
-    height=520,
-)
+    constellation_fig = build_constellation_figure(
+        constellation_df,
+        height=440,
+    )
 
-st.plotly_chart(
-    constellation_fig,
-    use_container_width=True,
-    config={"displayModeBar": False},
-)
+    st.plotly_chart(
+        constellation_fig,
+        use_container_width=True,
+        config={"displayModeBar": False},
+    )
+
+except (ValueError, FileNotFoundError) as exc:
+    st.warning(f"Constellation could not be loaded: {exc}")
 
 # ---------------------------------------------------------
 # Row 3: Author statistics

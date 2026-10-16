@@ -592,6 +592,32 @@ def get_books_for_reading_year(year: str):
     with connect() as db:
         return pd.read_sql_query(query, db, params=(str(year),))
 
+
+
+def get_constellation_book_details():
+    """Read authoritative metadata for curated constellation books."""
+
+    query = """
+        SELECT
+            SUBSTR(b.date_read, 1, 4) AS year,
+            b.display_title AS title,
+            a.name AS author,
+            COALESCE(b.rating_override, b.rating) AS rating,
+            COALESCE(b.pages_override, b.pages) AS pages
+        FROM books AS b
+        JOIN authors AS a ON a.id = b.author_id
+        WHERE b.shelf = 'read'
+          AND b.excluded_from_display = 0
+          AND b.date_read IS NOT NULL
+          AND SUBSTR(b.date_read, 1, 4)
+              GLOB '[0-9][0-9][0-9][0-9]'
+          AND SUBSTR(b.date_read, 5, 1) IN ('/', '-')
+    """
+
+    with connect() as db:
+        return pd.read_sql_query(query, db)
+
+
 def get_author_dependencies(author_id: int) -> tuple[int, int]:
     """Count books and works linked to an author."""
     with connect() as db:
