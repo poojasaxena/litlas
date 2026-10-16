@@ -16,7 +16,7 @@ from litlas.processing.core import load_config
 # Coordinates belong to themes, not individual books.
 THEME_CENTRES = {
     "Ideas & Society": (0.18, 0.60),
-    "Classics": (0.43, 0.67),
+    "Classics": (0.48, 0.65),
     "Close to Heart": (0.40, 0.20),
     "Personal Growth": (0.83, 0.66),
     "Human Nature": (0.80, 0.27),
@@ -337,7 +337,12 @@ def build_constellation_figure(
                 (-0.055, 0.050),
                 (0.055, -0.050),
             ]
-
+        elif n == 3:
+            offsets = [
+                (-0.030,  0.120),
+                ( 0.025,  0.000),
+                (-0.030, -0.120),
+            ]
         else:
             offsets = [
                 (
@@ -397,10 +402,7 @@ def build_constellation_figure(
         # Constellation heading with curved ornament
         # -------------------------------------------------
 
-        title_y = min(
-            0.93,
-            cy + (0.15 if n > 1 else 0.13),
-        )
+        title_y = min(0.93, cy + (0.15 if n > 1 else 0.13), )
 
         # Group title
         fig.add_annotation(
@@ -589,52 +591,60 @@ def build_constellation_figure(
                 )
             )
 
+
             # -------------------------------------------------
-            # 7. Labels
+            # 7. Labels — handwritten title + smaller metadata
             # -------------------------------------------------
 
             right_edge = x >= 0.72
 
-            label_gap = size / 2 + 18
-            xshift = (
-                -label_gap if right_edge else label_gap
-            )
-            xanchor = (
-                "right" if right_edge else "left"
-            )
+            # Distance from star to label, in pixels.
+            label_gap = size / 2 + 25
 
-            if pd.notna(book["pages"]):
-                pages_short = (
-                    f"<br><span style='font-size:10px'>"
-                    f"{escape(str(book['year']))} · "
-                    f"{int(book['pages']):,} pages"
-                    f"</span>"
-                )
-            else:
-                pages_short = (
-                    f"<br><span style='font-size:10px'>"
-                    f"{escape(str(book['year']))}</span>"
-                )
+            xshift = -label_gap if right_edge else label_gap
+            xanchor = "right" if right_edge else "left"
 
-            label_size = (
-                16 if significance == "treasure" else 14
-            )
+            # Vertical positions, in pixels.
+            title_yshift = 9
+            meta_yshift = -13
 
+            # Title: larger, calligraphic lettering.
             fig.add_annotation(
                 x=x,
                 y=y,
-                text=(
-                    f"<i>{escape(title)}</i>"
-                    f"{pages_short}"
-                ),
+                text=f"<i>{escape(title)}</i>",
                 showarrow=False,
                 xshift=xshift,
+                yshift=title_yshift,
                 xanchor=xanchor,
                 yanchor="middle",
                 font=dict(
                     family="Georgia, serif",
-                    size=label_size,
+                    size=16 if significance == "treasure" else 14,
                     color="#F6DEB3",
+                ),
+                align="left",
+            )
+
+            # Reading year and page count: quieter, conventional serif.
+            metadata = escape(str(book["year"]))
+
+            if pd.notna(book["pages"]):
+                metadata += f" · {int(book['pages']):,} pages"
+
+            fig.add_annotation(
+                x=x,
+                y=y,
+                text=metadata,
+                showarrow=False,
+                xshift=xshift,
+                yshift=meta_yshift,
+                xanchor=xanchor,
+                yanchor="middle",
+                font=dict(
+                    family="Georgia, serif",
+                    size=11,
+                    color="#D8C8AF",
                 ),
                 align="left",
             )
