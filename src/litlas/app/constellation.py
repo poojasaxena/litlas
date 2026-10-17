@@ -158,52 +158,112 @@ def _starburst_source(
     encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
     return f"data:image/png;base64,{encoded}"
 
+def load_constellation_books(
+    csv_path: str | Path,
+    library: pd.DataFrame,
+) -> pd.DataFrame:
+    """Match curated books by title and retrieve their database metadata."""
 
-def load_constellation_books(csv_path: str | Path, library: pd.DataFrame) -> pd.DataFrame:
-    """Validate CSV and join authoritative title/year/author/rating/page data."""
-    curated = pd.read_csv(csv_path, dtype=str, keep_default_na=False, encoding="utf-8-sig")
-    required = {"year", "title", "constellation", "significance", "note"}
+    curated = pd.read_csv(
+        csv_path,
+        dtype=str,
+        keep_default_na=False,
+        encoding="utf-8-sig",
+    )
+    curated.columns = curated.columns.str.strip()
+
+    required = {"title", "constellation", "significance", "note"}
     missing = required - set(curated.columns)
     if missing:
-        raise ValueError(f"Missing constellation CSV columns: {', '.join(sorted(missing))}")
+        raise ValueError(
+            f"Missing constellation CSV columns: {', '.join(sorted(missing))}"
+        )
 
     curated = curated.copy()
     for column in required:
         curated[column] = curated[column].str.strip()
-    curated = curated.loc[curated["year"].ne("") & curated["title"].ne("")].copy()
-    curated["significance"] = curated["significance"].str.casefold()
-    invalid = curated.loc[~curated["significance"].isin(TIERS), ["title", "significance"]]
-    if not invalid.empty:
-        raise ValueError("Unknown significance tags: " + ", ".join(
-            f"{r.title} ({r.significance})" for r in invalid.itertuples()
-        ))
 
-    curated["key"] = list(zip(curated["year"], curated["title"].str.casefold()))
-    if curated["key"].duplicated().any():
-        raise ValueError("Duplicate entries in constellation CSV: " + ", ".join(
-            curated.loc[curated["key"].duplicated(), "title"]
-        ))
+    # Author is optional, used only when titles are ambiguous.
+    if "author" not in curated.columns:
+        curated["author"] = ""
+    curated["author"] = curated["author"].str.strip()
+
+    curated = curated.loc[curated["title"].ne("")].copy()
+    curated["significance"] = curated["significance"].str.casefold()
+
+    invalid = curated.loc[
+        ~curated["significance"].isin(TIERS),
+        ["title", "significance"],
+    ]
+    if not invalid.empty:
+        raise ValueError(
+            "Unknown significance tags: "
+            + ", ".join(
+                f"{r.title} ({r.significance})"
+                for r in invalid.itertuples()
+            )
+        )
 
     books = library.copy()
-    books["year"] = books["year"].astype(str).str.strip()
     books["title"] = books["title"].astype(str).str.strip()
-    books["key"] = list(zip(books["year"], books["title"].str.casefold()))
-    # The title/year key is expected to identify a single displayed book.
-    ambiguous = set(curated["key"]) & set(books.loc[books["key"].duplicated(keep=False), "key"])
-    if ambiguous:
-        raise ValueError("Ambiguous title/year matches: " + ", ".join(sorted(str(k) for k in ambiguous)))
+    books["author"] = books["author"].astype(str).str.strip()
 
-    matched = curated.merge(
-        books[["key", "author", "rating", "pages"]],
-        on="key", how="left", indicator=True, validate="one_to_one",
+    # Earliest reading first; unknown years go last.
+    books["_reading_year"] = pd.to_numeric(
+        books["year"], errors="coerce"
     )
-    unmatched = matched.loc[matched["_merge"] != "both", ["year", "title"]]
-    if not unmatched.empty:
-        raise ValueError("Books not found in Litlas: " + ", ".join(
-            f"{r.year}: {r.title}" for r in unmatched.itertuples()
-        ))
-    return matched.drop(columns=["key", "_merge"])
 
+    books = books.sort_values(
+        "_reading_year",
+        ascending=True,
+        na_position="last",
+        kind="stable",
+    )
+
+    # Match titles without relying on the reading year.
+    books["_title_key"] = books["title"].str.casefold()
+    curated["_title_key"] = curated["title"].str.casefold()
+
+    matches = []
+
+    for row in curated.to_dict("records"):
+        candidates = books.loc[
+            books["_title_key"] == row["_title_key"]
+        ]
+
+        if row["author"]:
+            candidates = candidates.loc[
+                candidates["author"].str.casefold()
+                == row["author"].casefold()
+            ]
+
+        if candidates.empty:
+            raise ValueError(
+                f"Book not found in Litlas: {row['title']}"
+            )
+
+        # If multiple records share a title, use the earliest reading.
+        book = candidates.iloc[0]
+
+        matches.append({
+            "title": book["title"],
+            "year": book["year"],
+            "author": book["author"],
+            "rating": book["rating"],
+            "pages": book["pages"],
+            "constellation": row["constellation"],
+            "significance": row["significance"],
+            "note": row["note"],
+        })
+
+    result = pd.DataFrame(matches)
+
+    if result.duplicated(subset=["title", "author"]).any():
+        raise ValueError(
+            "The constellation CSV contains duplicate books."
+        )
+
+    return result
 
 def _star_size(significance: str, pages) -> float:
     """65% curated importance + 35% log-scaled length (visual size 13-30px)."""

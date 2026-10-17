@@ -239,6 +239,7 @@ def get_editable_books():
             b.goodreads_id,
             b.display_title,
             b.original_title,
+            b.date_read,
             a.name AS author,
             b.rating,
             b.rating_override,

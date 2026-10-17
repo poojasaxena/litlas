@@ -11,9 +11,9 @@ from litlas.database.repository import (
 
 FAVOURITE_TIERS = {
     0: "Not selected",
-    1: "✦  Exceptional",
+    1: "❦  Exceptional",
     2: "♥  Favourites",
-    3: "❦  Good authors",
+    3: "ღ  Good authors",
 }
 
 
@@ -106,11 +106,10 @@ def render_favourite_collection():
     authors = get_favourite_authors()
 
     categories = {
-        1: ("✦", "Exceptional"),
-        2: ("♥", "Favourites"),
-        3: ("❦", "Good authors"),
+        tier: tuple(label.split(maxsplit=1))
+        for tier, label in FAVOURITE_TIERS.items()
+        if tier != 0
     }
-
     sections = []
 
     for tier, (symbol, title) in categories.items():

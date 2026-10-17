@@ -323,6 +323,14 @@ st.markdown(
     .st-key-author_confirm_delete_button button:disabled {
         opacity: 0.45 !important;
     }
+    /* Reduce space between Literary Collection heading and author list */
+    .st-key-literary_collection {
+        gap: 0 !important;
+    }
+
+    .st-key-literary_collection [data-testid="stMarkdown"] h3 {
+        margin-bottom: 0 !important;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -426,8 +434,21 @@ if selected_tool:
                 render_author_favourites()
 
         with collection_col:
-            st.markdown("### My Literary Collection")
-            render_favourite_collection()
+            with st.container(key="literary_collection", gap="small"):
+                st.markdown(
+                    """
+                    <h3 style="
+                        margin: -50px 0 0;
+                        padding: 0;
+                        color: #58412F;
+                    ">
+                        My Literary Collection
+                    </h3>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                render_favourite_collection()
 
     elif selected_tool == "Author Details":
         st.subheader("Author Details")

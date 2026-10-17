@@ -15,6 +15,7 @@ RATING_OPTIONS = {
     "Unrated": 0.0,
     "1 ★": 1.0,
     "2 ★": 2.0,
+    "2.5 ★": 2.5,
     "3 ★": 3.0,
     "3.5 ★": 3.5,
     "4 ★": 4.0,
@@ -79,6 +80,18 @@ def render_book_editor_contents(show_heading=True):
     row = author_books[
         author_books["goodreads_id"] == selected_id
     ].iloc[0]
+
+    with select_col2:
+        # Reading date supplied by the database.
+        date_read = pd.to_datetime(
+            row.get("date_read"),
+            errors="coerce",
+        )
+
+        if pd.notna(date_read):
+            st.caption(f"Read on: {date_read.strftime('%-d %B %Y')}")
+        else:
+            st.caption("Reading date not recorded")
 
     stored_rating = row["rating_override"]
 
