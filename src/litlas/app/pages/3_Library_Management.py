@@ -3,16 +3,18 @@
 import streamlit as st
 import base64
 from pathlib import Path
-
+import pandas as pd
+from html import escape
 from litlas.app.author_favourites import (
     render_author_favourites,
     render_favourite_collection,
 )
+from textwrap import dedent
 from litlas.app.author_details import render_author_details
 from litlas.app.book_add import render_add_book
 from litlas.app.ui import apply_page_style, render_page_header
 from litlas.app.book_editor import render_book_editor_contents
-from pathlib import Path
+from litlas.database.importer import preview_goodreads_import
 
 ADD_BOOK_ICON = "/home/pooja-saxena/PoojaVault/Personal/Life/Creative/ImageBank/Inspiration/vintage/stack_antique_books-transparent.png"
 
@@ -59,8 +61,8 @@ st.markdown(
        1. LIBRARY MANAGEMENT NAVIGATION
        ========================================== */
 
-    div[data-testid="stButton"]:not(.st-key-author_details_add)
-        button:is([kind="secondary"], [kind="primary"]){
+    div[class*="st-key-tool_"]
+        button:is([kind="secondary"], [kind="primary"]) {
         position: relative !important;
         background: #E8DCC9;
         border: 1px solid #C5AA87;
@@ -72,7 +74,7 @@ st.markdown(
     }
 
     /* Icon above the label */
-    div[data-testid="stButton"]
+    div[class*="st-key-tool_"]
     button:is([kind="secondary"], [kind="primary"])
     span[data-has-shortcut="false"] {
         display: flex !important;
@@ -83,10 +85,10 @@ st.markdown(
     }
 
     /* Large navigation icons */
-    div[data-testid="stButton"]
+    div[class*="st-key-tool_"]
     button:is([kind="secondary"], [kind="primary"])
     span[data-has-shortcut="false"] > span:first-child,
-    div[data-testid="stButton"]
+    div[class*="st-key-tool_"]
     button:is([kind="secondary"], [kind="primary"])
     span[data-has-shortcut="false"] > span:first-child span {
         font-size: 55px !important;
@@ -94,7 +96,7 @@ st.markdown(
     }
 
     /* Navigation labels */
-    div[data-testid="stButton"]
+    div[class*="st-key-tool_"]
     button:is([kind="secondary"], [kind="primary"])
     [data-testid="stMarkdownContainer"] p {
         position: absolute !important;
@@ -109,14 +111,14 @@ st.markdown(
     }
 
     /* Hover */
-    div[data-testid="stButton"]
+    div[class*="st-key-tool_"]
     button:is([kind="secondary"], [kind="primary"]):hover {
         background: #DDC9AE !important;
         border-color: #A47B43 !important;
     }
 
     /* Selected navigation card */
-    div[data-testid="stButton"] button[kind="primary"] {
+    div[class*="st-key-tool_"] button[kind="primary"] {
         background: #D6C0A3 !important;
         border-color: #A47B43 !important;
         color: #58412F !important;
@@ -285,7 +287,7 @@ st.markdown(
         width: 200px !important;
         min-height: 42px !important;
     }
-
+        
     [data-testid="stFormSubmitButton"] button:hover {
         background: #6E4B3A !important;
         border-color: #6E4B3A !important;
@@ -329,6 +331,33 @@ st.markdown(
 
     .st-key-literary_collection [data-testid="stMarkdown"] h3 {
         margin-bottom: 0 !important;
+    }
+
+    /* Compact Goodreads action */
+    .st-key-goodreads_check_changes button {
+        width: 190px !important;
+        min-width: 190px !important;
+        height: 38px !important;
+        min-height: 38px !important;
+        padding: 6px 14px !important;
+
+        background: #8B634B !important;
+        border: 1px solid #8B634B !important;
+        border-radius: 6px !important;
+        box-shadow: none !important;
+    }
+
+    .st-key-goodreads_check_changes button,
+    .st-key-goodreads_check_changes button * {
+        color: #FFF9F1 !important;
+        font-family: Georgia, serif !important;
+        font-size: 14px !important;
+        font-weight: 400 !important;
+    }
+
+    .st-key-goodreads_check_changes button:hover {
+        background: #6E4B3A !important;
+        border-color: #6E4B3A !important;
     }
     </style>
     """,
@@ -458,8 +487,215 @@ if selected_tool:
         with editor_col:
             with st.container(border=True, key="litlas_editor_card"):
                 render_author_details()
-    else:
-        st.subheader(selected_tool)
+
+
+    elif selected_tool == "Goodreads":
+        st.subheader("Goodreads Library Sync")
         st.caption(
-            f"The {selected_tool} workspace will appear here."
+            "Compare your latest Goodreads export with Litlas. "
+            "No database changes will be made."
         )
+
+
+        if st.button(
+            "Check for changes",
+            key="goodreads_check_changes",
+            type="secondary",
+        ):
+            try:
+                st.session_state["goodreads_preview"] = (
+                    preview_goodreads_import()
+                )
+            except (ValueError, OSError) as exc:
+                st.session_state.pop("goodreads_preview", None)
+                st.error(str(exc))
+                
+                button_col1, button_col2, button_col3 = st.columns(
+                    [1, 1, 1]
+                )
+
+                with button_col2:
+                    check_changes = st.button(
+                        "Check for changes",
+                        key="goodreads_check_changes",
+                        type="secondary",
+                    )
+
+                if check_changes:
+                    try:
+                        st.session_state["goodreads_preview"] = (
+                            preview_goodreads_import()
+                        )
+                    except (ValueError, OSError) as exc:
+                        st.session_state.pop("goodreads_preview", None)
+                        st.error(str(exc))
+
+        preview = st.session_state.get("goodreads_preview")
+
+        if preview is not None:
+            source_name = Path(preview["source"]).name
+
+            st.caption(f"Source: {source_name}")
+
+            # ---------------------------------------------
+            # Compact import summary
+            # ---------------------------------------------
+            summary = [
+                ("New books", len(preview["new_books"])),
+                ("Updates", len(preview["changed_books"])),
+                ("Date conflicts", len(preview["date_conflicts"])),
+                ("Unchanged", len(preview["unchanged_books"])),
+            ]
+
+            summary_html = "".join(
+                f"""
+                <div style="flex:1; text-align:center;">
+                    <div style="
+                        font-family:Georgia,serif;
+                        font-size:21px;
+                        color:#58412F;
+                        line-height:1.2;
+                    ">{count}</div>
+                    <div style="
+                        font-size:12px;
+                        color:#81776E;
+                        margin-top:3px;
+                    ">{escape(label)}</div>
+                </div>
+                """
+                for label, count in summary
+            )
+
+            st.markdown(
+                f"""
+                <div style="
+                    display:flex;
+                    gap:12px;
+                    padding:12px 16px;
+                    background:#F7F0E4;
+                    border:1px solid #D4C1A7;
+                    border-radius:8px;
+                ">
+                    {summary_html}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            # ---------------------------------------------
+            # Compact date-conflict review
+            # ---------------------------------------------
+            conflicts = preview["date_conflicts"]
+
+            if conflicts:
+                with st.expander(
+                    f"Reading-date conflicts ({len(conflicts)})",
+                    expanded=False,
+                ):
+                    rows = []
+
+                    for conflict in conflicts:
+                        litlas_date = pd.to_datetime(
+                            conflict["litlas_date"],
+                            errors="coerce",
+                        )
+                        goodreads_date = pd.to_datetime(
+                            conflict["goodreads_date"],
+                            errors="coerce",
+                        )
+
+                        def format_date(value):
+                            if pd.isna(value):
+                                return "Not recorded"
+                            return (
+                                f"{value.day} "
+                                f"{value.strftime('%B %Y')}"
+                            )
+
+                        title = escape(conflict["title"])
+                        litlas_text = escape(
+                            format_date(litlas_date)
+                        )
+                        goodreads_text = escape(
+                            format_date(goodreads_date)
+                        )
+
+                        rows.append(
+                            f"""
+                            <div style="
+                                display:grid;
+                                grid-template-columns:2fr 1fr 1fr;
+                                gap:14px;
+                                align-items:center;
+                                padding:9px 4px;
+                                border-bottom:1px solid #E4D6C5;
+                                font-family:Georgia,serif;
+                                font-size:13px;
+                                color:#58412F;
+                            ">
+                                <div>{title}</div>
+                                <div>{litlas_text}</div>
+                                <div>{goodreads_text}</div>
+                            </div>
+                            """
+                        )
+
+                    table_html = f"""
+                    <div style="
+                        background:#F7F0E4;
+                        border-radius:7px;
+                        padding:6px 12px;
+                    ">
+                        <div style="
+                            display:grid;
+                            grid-template-columns:2fr 1fr 1fr;
+                            gap:14px;
+                            padding:8px 4px;
+                            border-bottom:1px solid #C5AA87;
+                            color:#81776E;
+                            font-size:12px;
+                        ">
+                            <div>Book</div>
+                            <div>Litlas</div>
+                            <div>Goodreads</div>
+                        </div>
+                        {''.join(rows)}
+                    </div>
+                    """
+
+                    st.markdown(
+                        " ".join(dedent(table_html).split()),
+                        unsafe_allow_html=True,
+                    )
+
+            elif (
+                not preview["new_books"]
+                and not preview["changed_books"]
+            ):
+                st.success("No differences found.")
+
+            if preview["new_books"]:
+                with st.expander(
+                    f"New books ({len(preview['new_books'])})"
+                ):
+                    for book in preview["new_books"]:
+                        st.write(
+                            f"{book['Title']} — {book['Author']}"
+                        )
+
+            if preview["changed_books"]:
+                with st.expander(
+                    f"Other updates ({len(preview['changed_books'])})"
+                ):
+                    for book in preview["changed_books"]:
+                        st.write(
+                            book["title"],
+                            book["changes"],
+                        )
+
+            if preview["new_authors"]:
+                with st.expander(
+                    f"New authors ({len(preview['new_authors'])})"
+                ):
+                    for author in preview["new_authors"]:
+                        st.write(author)

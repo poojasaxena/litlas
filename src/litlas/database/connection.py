@@ -54,9 +54,14 @@ CREATE INDEX IF NOT EXISTS idx_authors_country
 
 
 def database_path() -> Path:
-    """Database location from the project configuration."""
+    """Return the configured SQLite database path."""
     config = load_config()
-    return library_dir() / config["paths"]["litlas"] / "litlas.db"
+
+    return (
+        library_dir()
+        / config["paths"]["litlas"]
+        / config["database"]["filename"]
+    )
 
 
 @contextmanager
