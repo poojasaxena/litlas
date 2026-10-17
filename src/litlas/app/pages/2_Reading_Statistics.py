@@ -729,7 +729,7 @@ with ratings_col:
 # Row 2: Reading history
 # ---------------------------------------------------------
 
-history_col, highlights_col = st.columns([3, 2], gap="large")
+history_col, highlights_col = st.columns([2, 1], gap="large")
 
 history = get_books_read_by_year()
 
@@ -806,7 +806,7 @@ with history_col:
     if history.empty:
         st.info("No books have a recorded reading date yet.")
     else:
-        fig_history = build_year_spines_figure(history, spine_width=0.60)
+        fig_history = build_year_spines_figure(history, spine_width=0.60, image_height=450)
         # fig_history = go.Figure(
         #     go.Bar(
         #         x=history["year"],

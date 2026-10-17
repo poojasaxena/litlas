@@ -50,7 +50,8 @@ def _spine_parts(rating: str):
         return top, middle, bottom
 
 
-def build_year_spines_figure(history: pd.DataFrame, spine_width: float = SPINE_WIDTH) -> go.Figure:
+def build_year_spines_figure(history: pd.DataFrame, spine_width: float = SPINE_WIDTH, 
+                             image_height: float = 300) -> go.Figure:
     """Display books read per year as illustrated antique spines.
 
     Uses the same cached illustrations and image enhancements as Ratings.
@@ -134,7 +135,7 @@ def build_year_spines_figure(history: pd.DataFrame, spine_width: float = SPINE_W
             )
 
     figure.update_layout(
-        height=300,
+        height=image_height,
         margin=dict(l=45, r=25, t=30, b=40),
         paper_bgcolor="#FAF7F1",
         plot_bgcolor="#F5EFE4",
