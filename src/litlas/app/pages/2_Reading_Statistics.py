@@ -19,6 +19,10 @@ from litlas.database.repository import (
     get_books_for_reading_year,
     get_yearly_highlights,
 )
+from litlas.app.visualizations.book_spines import (
+    build_rating_spines_figure,
+    build_year_spines_figure,
+)
 from litlas.processing.countries import country_name
 from litlas.app.constellation import (
     load_constellation_books,
@@ -191,6 +195,182 @@ longest = page_stats["longest"]
 shortest = page_stats["shortest"]
 total_pages = page_stats["total_pages"]
 
+def make_book_spine_asset(
+    name: str,
+    base_color: str,
+    edge_color: str,
+    gold_color: str = "#D8B36A",
+) -> str:
+    """
+    Create a decorative vertical book-spine PNG and return its file path.
+    The image has a transparent background and can be placed inside Plotly.
+    """
+    out_dir = Path(".litlas_assets")
+    out_dir.mkdir(exist_ok=True)
+
+    path = out_dir / f"{name}_spine.png"
+    if path.exists():
+        return str(path)
+
+    width = 180
+    height = 900
+
+    img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+
+    # Main body
+    x0, y0, x1, y1 = 20, 20, width - 20, height - 20
+    draw.rounded_rectangle(
+        [x0, y0, x1, y1],
+        radius=18,
+        fill=base_color,
+        outline=edge_color,
+        width=6,
+    )
+
+    # Left darker edge
+    draw.rounded_rectangle(
+        [x0, y0, x0 + 18, y1],
+        radius=16,
+        fill=edge_color,
+    )
+
+    # Right subtle highlight edge
+    draw.rounded_rectangle(
+        [x1 - 8, y0, x1, y1],
+        radius=16,
+        fill=(255, 255, 255, 35),
+    )
+
+    # Top and bottom bands
+    band_h = 44
+    draw.rounded_rectangle(
+        [x0 + 10, y0 + 24, x1 - 10, y0 + 24 + band_h],
+        radius=8,
+        fill=None,
+        outline=gold_color,
+        width=4,
+    )
+    draw.rounded_rectangle(
+        [x0 + 10, y1 - 24 - band_h, x1 - 10, y1 - 24],
+        radius=8,
+        fill=None,
+        outline=gold_color,
+        width=4,
+    )
+
+    # Center vertical gold strip
+    cx = width // 2
+    draw.rounded_rectangle(
+        [cx - 3, y0 + 160, cx + 3, y1 - 160],
+        radius=3,
+        fill=gold_color,
+    )
+
+    # Decorative central frame
+    frame_top = height * 0.36
+    frame_bottom = height * 0.64
+    draw.rounded_rectangle(
+        [x0 + 30, frame_top, x1 - 30, frame_bottom],
+        radius=12,
+        fill=None,
+        outline=gold_color,
+        width=4,
+    )
+
+    # Little ornaments
+    for yy in [height * 0.28, height * 0.50, height * 0.72]:
+        draw.ellipse(
+            [cx - 7, yy - 7, cx + 7, yy + 7],
+            fill=gold_color,
+        )
+        draw.line(
+            [cx - 18, yy, cx + 18, yy],
+            fill=gold_color,
+            width=3,
+        )
+
+    # Faint leather texture
+    texture = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    tex_draw = ImageDraw.Draw(texture)
+    for y in range(y0 + 12, y1 - 12, 18):
+        alpha = 12 if (y // 18) % 2 == 0 else 8
+        tex_draw.line(
+            [(x0 + 12, y), (x1 - 12, y)],
+            fill=(255, 255, 255, alpha),
+            width=1,
+        )
+    texture = texture.filter(ImageFilter.GaussianBlur(0.6))
+    img = Image.alpha_composite(img, texture)
+
+    img.save(path)
+    return str(path)
+
+def add_rating_book_spines(fig, ratings):
+    """Draw decorative book spines for each rating category."""
+
+    leather_colors = [
+        "#64735E",  # forest green
+        "#98513D",  # burgundy leather
+        "#4D657A",  # antique blue
+        "#B18A53",  # tan leather
+        "#69735B",  # olive
+        "#8D6847",  # brown
+        "#65506F",  # purple
+    ]
+
+    for index, (_, row) in enumerate(ratings.iterrows()):
+        rating = float(row["rating"])
+        count = float(row["books"])
+
+        if count <= 0:
+            continue
+
+        width = 0.34
+        x0 = rating - width / 2
+        x1 = rating + width / 2
+
+        color = leather_colors[index % len(leather_colors)]
+
+        # Main leather-bound spine
+        fig.add_shape(
+            type="rect",
+            x0=x0,
+            x1=x1,
+            y0=0,
+            y1=count,
+            fillcolor=color,
+            line=dict(color="#5C4335", width=1.5),
+            layer="above",
+        )
+
+        # Fine golden lines near the top and bottom
+        band_offset = min(3, count * 0.15)
+
+        for y in (band_offset, count - band_offset):
+            fig.add_shape(
+                type="line",
+                x0=x0 + 0.035,
+                x1=x1 - 0.035,
+                y0=y,
+                y1=y,
+                line=dict(color="#D6B77B", width=1.5),
+                layer="above",
+            )
+
+        # Narrow gold vertical decoration
+        if count >= 10:
+            fig.add_shape(
+                type="line",
+                x0=rating,
+                x1=rating,
+                y0=count * 0.30,
+                y1=count * 0.70,
+                line=dict(color="#C8A66C", width=1),
+                layer="above",
+            )
+
+
 def page_milestone(label, value, title="", author=""):
     """Compact, two-line vintage reading milestone."""
 
@@ -269,11 +449,180 @@ with shortest_col:
     )
 
 
+def add_book_spine_details(fig, x_vals, y_vals):
+    """Subtle antique-book details over Plotly bars."""
+
+    gold = "#C7A875"
+    pale_gold = "#DDC49A"
+
+    for x, height in zip(x_vals, y_vals):
+        height = float(height)
+        if height <= 0:
+            continue
+
+        half_width = 0.24
+
+        # Subtle leather edge, giving the spine depth.
+        fig.add_shape(
+            type="rect",
+            x0=x - half_width,
+            x1=x - half_width + 0.045,
+            y0=0,
+            y1=height,
+            fillcolor="rgba(40,26,20,0.26)",
+            line=dict(width=0),
+            layer="above",
+        )
+
+        # Soft highlight on the opposite edge.
+        fig.add_shape(
+            type="rect",
+            x0=x + half_width - 0.055,
+            x1=x + half_width - 0.025,
+            y0=0,
+            y1=height,
+            fillcolor="rgba(255,232,188,0.17)",
+            line=dict(width=0),
+            layer="above",
+        )
+
+        # Short bars need fewer decorative elements.
+        if height < 8:
+            continue
+
+        inset = 0.085
+        left = x - half_width + inset
+        right = x + half_width - inset
+
+        # Fine double-ruled bands at each end.
+        band_spacing = min(1.0, height * 0.08)
+        top_offset = min(2.4, height * 0.19)
+
+        for band_y in (
+            top_offset,
+            top_offset + band_spacing,
+            height - top_offset - band_spacing,
+            height - top_offset,
+        ):
+            fig.add_shape(
+                type="line",
+                x0=left,
+                x1=right,
+                y0=band_y,
+                y1=band_y,
+                line=dict(color=gold, width=0.8),
+                layer="above",
+            )
+
+        # Small central ornament for taller spines.
+        if height >= 25:
+            fig.add_annotation(
+                x=x,
+                y=height * 0.52,
+                text="✦",
+                showarrow=False,
+                font=dict(
+                    family="Georgia, serif",
+                    size=12,
+                    color=pale_gold,
+                ),
+            )
+
+
+def add_horizontal_book_stacks(fig, counts):
+    """Draw antique books along horizontal chart rows.
+
+    Each row's full illustrated length represents its exact count.
+    Decorative books are capped at 12 per row to avoid crowding.
+    """
+    leather_colors = [
+        "#81533C",  # aged brown
+        "#A66B47",  # chestnut
+        "#667667",  # faded green
+        "#596B7D",  # antique blue
+        "#956852",  # russet
+        "#91764F",  # worn ochre
+    ]
+
+    for row_index, count in enumerate(counts):
+        count = float(count)
+
+        if count <= 0:
+            continue
+
+        number_of_books = min(12, max(1, int(count)))
+        book_width = count / number_of_books
+
+        for j in range(number_of_books):
+            x0 = j * book_width + book_width * 0.035
+            x1 = (j + 1) * book_width - book_width * 0.035
+
+            if x1 <= x0:
+                continue
+
+            y0 = row_index - 0.30
+            y1 = row_index + 0.30
+
+            color = leather_colors[
+                (row_index + j) % len(leather_colors)
+            ]
+
+            # Leather book body
+            fig.add_shape(
+                type="rect",
+                xref="x",
+                yref="y",
+                x0=x0,
+                x1=x1,
+                y0=y0,
+                y1=y1,
+                fillcolor=color,
+                line=dict(
+                    color="#654631",
+                    width=1.2,
+                ),
+                layer="above",
+            )
+
+            # Gold decorative upper and lower bands
+            for y in (y0 + 0.095, y1 - 0.095):
+                fig.add_shape(
+                    type="line",
+                    xref="x",
+                    yref="y",
+                    x0=x0,
+                    x1=x1,
+                    y0=y,
+                    y1=y,
+                    line=dict(
+                        color="#D5B47D",
+                        width=1.1,
+                    ),
+                    layer="above",
+                )
+
+            # Subtle spine highlight
+            fig.add_shape(
+                type="line",
+                xref="x",
+                yref="y",
+                x0=x0 + (x1 - x0) * 0.12,
+                x1=x0 + (x1 - x0) * 0.12,
+                y0=y0 + 0.13,
+                y1=y1 - 0.13,
+                line=dict(
+                    color="#E8D1A6",
+                    width=0.6,
+                ),
+                layer="above",
+            )
+
+
 # ---------------------------------------------------------
 # Row 1: Country distribution and ratings
 # ---------------------------------------------------------
 
-country_col, ratings_col = st.columns([3, 1], gap="large")
+country_col, ratings_col = st.columns([2, 1], gap="large")
 
 density = get_country_reading_density()
 
@@ -351,6 +700,14 @@ with country_col:
         )
 
 
+
+blue_spine_path = make_book_spine_asset(
+    name="rating_3_blue",
+    base_color="#4F647A",
+    edge_color="#344556",
+    gold_color="#D8B36A",
+)
+
 ratings = get_rating_distribution()
 
 with ratings_col:
@@ -359,51 +716,7 @@ with ratings_col:
     if ratings.empty:
         st.info("No rated books available yet.")
     else:
-        fig_ratings = go.Figure(
-            go.Bar(
-                x=ratings["rating"],
-                y=ratings["books"],
-                marker=dict(
-                    color="#A98160",
-                    line=dict(color="#855C45", width=1),
-                ),
-                text=ratings["books"],
-                textposition="outside",
-                cliponaxis=False,
-                hovertemplate=(
-                    "<b>%{x} stars</b><br>"
-                    "%{y} books<extra></extra>"
-                ),
-            )
-        )
-
-        fig_ratings.update_layout(
-            height=420,
-            margin=dict(l=40, r=10, t=30, b=50),
-            paper_bgcolor="#FAF7F1",
-            plot_bgcolor="#EFE3D0",
-            font=dict(
-                family="Georgia, serif",
-                size=11,
-                color="#58412F",
-            ),
-            xaxis=dict(
-                title=None,
-                tickmode="array",
-                tickvals=[1, 2, 3, 4, 5],
-                ticktext=["1", "2", "3", "4", "5"],
-                showgrid=False,
-                zeroline=False,
-            ),
-            yaxis=dict(
-                title=None,
-                showgrid=True,
-                gridcolor="#D1BEA4",
-                zeroline=False,
-            ),
-            bargap=0.25,
-            showlegend=False,
-        )
+        fig_ratings = build_rating_spines_figure(ratings)
 
         st.plotly_chart(
             fig_ratings,
@@ -493,49 +806,50 @@ with history_col:
     if history.empty:
         st.info("No books have a recorded reading date yet.")
     else:
-        fig_history = go.Figure(
-            go.Bar(
-                x=history["year"],
-                y=history["books"],
-                marker=dict(
-                    color="#A98160",
-                    line=dict(color="#855C45", width=1),
-                ),
-                text=history["books"],
-                textposition="outside",
-                cliponaxis=False,
-                hovertemplate=(
-                    "<b>%{x}</b><br>"
-                    "%{y} books read<extra></extra>"
-                ),
-            )
-        )
+        fig_history = build_year_spines_figure(history, spine_width=0.60)
+        # fig_history = go.Figure(
+        #     go.Bar(
+        #         x=history["year"],
+        #         y=history["books"],
+        #         marker=dict(
+        #             color="#A98160",
+        #             line=dict(color="#855C45", width=1),
+        #         ),
+        #         text=history["books"],
+        #         textposition="outside",
+        #         cliponaxis=False,
+        #         hovertemplate=(
+        #             "<b>%{x}</b><br>"
+        #             "%{y} books read<extra></extra>"
+        #         ),
+        #     )
+        # )
 
-        fig_history.update_layout(
-            height=300,
-            margin=dict(l=45, r=25, t=30, b=40),
-            paper_bgcolor="#FAF7F1",
-            plot_bgcolor="#F5EFE4",
-            font=dict(
-                family="Georgia, serif",
-                size=13,
-                color="#58412F",
-            ),
-            xaxis=dict(
-                title=None,
-                type="category",
-                showgrid=False,
-            ),
-            yaxis=dict(
-                title="Books",
-                showgrid=True,
-                gridcolor="#DDD2C2",
-                zeroline=False,
-                rangemode="tozero",
-            ),
-            bargap=0.35,
-            showlegend=False,
-        )
+        # fig_history.update_layout(
+        #     height=300,
+        #     margin=dict(l=45, r=25, t=30, b=40),
+        #     paper_bgcolor="#FAF7F1",
+        #     plot_bgcolor="#F5EFE4",
+        #     font=dict(
+        #         family="Georgia, serif",
+        #         size=13,
+        #         color="#58412F",
+        #     ),
+        #     xaxis=dict(
+        #         title=None,
+        #         type="category",
+        #         showgrid=False,
+        #     ),
+        #     yaxis=dict(
+        #         title="Books",
+        #         showgrid=True,
+        #         gridcolor="#DDD2C2",
+        #         zeroline=False,
+        #         rangemode="tozero",
+        #     ),
+        #     bargap=0.35,
+        #     showlegend=False,
+        # )
 
         event = st.plotly_chart(
             fig_history,
@@ -549,11 +863,19 @@ with history_col:
         points = event.selection.points
 
         if points:
-            selected_year = str(points[0]["x"])
+            selected_index = int(points[0]["x"])
 
-            if st.session_state.get("_last_opened_history_year") != selected_year:
-                st.session_state["_last_opened_history_year"] = selected_year
-                show_year_books(selected_year)
+            if 0 <= selected_index < len(history):
+                selected_year = str(
+                    history.iloc[selected_index]["year"]
+                )
+
+                if (
+                    st.session_state.get("_last_opened_history_year")
+                    != selected_year
+                ):
+                    st.session_state["_last_opened_history_year"] = selected_year
+                    show_year_books(selected_year)
         else:
             st.session_state["_last_opened_history_year"] = None
 
@@ -629,7 +951,10 @@ with highlights_col:
                 """
             )
 
-        st.html("\n".join(rows))
+        if rows:
+            st.html("\n".join(rows))
+        else:
+            st.caption("No books recorded for this year.")
 
     st.caption(
         "Highest-rated completed book per year. "
