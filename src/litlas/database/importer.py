@@ -7,6 +7,106 @@ from litlas.processing.core import latest_goodreads, load_config
 from litlas.database.connection import connect
 
 
+def _ensure_date_resolutions_table(db):
+    """Create storage for confirmed reading-date decisions."""
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS goodreads_date_resolutions (
+            book_id TEXT PRIMARY KEY,
+            litlas_date TEXT NOT NULL,
+            goodreads_date TEXT NOT NULL,
+            decision TEXT NOT NULL
+                CHECK (decision = 'keep_litlas'),
+            FOREIGN KEY (book_id) REFERENCES books(goodreads_id)
+        )
+    """)
+
+
+def resolve_goodreads_date_conflict(
+    book_id: str,
+    litlas_date: str,
+    goodreads_date: str,
+    decision: str,
+    source=None,
+) -> None:
+    """Apply a verified decision to one reading-date conflict."""
+
+    if decision not in ("keep_litlas", "use_goodreads"):
+        raise ValueError("Invalid reading-date decision.")
+
+    # Refresh from the actual Goodreads export before saving.
+    # This must happen outside the write transaction.
+    preview = preview_goodreads_import(source)
+
+    conflict = next(
+        (
+            item for item in preview["date_conflicts"]
+            if item["book_id"] == book_id
+        ),
+        None,
+    )
+
+    if conflict is None or (
+        conflict["litlas_date"] != litlas_date
+        or conflict["goodreads_date"] != goodreads_date
+    ):
+        raise ValueError(
+            "This conflict has changed. Check for changes again."
+        )
+
+    with connect() as db:
+        db.execute("BEGIN IMMEDIATE")
+        _ensure_date_resolutions_table(db)
+
+        current = db.execute(
+            "SELECT date_read FROM books WHERE goodreads_id = ?",
+            (book_id,),
+        ).fetchone()
+
+        if current is None or current["date_read"] != litlas_date:
+            raise ValueError(
+                "Litlas reading date changed. Refresh the preview."
+            )
+
+        if decision == "keep_litlas":
+            db.execute(
+                """
+                INSERT INTO goodreads_date_resolutions (
+                    book_id, litlas_date, goodreads_date, decision
+                )
+                VALUES (?, ?, ?, 'keep_litlas')
+                ON CONFLICT(book_id) DO UPDATE SET
+                    litlas_date = excluded.litlas_date,
+                    goodreads_date = excluded.goodreads_date,
+                    decision = excluded.decision
+                """,
+                (book_id, litlas_date, goodreads_date),
+            )
+
+        else:
+            cursor = db.execute(
+                """
+                UPDATE books
+                SET date_read = ?
+                WHERE goodreads_id = ?
+                  AND date_read = ?
+                """,
+                (goodreads_date, book_id, litlas_date),
+            )
+
+            if cursor.rowcount != 1:
+                raise ValueError(
+                    "Reading date could not be updated."
+                )
+
+            db.execute(
+                """
+                DELETE FROM goodreads_date_resolutions
+                WHERE book_id = ?
+                """,
+                (book_id,),
+            )
+
+
 
 def preview_goodreads_import(source=None):
     """Compare a Goodreads export against Litlas without modifying SQLite."""
@@ -47,6 +147,29 @@ def preview_goodreads_import(source=None):
                 """
             )
         }
+
+        # The resolution table may not exist on first use.
+        table_exists = db.execute(
+            """
+            SELECT 1 FROM sqlite_master
+            WHERE type = 'table'
+              AND name = 'goodreads_date_resolutions'
+            """
+        ).fetchone()
+
+        resolved_dates = {}
+
+        if table_exists:
+            resolved_dates = {
+                row["book_id"]: dict(row)
+                for row in db.execute(
+                    """
+                    SELECT book_id, litlas_date,
+                           goodreads_date, decision
+                    FROM goodreads_date_resolutions
+                    """
+                )
+            }
 
         existing_authors = {
             " ".join(row["name"].split()).casefold()
@@ -131,13 +254,27 @@ def preview_goodreads_import(source=None):
         # Never treat date differences as automatic updates.
         date_difference = differences.pop("date_read", None)
 
+        unresolved_date_difference = date_difference
+
         if date_difference is not None:
-            date_conflicts.append({
-                "book_id": book_id,
-                "title": book["Title"],
-                "litlas_date": date_difference["old"],
-                "goodreads_date": date_difference["new"],
-            })
+            previous = resolved_dates.get(book_id)
+
+            already_resolved = (
+                previous is not None
+                and previous["decision"] == "keep_litlas"
+                and previous["litlas_date"] == date_difference["old"]
+                and previous["goodreads_date"] == date_difference["new"]
+            )
+
+            if already_resolved:
+                unresolved_date_difference = None
+            else:
+                date_conflicts.append({
+                    "book_id": book_id,
+                    "title": book["Title"],
+                    "litlas_date": date_difference["old"],
+                    "goodreads_date": date_difference["new"],
+                })
 
         if differences:
             changed_books.append({
@@ -145,7 +282,7 @@ def preview_goodreads_import(source=None):
                 "title": book["Title"],
                 "changes": differences,
             })
-        elif date_difference is None:
+        elif unresolved_date_difference is None:
             unchanged_books.append(book["Title"])
 
 

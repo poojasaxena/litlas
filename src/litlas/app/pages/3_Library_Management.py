@@ -14,7 +14,10 @@ from litlas.app.author_details import render_author_details
 from litlas.app.book_add import render_add_book
 from litlas.app.ui import apply_page_style, render_page_header
 from litlas.app.book_editor import render_book_editor_contents
-from litlas.database.importer import preview_goodreads_import
+from litlas.database.importer import (
+    preview_goodreads_import,
+    resolve_goodreads_date_conflict,
+)
 
 ADD_BOOK_ICON = "/home/pooja-saxena/PoojaVault/Personal/Life/Creative/ImageBank/Inspiration/vintage/stack_antique_books-transparent.png"
 
@@ -509,28 +512,15 @@ if selected_tool:
             except (ValueError, OSError) as exc:
                 st.session_state.pop("goodreads_preview", None)
                 st.error(str(exc))
-                
-                button_col1, button_col2, button_col3 = st.columns(
-                    [1, 1, 1]
-                )
 
-                with button_col2:
-                    check_changes = st.button(
-                        "Check for changes",
-                        key="goodreads_check_changes",
-                        type="secondary",
-                    )
-
-                if check_changes:
-                    try:
-                        st.session_state["goodreads_preview"] = (
-                            preview_goodreads_import()
-                        )
-                    except (ValueError, OSError) as exc:
-                        st.session_state.pop("goodreads_preview", None)
-                        st.error(str(exc))
 
         preview = st.session_state.get("goodreads_preview")
+
+        message = st.session_state.pop(
+            "goodreads_resolution_message", None
+        )
+        if message:
+            st.success(message)
 
         if preview is not None:
             source_name = Path(preview["source"]).name
@@ -590,8 +580,7 @@ if selected_tool:
             if conflicts:
                 with st.expander(
                     f"Reading-date conflicts ({len(conflicts)})",
-                    expanded=False,
-                ):
+                    expanded=False,):
                     rows = []
 
                     for conflict in conflicts:
@@ -668,6 +657,107 @@ if selected_tool:
                         unsafe_allow_html=True,
                     )
 
+
+                # -----------------------------------------
+                # Review and resolve one conflict
+                # -----------------------------------------
+                st.markdown("##### Review a conflict")
+
+                conflict_options = {
+                    conflict["book_id"]: conflict
+                    for conflict in conflicts
+                }
+
+                selected_book_id = st.selectbox(
+                    "Select a book",
+                    options=list(conflict_options),
+                    format_func=lambda book_id: (
+                        conflict_options[book_id]["title"]
+                    ),
+                    index=None,
+                    placeholder="Find a book to review...",
+                    key="goodreads_conflict_book",
+                )
+
+                if selected_book_id is not None:
+                    selected = conflict_options[selected_book_id]
+
+                    litlas_date = pd.to_datetime(
+                        selected["litlas_date"],
+                        errors="coerce",
+                    )
+                    goodreads_date = pd.to_datetime(
+                        selected["goodreads_date"],
+                        errors="coerce",
+                    )
+
+                    left, right = st.columns(2)
+
+                    with left:
+                        st.caption("Litlas")
+                        st.write(
+                            litlas_date.strftime("%d %B %Y")
+                            if pd.notna(litlas_date)
+                            else "Not recorded"
+                        )
+
+                    with right:
+                        st.caption("Goodreads")
+                        st.write(
+                            goodreads_date.strftime("%d %B %Y")
+                            if pd.notna(goodreads_date)
+                            else "Not recorded"
+                        )
+
+                    decision = st.radio(
+                        "Which date is correct?",
+                        [
+                            "Keep Litlas date",
+                            "Use Goodreads date",
+                            "Decide later",
+                        ],
+                        index=2,
+                        horizontal=True,
+                        key=f"goodreads_date_choice_{selected_book_id}",
+                    )
+
+                    decision_codes = {
+                        "Keep Litlas date": "keep_litlas",
+                        "Use Goodreads date": "use_goodreads",
+                    }
+
+                    if decision != "Decide later":
+                        if st.button(
+                            "Save this decision",
+                            key=f"save_date_resolution_{selected_book_id}",
+                            type="secondary",
+                        ):
+                            try:
+                                resolve_goodreads_date_conflict(
+                                    book_id=selected_book_id,
+                                    litlas_date=selected["litlas_date"],
+                                    goodreads_date=selected["goodreads_date"],
+                                    decision=decision_codes[decision],
+                                    source=preview["source"],
+                                )
+                            except ValueError as exc:
+                                st.error(str(exc))
+                            else:
+                                st.session_state["goodreads_preview"] = (
+                                    preview_goodreads_import(
+                                        preview["source"]
+                                    )
+                                )
+                                st.session_state[
+                                    "goodreads_resolution_message"
+                                ] = (
+                                    f"Resolved: {selected['title']} "
+                                    f"— {decision}"
+                                )
+                                st.rerun()
+
+
+            
             elif (
                 not preview["new_books"]
                 and not preview["changed_books"]
