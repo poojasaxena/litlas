@@ -161,6 +161,56 @@ def refresh_display_titles():
 
     return updated
 
+
+def get_literary_wanderlust() -> pd.DataFrame:
+    """Count first encounters and returns to authors by reading year.
+
+    The earliest dated book by each author is a discovery.
+    Subsequent books by that author are returns.
+    """
+    query = """
+        WITH dated_books AS (
+            SELECT
+                goodreads_id,
+                author_id,
+                REPLACE(date_read, '/', '-') AS reading_date,
+                SUBSTR(date_read, 1, 4) AS year
+            FROM books
+            WHERE shelf = 'read'
+              AND excluded_from_display = 0
+              AND date_read IS NOT NULL
+              AND TRIM(date_read) != ''
+              AND SUBSTR(date_read, 1, 4)
+                  GLOB '[0-9][0-9][0-9][0-9]'
+              AND SUBSTR(date_read, 5, 1) IN ('/', '-')
+        ),
+        reading_order AS (
+            SELECT
+                year,
+                ROW_NUMBER() OVER (
+                    PARTITION BY author_id
+                    ORDER BY reading_date, goodreads_id
+                ) AS author_encounter
+            FROM dated_books
+        )
+        SELECT
+            year,
+            SUM(
+                CASE WHEN author_encounter = 1 THEN 1 ELSE 0 END
+            ) AS new_authors,
+            SUM(
+                CASE WHEN author_encounter > 1 THEN 1 ELSE 0 END
+            ) AS returning_authors,
+            COUNT(*) AS total_books
+        FROM reading_order
+        GROUP BY year
+        ORDER BY year
+    """
+
+    with connect() as db:
+        return pd.read_sql_query(query, db)
+
+
 def get_books_read_by_year():
     """Count displayed read books by recorded reading year."""
 

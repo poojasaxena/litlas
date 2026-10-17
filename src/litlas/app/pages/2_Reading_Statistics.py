@@ -30,7 +30,11 @@ from litlas.app.constellation import (
     default_constellation_csv,
 )
 from litlas.database.repository import get_constellation_book_details
+from litlas.database.repository import get_literary_wanderlust
 
+from litlas.app.visualizations.wanderlust import (
+    build_wanderlust_figure,
+)
 # ---------------------------------------------------------
 # Page setup
 # ---------------------------------------------------------
@@ -806,51 +810,8 @@ with history_col:
     if history.empty:
         st.info("No books have a recorded reading date yet.")
     else:
-        fig_history = build_year_spines_figure(history, spine_width=0.60, image_height=450)
-        # fig_history = go.Figure(
-        #     go.Bar(
-        #         x=history["year"],
-        #         y=history["books"],
-        #         marker=dict(
-        #             color="#A98160",
-        #             line=dict(color="#855C45", width=1),
-        #         ),
-        #         text=history["books"],
-        #         textposition="outside",
-        #         cliponaxis=False,
-        #         hovertemplate=(
-        #             "<b>%{x}</b><br>"
-        #             "%{y} books read<extra></extra>"
-        #         ),
-        #     )
-        # )
-
-        # fig_history.update_layout(
-        #     height=300,
-        #     margin=dict(l=45, r=25, t=30, b=40),
-        #     paper_bgcolor="#FAF7F1",
-        #     plot_bgcolor="#F5EFE4",
-        #     font=dict(
-        #         family="Georgia, serif",
-        #         size=13,
-        #         color="#58412F",
-        #     ),
-        #     xaxis=dict(
-        #         title=None,
-        #         type="category",
-        #         showgrid=False,
-        #     ),
-        #     yaxis=dict(
-        #         title="Books",
-        #         showgrid=True,
-        #         gridcolor="#DDD2C2",
-        #         zeroline=False,
-        #         rangemode="tozero",
-        #     ),
-        #     bargap=0.35,
-        #     showlegend=False,
-        # )
-
+        fig_history = build_year_spines_figure(history, spine_width=0.60, image_height=400)
+ 
         event = st.plotly_chart(
             fig_history,
             use_container_width=True,
@@ -882,10 +843,10 @@ with history_col:
         dated_books = int(history["books"].sum())
         missing_dates = int(summary["books"]) - dated_books
 
-        st.caption(
-            f"Based on {dated_books} books with recorded reading dates. "
-            f"{missing_dates} books have no usable Date Read value."
-        )
+        # st.caption(
+        #     f"Based on {dated_books} books with recorded reading dates. "
+        #     f"{missing_dates} books have no usable Date Read value."
+        # )
 
 # ---------------------------------------------------------
 # Yearly literary highlights
@@ -956,10 +917,10 @@ with highlights_col:
         else:
             st.caption("No books recorded for this year.")
 
-    st.caption(
-        "Highest-rated completed book per year. "
-        "Ties resolved by length, then completion date."
-    )
+    # st.caption(
+    #     "Highest-rated completed book per year. "
+    #     "Ties resolved by length, then completion date."
+    # )
 
 st.divider()
 st.subheader("My Literary Constellation")
@@ -990,8 +951,10 @@ except (ValueError, FileNotFoundError) as exc:
 
 st.divider()
 
-most_read_col, favourite_col = st.columns([1, 1], gap="large")
-
+most_read_col, favourite_col, wanderlust_col = st.columns(
+    [1, 1, 1],
+    gap="large",
+)
 # Get a sufficiently large pool of authors, not just the
 # ten most-read, so favourite rankings are not biased.
 all_authors = get_top_authors(limit=10000)
@@ -1136,7 +1099,7 @@ with favourite_col:
                 border:1px solid #D4C1A7;
                 border-radius:7px;
                 padding:13px 16px;
-                margin-bottom:10px;
+                margin-bottom:{'0' if i == len(favourites) - 1 else '10px'};
                 font-family:Georgia,serif;
                 color:#58412F;
             ">
@@ -1174,7 +1137,7 @@ with favourite_col:
 
                 <div style="
                     background:#E2D5C3;
-                    height:5px;
+                    height:5.0px;
                     margin-top:12px;
                     border-radius:4px;
                     overflow:hidden;
@@ -1191,8 +1154,33 @@ with favourite_col:
 
         st.html("\n".join(cards))
 
-        st.caption(
-            "Ranked by confidence-adjusted average rating. "
-            "At least two rated books required; more ratings "
-            "give greater confidence in the score."
+        # st.caption(
+        #     "Ranked by confidence-adjusted average rating. "
+        # )
+
+
+# ---------------------------------------------------------
+# Literary Wanderlust
+# ---------------------------------------------------------
+
+with wanderlust_col:
+    st.subheader("Literary Wanderlust")
+
+    wanderlust = get_literary_wanderlust()
+
+    if wanderlust.empty:
+        st.info("Not enough reading history available yet.")
+    else:
+        fig_wanderlust = build_wanderlust_figure(wanderlust)
+
+        st.plotly_chart(
+            fig_wanderlust,
+            use_container_width=True,
+            config={"displayModeBar": False},
         )
+
+        # st.caption(
+        #     "First dated book by an author counts as a discovery; "
+        #     "later books count as returns. "
+        #     "Based on available reading dates."
+        # )
