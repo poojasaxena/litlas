@@ -2,11 +2,13 @@
 """Form for adding books independently of Goodreads."""
 
 import streamlit as st
+import pycountry
 
 from litlas.database.connection import connect
 from litlas.database.repository import add_book
 from litlas.app.book_editor import RATING_OPTIONS
-
+from litlas.app.author_details import find_author_matches
+from litlas.processing.countries import COUNTRY_NAMES, country_name
 
 def render_add_book():
     """Render the Add a Book workspace."""
@@ -17,29 +19,97 @@ def render_add_book():
         ).fetchall()
 
     author_options = {
-        int(row["id"]): row["name"]
+        " ".join(row["name"].split()): int(row["id"])
         for row in authors
     }
 
-    with st.form("add_book_form", clear_on_submit=True, border=False):
+    # -------------------------------------------------
+    # Row 1: title + searchable author
+    # -------------------------------------------------
+    col1, col2 = st.columns(2, gap="large")
 
-        col1, col2 = st.columns(2, gap="large")
+    with col1:
+        title = st.text_input(
+            "Book title",
+            placeholder="Enter book title...",
+            key="add_book_title",
+        )
 
-        with col1:
-            title = st.text_input(
-                "Book title",
-                placeholder="Enter book title...",
+    with col2:
+        author_name = st.selectbox(
+            "Author",
+            options=list(author_options),
+            index=None,
+            placeholder="Find or add an author...",
+            accept_new_options=True,
+            key="add_book_author",
+        )
+
+    normalized_name = (
+        " ".join(author_name.split()) if author_name else ""
+    )
+
+    existing_name = next(
+        (
+            name for name in author_options
+            if name.casefold() == normalized_name.casefold()
+        ),
+        None,
+    )
+
+    new_author = bool(normalized_name and existing_name is None)
+
+    author_id = (
+        author_options[existing_name]
+        if existing_name is not None
+        else None
+    )
+
+    iso3 = None
+    confirm_similar = False
+
+    # -------------------------------------------------
+    # New author: country and duplicate protection
+    # -------------------------------------------------
+    if new_author:
+        st.caption(f"New author: {normalized_name}")
+
+        exact, possible = find_author_matches(normalized_name)
+
+        if possible:
+            st.warning(
+                "Possible matching authors: "
+                + ", ".join(row["name"] for row in possible)
             )
 
-        with col2:
-            author_id = st.selectbox(
-                "Author",
-                options=list(author_options),
-                format_func=lambda value: author_options[value],
-                index=None,
-                placeholder="Find an author...",
+            confirm_similar = st.checkbox(
+                "I confirm this is a different author",
+                key="add_book_confirm_similar",
             )
 
+        country_codes = sorted(
+            {country.alpha_3 for country in pycountry.countries}
+            | set(COUNTRY_NAMES),
+            key=lambda code: country_name(code).casefold(),
+        )
+
+        iso3 = st.selectbox(
+            "Country of birth",
+            options=country_codes,
+            index=None,
+            format_func=country_name,
+            placeholder="Select country...",
+            key="add_book_country",
+        )
+
+    # -------------------------------------------------
+    # Book details
+    # -------------------------------------------------
+    with st.form(
+        "add_book_form",
+        clear_on_submit=False,
+        border=False,
+    ):
         col3, col4 = st.columns(2, gap="large")
 
         with col3:
@@ -84,13 +154,24 @@ def render_add_book():
             use_container_width=True,
         )
 
+    # -------------------------------------------------
+    # Validation and saving
+    # -------------------------------------------------
     if submitted:
         if not title.strip():
             st.error("Please enter a book title.")
             return
 
-        if author_id is None:
-            st.error("Please select an author.")
+        if not normalized_name:
+            st.error("Please select or enter an author.")
+            return
+
+        if new_author and iso3 is None:
+            st.error("Please select the author's country of birth.")
+            return
+
+        if new_author and possible and not confirm_similar:
+            st.error("Please confirm that this is a different author.")
             return
 
         shelf = {
@@ -99,13 +180,15 @@ def render_add_book():
             "To read": "to-read",
         }[shelf_label]
 
-        # A completion date is meaningful only for books marked read.
         if shelf != "read":
             date_read = None
 
         try:
-            book_id = add_book(
+            add_book(
                 author_id=author_id,
+                new_author_name=normalized_name if new_author else None,
+                new_author_iso3=iso3 if new_author else None,
+                confirm_similar=confirm_similar,
                 title=title,
                 rating=RATING_OPTIONS[rating_label],
                 pages=int(pages) if pages else None,
@@ -126,3 +209,4 @@ def render_add_book():
         st.success(
             f"Added to Litlas: {st.session_state.pop('added_book')}"
         )
+

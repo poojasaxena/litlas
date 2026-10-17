@@ -44,13 +44,12 @@ render_page_header(
 # ---------------------------------------------------------
 
 TOOLS = [
-    ("Edit a Book", "📖"),
     ("Add a Book", "📚"),
+    ("Edit a Book", "📖"),
     ("Favourites", "🤎"),
     ("Author Details", "✒️"),
     ("Goodreads", "📜"),
 ]
-
 
 
 st.markdown(

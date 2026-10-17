@@ -5,6 +5,9 @@ import pandas as pd
 from litlas.database.connection import connect
 from litlas.processing.cleaning import clean_title
 from litlas.processing.core import load_config
+from difflib import SequenceMatcher
+from litlas.processing.countries import country_name
+from uuid import uuid4
 
 def load_read_books():
     """Return read books with their authors and canonical works."""
@@ -359,12 +362,15 @@ from uuid import uuid4
 
 
 def add_book(
-    author_id: int,
+    author_id: int | None,
     title: str,
     rating: float = 0,
     pages: int | None = None,
     shelf: str = "read",
     date_read: str | None = None,
+    new_author_name: str | None = None,
+    new_author_iso3: str | None = None,
+    confirm_similar: bool = False,
 ) -> str:
     """Add a book independently of Goodreads."""
 
@@ -382,18 +388,77 @@ def add_book(
     if shelf not in ("read", "currently-reading", "to-read"):
         raise ValueError("Invalid reading status.")
 
+    # Generate identifiers for the new book and literary work.
     record_id = uuid4().hex
     book_id = f"litlas:{record_id}"
     work_id = f"litlas:{record_id}"
 
     with connect() as db:
-        author = db.execute(
-            "SELECT id FROM authors WHERE id = ?",
-            (author_id,),
-        ).fetchone()
+        db.execute("BEGIN IMMEDIATE")
 
-        if author is None:
-            raise ValueError("Selected author does not exist.")
+        if new_author_name is not None:
+            name = " ".join(new_author_name.split())
+
+            if not name:
+                raise ValueError("Author name cannot be empty.")
+
+            if not new_author_iso3:
+                raise ValueError("Please select a country.")
+
+            existing_authors = db.execute(
+                "SELECT id, name FROM authors"
+            ).fetchall()
+
+            normalized = name.casefold()
+
+            for author in existing_authors:
+                existing_name = " ".join(
+                    author["name"].split()
+                ).casefold()
+
+                if normalized == existing_name:
+                    raise ValueError(
+                        f"Author already exists: {author['name']}"
+                    )
+
+                similarity = SequenceMatcher(
+                    None,
+                    normalized,
+                    existing_name,
+                ).ratio()
+
+                if similarity >= 0.80 and not confirm_similar:
+                    raise ValueError(
+                        f"Similar author found: {author['name']}. "
+                        "Please confirm this is a different person."
+                    )
+
+            cursor = db.execute(
+                """
+                INSERT INTO authors
+                    (name, country, iso3, status, source)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    name,
+                    country_name(new_author_iso3),
+                    new_author_iso3,
+                    "manual",
+                    "manual entry",
+                ),
+            )
+
+            author_id = cursor.lastrowid
+
+        else:
+            author = db.execute(
+                "SELECT id FROM authors WHERE id = ?",
+                (author_id,),
+            ).fetchone()
+
+            if author is None:
+                raise ValueError("Selected author does not exist.")
+
 
         # A literary work must exist for country statistics
         # and unique-work counting.
