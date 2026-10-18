@@ -21,7 +21,9 @@ from litlas.processing.countries import (
     country_coordinates,
     load_country_boundaries,
 )
-
+from litlas.app.visualizations.unexplored_lands import (
+    add_unexplored_lands_control,
+)
 
 ## Configuration constants for the map and flag display
 config = load_config()
@@ -143,8 +145,18 @@ for iso, group in mapped.groupby('ISO3',sort=True):
         tooltip=name,
     ).add_to(m)
     placed+=1
-folium.LayerControl(position='topright').add_to(m)
-st_folium(m,height=MAP_HEIGHT,use_container_width=True,returned_objects=[],key='literarymap')
+
+folium.LayerControl(position="topright").add_to(m)
+
+add_unexplored_lands_control(m, read_countries)
+
+st_folium(
+    m,
+    height=MAP_HEIGHT,
+    use_container_width=True,
+    returned_objects=[],
+    key="literarymap",
+)
 
 if mapped.empty:
     st.info('No author birth countries assigned yet. Run `litlas-prepare` in your terminal, then refresh this page.')
