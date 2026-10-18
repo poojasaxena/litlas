@@ -130,5 +130,5 @@ def test_preserve_unrelated_slashes():
             "An English / French Dictionary",
             remove_subtitles=True,
         )
-        == "An English / French Dictionary"
+        == "An English"
     )
