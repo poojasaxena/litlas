@@ -11,7 +11,7 @@ from PIL import ImageFilter
 import pandas as pd
 import plotly.graph_objects as go
 import base64
-from litlas.processing.core import load_config
+from litlas.processing.paths import load_config
 
 # Coordinates belong to themes, not individual books.
 THEME_CENTRES = {

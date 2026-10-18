@@ -1,4 +1,8 @@
-"""Prepare a full, cached birth-country enriched Goodreads table before launching the map."""
+"""
+litlas.processing.prepare
+Prepare a full, cached birth-country enriched Goodreads table before launching the map.
+"""
+
 import argparse
 import os
 import random
@@ -6,19 +10,21 @@ import time
 from pathlib import Path
 import pandas as pd
 import requests
-from litlas.processing.core import (
-    FIELDS,
+from litlas.processing.paths import (
+    load_config,
     library_dir,
     latest_goodreads,
-    load_goodreads,
+    enriched_books_path
+)
+from litlas.processing.goodreads import load_goodreads
+from litlas.processing.countries import iso3
+from litlas.processing.authors import (
     load_authors,
     save_authors,
     attach_country,
-    iso3,
-    enriched_books_path,
+    FIELDS
 )
 from litlas.processing.cleaning import clean_title
-from litlas.processing.core import load_config
 
 from litlas.enrichment.wikidata import resolve_birth_country, WikidataRateLimit
 from litlas.processing.cleaning import clean_title

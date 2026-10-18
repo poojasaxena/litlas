@@ -4,7 +4,7 @@ import pandas as pd
 
 from litlas.database.connection import connect
 from litlas.processing.cleaning import clean_title
-from litlas.processing.core import load_config
+from litlas.processing.paths import load_config
 from difflib import SequenceMatcher
 from litlas.processing.countries import country_name
 from uuid import uuid4

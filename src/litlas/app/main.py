@@ -5,7 +5,7 @@ import streamlit as st
 import folium
 
 from streamlit_folium import st_folium
-from litlas.processing.core import load_config
+from litlas.processing.paths import load_config
 from litlas.app.popups import flag, pop_html
 from litlas.database.connection import database_path
 from litlas.database.repository import load_read_books

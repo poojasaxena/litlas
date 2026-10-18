@@ -56,6 +56,61 @@ SPECIAL_COORDINATES = {
 }
 
 
+ALIASES = {
+    "England": "GBR",
+    "Scotland": "GBR",
+    "Wales": "GBR",
+    "Northern Ireland": "GBR",
+    "United Kingdom": "GBR",
+    "USA": "USA",
+    "United States": "USA",
+    "United States of America": "USA",
+    "Russia": "RUS",
+    "South Korea": "KOR",
+    "North Korea": "PRK",
+    "Taiwan": "TWN",
+    "Türkiye": "TUR",
+    "Czech Republic": "CZE",
+    "Kosovo": "XKX",
+    "Ivory Coast": "CIV",
+}
+
+
+ALIASES = {
+    "England": "GBR",
+    "Scotland": "GBR",
+    "Wales": "GBR",
+    "Northern Ireland": "GBR",
+    "United Kingdom": "GBR",
+    "USA": "USA",
+    "United States": "USA",
+    "United States of America": "USA",
+    "Russia": "RUS",
+    "South Korea": "KOR",
+    "North Korea": "PRK",
+    "Taiwan": "TWN",
+    "Türkiye": "TUR",
+    "Czech Republic": "CZE",
+    "Kosovo": "XKX",
+    "Ivory Coast": "CIV",
+}
+
+def iso3(name):
+    """Resolve a country name or alias to an ISO3 code."""
+    if not isinstance(name, str) or not name.strip():
+        return ""
+
+    name = name.strip()
+
+    if name in ALIASES:
+        return ALIASES[name]
+
+    try:
+        return pycountry.countries.lookup(name).alpha_3
+    except LookupError:
+        return ""
+
+
 @lru_cache(maxsize=1)
 def sovereign_country_codes() -> frozenset[str]:
     """UN members plus the two UN observer states."""

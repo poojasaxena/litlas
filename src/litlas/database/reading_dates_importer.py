@@ -9,7 +9,7 @@ import pandas as pd
 from datetime import datetime
 import sqlite3
 
-from litlas.processing.core import (
+from litlas.processing.paths import (
     reading_dates_dir,
     library_dir,
     load_config,

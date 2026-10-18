@@ -8,7 +8,7 @@ import streamlit as st
 from branca.colormap import LinearColormap
 from streamlit_folium import st_folium
 from litlas.app.popups import pop_html
-from litlas.processing.core import load_config
+from litlas.processing.paths import load_config
 from html import escape
 from litlas.database.repository import (
     get_country_reading_density,

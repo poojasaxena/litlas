@@ -6,7 +6,7 @@ from pathlib import Path
 from html import escape
 import streamlit as st
 
-from litlas.processing.core import load_config
+from litlas.processing.paths import load_config
 
 def load_logo_path() -> Path | None:
     """Return the original Vault logo path, if available."""

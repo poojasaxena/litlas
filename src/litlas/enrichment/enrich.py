@@ -1,9 +1,12 @@
-"""CLI: litlas-enrich --batch 20"""
+"""
+litlas.enrichment.enrich
+CLI for enriching author birthplaces using Wikidata.
+"""
 
 import argparse
 import time
 from datetime import datetime, timezone
-from litlas.processing.core import iso3
+from litlas.processing.countries import iso3
 from litlas.database.connection import connect
 from litlas.enrichment.wikidata import resolve_birth_country, WikidataRateLimit
 

@@ -4,7 +4,7 @@ import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 
-from litlas.processing.core import library_dir, load_config
+from litlas.processing.paths import library_dir, load_config
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS authors (
