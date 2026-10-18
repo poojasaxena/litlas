@@ -53,32 +53,28 @@ def add_unexplored_lands_control(
         font-family: Georgia, serif;
     }
 
-    .litlas-explorer-button {
-        width: 34px;
-        height: 34px;
-        border: 1px solid #B9AA95;
-        border-radius: 4px;
-        background: #FAF7F1;
-        color: #58412F;
-        cursor: pointer;
-        font-size: 20px;
-        box-shadow: 0 1px 5px #0002;
-    }
-
     .litlas-explorer-panel {
         position: absolute;
         top: 0;
         left: 43px;
-        width: 310px;
+
+        width: 230px;
         max-width: calc(100vw - 115px);
         box-sizing: border-box;
-        background: #F7F0E4;
+
+        background: #F5EFE4;
         border: 1px solid #C9BBA6;
-        border-radius: 7px;
-        box-shadow: 0 5px 18px #58412F35;
-        padding: 13px;
+        border-radius: 8px;
+        box-shadow: 0 3px 12px rgba(85, 63, 42, 0.14);
+
+        padding: 14px;
         color: #58412F;
         display: none;
+    }
+
+    .unexplored-card,
+    .unexplored-card * {
+        box-sizing: border-box;
     }
 
     .litlas-explorer-panel.open {
@@ -98,15 +94,20 @@ def add_unexplored_lands_control(
     }
 
     .litlas-explorer-search {
-        box-sizing: border-box;
+        display: block;
         width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+
         padding: 7px 9px;
-        border-radius: 4px;
+        margin: 0 0 9px 0;
+
         border: 1px solid #D4C1A7;
+        border-radius: 4px;
         background: #FFFCF6;
         color: #58412F;
         font: 13px Georgia, serif;
-        margin-bottom: 9px;
     }
 
     .litlas-explorer-list {
@@ -123,6 +124,29 @@ def add_unexplored_lands_control(
         border-bottom: 1px solid #E4D8C7;
         overflow-wrap: anywhere;
     }
+
+    .unexplored-toggle {
+        width: 34px;
+        height: 34px;
+        border: 1px solid #C9BBA6;
+        border-radius: 4px;
+        background: #FAF7F1;
+        color: #7A5A3A;
+        font-family: Georgia, serif;
+        font-size: 18px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 1px 4px rgba(88, 65, 47, 0.14);
+    }
+
+    .unexplored-toggle:hover {
+        background: #F2E8D8;
+        color: #5D3F2E;
+    }
+
     </style>
     """
 
@@ -141,18 +165,21 @@ def add_unexplored_lands_control(
                     "div", "litlas-explorer-control"
                 );
 
-                const button = L.DomUtil.create(
-                    "button", "litlas-explorer-button", control
+                const toggleButton = L.DomUtil.create(
+                    "button", "", control
                 );
-                button.type = "button";
-                button.textContent = "⌕";
-                button.title = "Unexplored Literary Lands";
-                button.setAttribute(
+                toggleButton.type = "button";
+                toggleButton.innerHTML = "⌕";
+                toggleButton.className = "unexplored-toggle";
+                toggleButton.title = "Browse unexplored lands";
+                toggleButton.setAttribute(
                     "aria-label", "Explore unread countries"
                 );
 
                 const panel = L.DomUtil.create(
-                    "div", "litlas-explorer-panel", control
+                    "div",
+                    "litlas-explorer-panel",
+                    control
                 );
 
                 const heading = L.DomUtil.create(
@@ -206,10 +233,12 @@ def add_unexplored_lands_control(
                 L.DomEvent.disableClickPropagation(control);
                 L.DomEvent.disableScrollPropagation(control);
 
-                L.DomEvent.on(button, "click", function (event) {
+                L.DomEvent.on(toggleButton, "click", function (event) {
                     L.DomEvent.stop(event);
                     const isOpen = panel.classList.toggle("open");
-                    button.setAttribute("aria-expanded", String(isOpen));
+                    toggleButton.setAttribute(
+                        "aria-expanded", String(isOpen)
+                    );
                     if (isOpen) search.focus();
                 });
 
@@ -218,17 +247,17 @@ def add_unexplored_lands_control(
                 L.DomEvent.on(control, "keydown", function (event) {
                     if (event.key === "Escape") {
                         panel.classList.remove("open");
-                        button.setAttribute("aria-expanded", "false");
-                        button.focus();
+                        toggleButton.setAttribute("aria-expanded", "false");
+                        toggleButton.focus();
                     }
                 });
 
                 L.DomEvent.on(map, "click", function () {
                     panel.classList.remove("open");
-                    button.setAttribute("aria-expanded", "false");
+                    toggleButton.setAttribute("aria-expanded", "false");
                 });
 
-                button.setAttribute("aria-expanded", "false");
+                toggleButton.setAttribute("aria-expanded", "false");
                 return control;
             }
         });
