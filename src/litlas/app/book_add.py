@@ -8,7 +8,7 @@ from litlas.database.connection import connect
 from litlas.database.repository import add_book
 from litlas.app.book_editor import RATING_OPTIONS
 from litlas.app.author_details import find_author_matches
-from litlas.processing.countries import COUNTRY_NAMES, country_name
+from litlas.processing.countries import COUNTRY_DISPLAY_NAMES, country_name
 
 def render_add_book():
     """Render the Add a Book workspace."""
@@ -89,7 +89,7 @@ def render_add_book():
 
         country_codes = sorted(
             {country.alpha_3 for country in pycountry.countries}
-            | set(COUNTRY_NAMES),
+            | set(COUNTRY_DISPLAY_NAMES),
             key=lambda code: country_name(code).casefold(),
         )
 

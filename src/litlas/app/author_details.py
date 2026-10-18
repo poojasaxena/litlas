@@ -11,7 +11,7 @@ from litlas.database.repository import (
     get_author_dependencies,
 )
 from litlas.processing.countries import (
-    COUNTRY_NAMES,
+    COUNTRY_DISPLAY_NAMES,
     country_name,
 )
 import streamlit as st
@@ -138,7 +138,7 @@ def render_author_details():
 
     country_codes = sorted(
         {country.alpha_3 for country in pycountry.countries}
-        | set(COUNTRY_NAMES),
+        | set(COUNTRY_DISPLAY_NAMES),
         key=lambda code: country_name(code).casefold(),
     )
 

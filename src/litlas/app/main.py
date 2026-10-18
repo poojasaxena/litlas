@@ -148,7 +148,10 @@ for iso, group in mapped.groupby('ISO3',sort=True):
 
 folium.LayerControl(position="topright").add_to(m)
 
-add_unexplored_lands_control(m, read_countries)
+add_unexplored_lands_control(
+    m,
+    read_countries,
+)
 
 st_folium(
     m,

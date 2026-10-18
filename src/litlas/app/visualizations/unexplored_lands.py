@@ -4,23 +4,13 @@
 import json
 
 import folium
-from branca.element import Element
-
-from litlas.processing.countries import country_name
-from branca.element import MacroElement
+from branca.element import Element, MacroElement
 from jinja2 import Template
 
-AFRICA_ISO3 = {
-    "DZA", "AGO", "BEN", "BWA", "BFA", "BDI",
-    "CPV", "CMR", "CAF", "TCD", "COM", "COG",
-    "COD", "CIV", "DJI", "EGY", "GNQ", "ERI",
-    "SWZ", "ETH", "GAB", "GMB", "GHA", "GIN",
-    "GNB", "KEN", "LSO", "LBR", "LBY", "MDG",
-    "MWI", "MLI", "MRT", "MUS", "MAR", "MOZ",
-    "NAM", "NER", "NGA", "RWA", "STP", "SEN",
-    "SYC", "SLE", "SOM", "ZAF", "SSD", "SDN",
-    "TZA", "TGO", "TUN", "UGA", "ZMB", "ZWE",
-}
+from litlas.processing.countries import (
+    country_name,
+    sovereign_country_codes,
+)
 
 
 def add_unexplored_lands_control(
@@ -29,13 +19,24 @@ def add_unexplored_lands_control(
 ) -> None:
     """Add a collapsible literary explorer to the Folium map."""
 
+
+    # Sovereign-state reference set, independent of GeoJSON
+    # territories and map rendering.
+    world_iso3 = sovereign_country_codes()
+
+    explored_iso3 = world_iso3.intersection(
+        read_countries
+    )
+
+    unexplored_iso3 = world_iso3 - explored_iso3
+
     missing = sorted(
-        [
-            country_name(iso)
-            for iso in AFRICA_ISO3 - set(read_countries)
-        ],
+        (country_name(iso) for iso in unexplored_iso3),
         key=str.casefold,
     )
+
+    total_countries = len(world_iso3)
+
 
     # Escape HTML-significant characters in embedded JSON.
     countries_json = json.dumps(
@@ -72,11 +73,6 @@ def add_unexplored_lands_control(
         display: none;
     }
 
-    .unexplored-card,
-    .unexplored-card * {
-        box-sizing: border-box;
-    }
-
     .litlas-explorer-panel.open {
         display: block;
     }
@@ -93,15 +89,15 @@ def add_unexplored_lands_control(
         margin-bottom: 10px;
     }
 
-    .litlas-explorer-search {
+    .leaflet-container .litlas-explorer-panel input.litlas-explorer-search {
         display: block;
-        width: 100%;
+        width: calc(100% - 8px);
         max-width: 100%;
         min-width: 0;
         box-sizing: border-box;
 
         padding: 7px 9px;
-        margin: 0 0 9px 0;
+        margin: 0 4px 9px 4px;
 
         border: 1px solid #D4C1A7;
         border-radius: 4px;
@@ -156,6 +152,7 @@ def add_unexplored_lands_control(
     (function () {
         const map = MAP_REFERENCE;
         const missing = COUNTRIES_JSON;
+        const totalCountries = TOTAL_COUNTRIES;
 
         const Explorer = L.Control.extend({
             options: {position: "topleft"},
@@ -191,14 +188,14 @@ def add_unexplored_lands_control(
                     "div", "litlas-explorer-summary", panel
                 );
                 summary.textContent =
-                    "Africa · " + missing.length +
-                    " of 54 countries unexplored";
+                    "World · " + missing.length +
+                    " of " + totalCountries + " unexplored";
 
                 const search = L.DomUtil.create(
                     "input", "litlas-explorer-search", panel
                 );
                 search.type = "search";
-                search.placeholder = "Find an African country...";
+                search.placeholder = "Find a country...";
                 search.setAttribute(
                     "aria-label", "Search unexplored countries"
                 );
@@ -266,10 +263,12 @@ def add_unexplored_lands_control(
     })();
     """
 
-    script = script.replace(
-        "MAP_REFERENCE", m.get_name()
-    ).replace(
-        "COUNTRIES_JSON", countries_json
+    total_json = json.dumps(total_countries)
+
+    script = (
+        script.replace("MAP_REFERENCE", m.get_name())
+        .replace("COUNTRIES_JSON", countries_json)
+        .replace("TOTAL_COUNTRIES", total_json)
     )
 
     class UnexploredLandsControl(MacroElement):

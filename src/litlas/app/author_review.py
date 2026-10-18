@@ -91,17 +91,6 @@ with st.expander(
         suffix = f" — {rating:g}★" if rating else ""
         st.write(f"• {book['title']}{suffix}")
 
-# Supported present-day countries with ISO3 codes.
-COUNTRY_NAMES = {
-    "KOR": "South Korea",
-    "PRK": "North Korea",
-    "USA": "United States",
-    "GBR": "United Kingdom",
-    "RUS": "Russia",
-    "IRN": "Iran",
-    "CZE": "Czechia",
-    "TWN": "Taiwan",
-}
 
 countries = sorted(
     [(country_name(c.alpha_3), c.alpha_3) for c in pycountry.countries],

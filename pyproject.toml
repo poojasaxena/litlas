@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "streamlit>=1.38,<2", "streamlit-folium>=0.22,<1", "folium>=0.17,<1",
-    "pandas>=2,<3", "pycountry>=24,<27", "countryinfo>=0.1.2,<1", "requests>=2.31,<3"
+    "pandas>=2,<3", "pycountry>=24,<27", "countryinfo>=0.1.2,<1", "requests>=2.31,<3", "country_converter>=0.7,<1"
 ]
 
 [project.scripts]
