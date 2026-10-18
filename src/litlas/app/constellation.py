@@ -293,7 +293,7 @@ def _group_centres(names: list[str]) -> dict[str, tuple[float, float]]:
 
 def build_constellation_figure(
     df: pd.DataFrame,
-    height: int = 680,
+    height: int = 670,
 ) -> go.Figure:
     """Draw an interactive literary constellation with illustrated stars."""
 
