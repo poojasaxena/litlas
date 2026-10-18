@@ -1,4 +1,7 @@
-"""Antique illustrated book-spine rating chart for Litlas."""
+"""
+litlas.app.visualizations.book_spines 
+Antique illustrated book-spine rating chart for Litlas.
+"""
 
 from functools import lru_cache
 from pathlib import Path
@@ -6,9 +9,7 @@ from pathlib import Path
 import pandas as pd
 import plotly.graph_objects as go
 from PIL import Image, ImageEnhance
-
-
-_ASSETS = Path(__file__).resolve().parent / "assets" / "book_spines"
+from litlas.processing.paths import BOOK_SPINES_DIR
 
 # ---------------------------------------------------------
 # Visual tuning
@@ -34,7 +35,7 @@ def _enhance_spine(image: Image.Image) -> Image.Image:
 @lru_cache(maxsize=32)
 def _spine_parts(rating: str):
     """Read one spine image once, enhance it, and preserve decorative ends."""
-    path = _ASSETS / f"rating_{rating.replace('.', '_')}.png"
+    path = BOOK_SPINES_DIR / f"rating_{rating.replace('.', '_')}.png"
 
     with Image.open(path) as source:
         spine = source.convert("RGBA")

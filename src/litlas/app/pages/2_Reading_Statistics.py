@@ -19,6 +19,7 @@ from litlas.database.repository import (
     get_books_for_reading_year,
     get_yearly_highlights,
 )
+from litlas.processing.paths import default_constellation_csv
 from litlas.app.visualizations.book_spines import (
     build_rating_spines_figure,
     build_year_spines_figure,
@@ -27,7 +28,6 @@ from litlas.processing.countries import country_name
 from litlas.app.constellation import (
     load_constellation_books,
     build_constellation_figure,
-    default_constellation_csv,
 )
 from litlas.database.repository import get_constellation_book_details
 from litlas.database.repository import get_literary_wanderlust

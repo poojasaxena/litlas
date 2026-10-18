@@ -11,7 +11,10 @@ from PIL import ImageFilter
 import pandas as pd
 import plotly.graph_objects as go
 import base64
-from litlas.processing.paths import load_config
+from litlas.processing.paths import (
+    ILLUSTRATIONS_DIR,
+    constellation_background_path,
+)
 
 # Coordinates belong to themes, not individual books.
 THEME_CENTRES = {
@@ -30,11 +33,7 @@ THEME_COLORS = {
 }
 TIERS = {"notable": 0.20, "memorable": 0.60, "treasure": 1.00}
 
-STARBURST_PATH = (
-    Path(__file__).resolve().parent
-    / "assets"
-    / "litlas_golden_starburst.png"
-)
+STARBURST_PATH = ILLUSTRATIONS_DIR / "litlas_golden_starburst.png"
 
 
 def _image_to_data_uri(path: Path) -> str:
@@ -57,8 +56,6 @@ def _starburst_glow(source: str, blur_radius: int = 14) -> str:
         + base64.b64encode(buffer.getvalue()).decode("ascii")
     )
 
-def default_constellation_csv() -> Path:
-    return Path(__file__).resolve().parents[3] / "data" / "constellation_books.csv"
 
 def _star_luminosity(significance: str) -> float:
     """
@@ -303,35 +300,29 @@ def build_constellation_figure(
     # 1. Background illustration
     # ---------------------------------------------------------
 
-    config = load_config()
-    background_path = config.get("illustrations", {}).get(
-        "constellation_illustration"
-    )
+    background_path = constellation_background_path()
 
-    if background_path:
-        path = Path(background_path).expanduser()
+    if background_path and background_path.is_file():
+        encoded = base64.b64encode(
+            background_path.read_bytes()
+        ).decode("ascii")
 
-        if path.is_file():
-            encoded = base64.b64encode(
-                path.read_bytes()
-            ).decode("ascii")
-
-            fig.add_layout_image(
-                dict(
-                    source=f"data:image/png;base64,{encoded}",
-                    xref="paper",
-                    yref="paper",
-                    x=0,
-                    y=1,
-                    xanchor="left",
-                    yanchor="top",
-                    sizex=1,
-                    sizey=1,
-                    sizing="stretch",
-                    opacity=1,
-                    layer="below",
-                )
+        fig.add_layout_image(
+            dict(
+                source=f"data:image/png;base64,{encoded}",
+                xref="paper",
+                yref="paper",
+                x=0,
+                y=1,
+                xanchor="left",
+                yanchor="top",
+                sizex=1,
+                sizey=1,
+                sizing="stretch",
+                opacity=1,
+                layer="below",
             )
+        )
 
     # Gentle dark veil.
     fig.add_shape(
@@ -351,18 +342,13 @@ def build_constellation_figure(
     # 2. Load the original illustrated star
     # ---------------------------------------------------------
 
-    starburst_path = (
-        Path(__file__).resolve().parent
-        / "assets"
-        / "litlas_golden_starburst.png"
-    )
 
-    if not starburst_path.is_file():
+    if not STARBURST_PATH.is_file():
         raise FileNotFoundError(
-            f"Starburst asset not found: {starburst_path}"
+            f"Starburst asset not found: {STARBURST_PATH}"
         )
 
-    with Image.open(starburst_path) as img:
+    with Image.open(STARBURST_PATH) as img:
         original_star = img.convert("RGBA")
 
     # Create one colour variant per theme and significance.

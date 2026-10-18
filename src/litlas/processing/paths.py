@@ -1,8 +1,8 @@
 """
-litlas.processing.paths — Paths for Goodreads reading data and persistent birthplace metadata.
-"""
+litlas.processing.paths 
 
-# src/litlas/processing/paths.py
+Central configuration and filesystem paths for Litlas.
+"""
 
 from pathlib import Path
 import tomllib
@@ -10,12 +10,18 @@ import tomllib
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 CONFIG_PATH = PROJECT_ROOT / "config.toml"
-DATA_DIR = PROJECT_ROOT / "data"
-ASSETS_DIR = DATA_DIR / "assets"
 
+DATA_DIR = PROJECT_ROOT / "data"
+
+ASSETS_DIR = DATA_DIR / "assets"
 BOOK_SPINES_DIR = ASSETS_DIR / "book_spines"
 ILLUSTRATIONS_DIR = ASSETS_DIR / "illustrations"
 BOOK_COVERS_DIR = ASSETS_DIR / "covers"
+GALLERY_DIR = ASSETS_DIR / "gallery"
+
+CONSTELLATION_DIR = DATA_DIR / "constellation"
+CONSTELLATION_BOOKS_CSV = CONSTELLATION_DIR / "constellation_books.csv"
+CONSTELLATION_COLLECTION_CSV = CONSTELLATION_DIR / "constellation_collection.csv"
 
 
 def load_config() -> dict:
@@ -55,7 +61,8 @@ def latest_goodreads(folder=None):
 
     return sorted(files, key=lambda p: p.name)[-1]
 
-
+def default_constellation_csv() -> Path:
+    return CONSTELLATION_BOOKS_CSV
 
 def authors_path(folder=None):
     root = Path(folder) if folder else library_dir()
@@ -69,3 +76,15 @@ def enriched_books_path(folder=None):
 def reading_dates_dir() -> Path:
     """Return the directory containing yearly reading-date files."""
     return library_dir() / load_config()["paths"]["reading_date"]
+
+
+def constellation_background_path() -> Path | None:
+    """Resolve the configured constellation background illustration."""
+    configured = load_config().get(
+        "illustrations", {}
+    ).get("constellation_illustration")
+
+    if not configured:
+        return None
+
+    return Path(configured).expanduser()
