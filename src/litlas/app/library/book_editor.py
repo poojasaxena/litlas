@@ -23,6 +23,38 @@ RATING_OPTIONS = {
     "5 ★": 5.0,
 }
 
+st.markdown(
+    """
+    <style>
+    /* Compact book editor */
+    .st-key-compact_book_editor [data-testid="stVerticalBlock"] {
+        gap: 0.45rem !important;
+    }
+
+    /* Reduce excessive whitespace around captions */
+    .st-key-compact_book_editor [data-testid="stCaptionContainer"] {
+        margin-top: -5px !important;
+    }
+
+    /* Keep the Save button close to the fields */
+    .st-key-compact_book_editor [data-testid="stFormSubmitButton"] {
+        margin-top: 0 !important;
+    }
+
+    /* Reduce spacing between search, reading date and form */
+    .st-key-compact_book_editor [data-testid="stVerticalBlock"] {
+        gap: 0.25rem !important;
+    }
+
+    /* Bring the small metadata captions closer to their fields */
+    .st-key-compact_book_editor [data-testid="stCaptionContainer"] {
+        margin-top: -12px !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 def render_book_editor_contents(show_heading=True):
     """Render the book editor in the current location."""
 
@@ -36,62 +68,42 @@ def render_book_editor_contents(show_heading=True):
         st.subheader("Library Editor")
         st.caption("Edit your personal reading records.")
 
-    authors = sorted(books["author"].dropna().unique())
 
-    # -------------------------------------------------
-    # Row 1: author + book selectors
-    # -------------------------------------------------
-    select_col1, select_col2 = st.columns([1, 1], gap="large")
-
-    with select_col1:
-        selected_author = st.selectbox(
-            "Author",
-            authors,
-            index=None,
-            placeholder="Find an author...",
-            key="editor_author",
-        )
-
-    if selected_author is None:
-        return
-
-    author_books = books[
-        books["author"] == selected_author
-    ].copy()
-
+    # Search all books directly by title or author.
     book_options = {
-        str(row["goodreads_id"]): str(row["display_title"])
-        for _, row in author_books.iterrows()
+        str(row["goodreads_id"]): (
+            f'{row["display_title"]} — {row["author"]}'
+        )
+        for _, row in books.iterrows()
     }
 
-    with select_col2:
-        selected_id = st.selectbox(
-            "Book",
-            options=list(book_options),
-            format_func=lambda book_id: book_options[book_id],
-            index=None,
-            placeholder="Select a book...",
-            key="editor_book",
-        )
+    selected_id = st.selectbox(
+        "Find a book",
+        options=list(book_options),
+        format_func=lambda book_id: book_options[book_id],
+        index=None,
+        placeholder="Search by title or author...",
+        key="editor_book",
+    )
 
     if selected_id is None:
         return
 
-    row = author_books[
-        author_books["goodreads_id"] == selected_id
+    row = books.loc[
+        books["goodreads_id"].astype(str) == selected_id
     ].iloc[0]
 
-    with select_col2:
-        # Reading date supplied by the database.
-        date_read = pd.to_datetime(
-            row.get("date_read"),
-            errors="coerce",
-        )
+    
+    # Reading date supplied by the database.
+    date_read = pd.to_datetime(
+        row.get("date_read"),
+        errors="coerce",
+    )
 
-        if pd.notna(date_read):
-            st.caption(f"Read on: {date_read.strftime('%-d %B %Y')}")
-        else:
-            st.caption("Reading date not recorded")
+    if pd.notna(date_read):
+        st.caption(f"Read on: {date_read.strftime('%-d %B %Y')}")
+    else:
+        st.caption("Reading date not recorded")
 
     stored_rating = row["rating_override"]
 
@@ -115,44 +127,69 @@ def render_book_editor_contents(show_heading=True):
     original_rating = float(row["rating"])
     original_pages = row["pages"]
 
+    saved = st.session_state.get("book_editor_saved")
+
+    if saved and saved[0] == selected_id:
+        st.markdown(
+            f"""
+            <div style="
+                color:#6E4B3A;
+                font-family:Georgia,serif;
+                font-size:14px;
+                padding:0;
+                margin:0;
+            ">
+                ✓ Saved: {escape(str(row["display_title"]))}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
     # -------------------------------------------------
     # Row 2: rating + pages + save
     # -------------------------------------------------
-    with st.form("edit_book_form", clear_on_submit=False, border=False):
-        form_col1, form_col2 = st.columns(2, gap="large")
+    with st.form(
+            "edit_book_form",
+            clear_on_submit=False,
+            border=False,
+            enter_to_submit=False,
+        ):
         
+        with st.container(key="compact_book_editor"):
+            form_col1, form_col2 = st.columns(2, gap="large")
+            
 
-        with form_col1:
-            rating_label = st.selectbox(
-                "My rating",
-                rating_labels,
-                index=rating_labels.index(current_label),
+            with form_col1:
+                rating_label = st.selectbox(
+                    "My rating",
+                    rating_labels,
+                    index=rating_labels.index(current_label),
+                )
+
+                st.caption(
+                    f"Original Goodreads rating: {original_rating:g} ★"
+                    if original_rating
+                    else "Original Goodreads rating: Unrated"
+                )
+
+            with form_col2:
+                pages = st.number_input(
+                    "Number of pages",
+                    min_value=1,
+                    step=1,
+                    value=int(current_pages) if pd.notna(current_pages) else 1,
+                )
+
+                if pd.notna(original_pages):
+                    st.caption(f"Imported page count: {int(original_pages)}")
+                else:
+                    st.caption("Imported page count: missing")
+
+            submitted = st.form_submit_button(
+                "Save to Litlas",
+                type="secondary",
+                use_container_width=True,
             )
-
-            st.caption(
-                f"Original Goodreads rating: {original_rating:g} ★"
-                if original_rating
-                else "Original Goodreads rating: Unrated"
-            )
-
-        with form_col2:
-            pages = st.number_input(
-                "Number of pages",
-                min_value=1,
-                step=1,
-                value=int(current_pages) if pd.notna(current_pages) else 1,
-            )
-
-            if pd.notna(original_pages):
-                st.caption(f"Imported page count: {int(original_pages)}")
-            else:
-                st.caption("Imported page count: missing")
-
-        submitted = st.form_submit_button(
-            "Save to Litlas",
-            type="secondary",
-            use_container_width=True,
-        )
 
 
     if submitted:
@@ -193,26 +230,6 @@ def render_book_editor_contents(show_heading=True):
             )
             st.rerun()
 
-    saved = st.session_state.get("book_editor_saved")
-
-    if saved and saved[0] == selected_id:
-        st.markdown(
-            f"""
-            <div style="
-                background:#E8DCC8;
-                border:1px solid #CDAE86;
-                border-radius:8px;
-                padding:12px 16px;
-                margin-top:14px;
-                font-family:Georgia,serif;
-                font-size:15px;
-                color:#6E4B3A;
-            ">
-                ✓ Saved: {saved[1]}
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
 
 def render_book_editor_contents_sidebar(show_heading=True):
     """Render the Library Editor inside Streamlit's sidebar."""
@@ -369,14 +386,6 @@ def render_book_editor_contents_sidebar(show_heading=True):
                 str(row["display_title"]),
             )
             st.rerun()
-
-    saved = st.session_state.get("book_editor_saved")
-
-    if saved and saved[0] == selected_id:
-        with st.container(key="litlas_saved_confirmation"):
-            st.markdown(
-                f"✓ **Saved:** {escape(saved[1])}"
-            )
 
 def render_book_editor():
     """Render the editor in the Reading Statistics sidebar."""
