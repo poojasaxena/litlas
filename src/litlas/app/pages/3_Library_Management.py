@@ -1,25 +1,30 @@
-"""Library Management workspace for Litlas."""
+"""
+litlas.app.pages.3_Library_Management
+Library Management workspace for Litlas.
+"""
 
 import streamlit as st
 import base64
 from pathlib import Path
 import pandas as pd
 from html import escape
-from litlas.app.author_favourites import (
+from litlas.app.library.author_favourites import (
     render_author_favourites,
     render_favourite_collection,
 )
 from textwrap import dedent
-from litlas.app.author_details import render_author_details
-from litlas.app.book_add import render_add_book
+from litlas.app.library.author_details import render_author_details
+from litlas.app.library.book_add import render_add_book
 from litlas.app.ui import apply_page_style, render_page_header
-from litlas.app.book_editor import render_book_editor_contents
+from litlas.app.library.book_editor import render_book_editor_contents
 from litlas.database.importer import (
     preview_goodreads_import,
     resolve_goodreads_date_conflict,
 )
+from litlas.processing.paths import illustration_path
 
-ADD_BOOK_ICON = "/home/pooja-saxena/PoojaVault/Personal/Life/Creative/ImageBank/Inspiration/vintage/stack_antique_books-transparent.png"
+ADD_BOOK_ICON = str(illustration_path("add_book"))
+
 
 def image_to_base64(path: str) -> str:
     return base64.b64encode(Path(path).read_bytes()).decode("ascii")

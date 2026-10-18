@@ -88,3 +88,16 @@ def constellation_background_path() -> Path | None:
         return None
 
     return Path(configured).expanduser()
+
+def illustration_path(name: str) -> Path:
+    """Resolve a configured illustration by its name."""
+    config = load_config()
+
+    try:
+        configured = config["illustrations"][name]
+    except KeyError as exc:
+        raise KeyError(
+            f"Illustration '{name}' is not defined in {CONFIG_PATH}"
+        ) from exc
+
+    return Path(configured).expanduser()

@@ -25,7 +25,7 @@ from litlas.app.visualizations.book_spines import (
     build_year_spines_figure,
 )
 from litlas.processing.countries import country_name
-from litlas.app.constellation import (
+from litlas.app.visualizations.constellation import (
     load_constellation_books,
     build_constellation_figure,
 )

@@ -6,8 +6,8 @@ import pycountry
 
 from litlas.database.connection import connect
 from litlas.database.repository import add_book
-from litlas.app.book_editor import RATING_OPTIONS
-from litlas.app.author_details import find_author_matches
+from litlas.app.library.book_editor import RATING_OPTIONS
+from litlas.app.library.author_details import find_author_matches
 from litlas.processing.countries import COUNTRY_DISPLAY_NAMES, country_name
 
 def render_add_book():
