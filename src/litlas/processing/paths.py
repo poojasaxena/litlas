@@ -23,6 +23,10 @@ CONSTELLATION_DIR = DATA_DIR / "constellation"
 CONSTELLATION_BOOKS_CSV = CONSTELLATION_DIR / "constellation_books.csv"
 CONSTELLATION_COLLECTION_CSV = CONSTELLATION_DIR / "constellation_collection.csv"
 
+GALLERY_DIR = ASSETS_DIR / "gallery"
+
+JINDAGI_COVER = GALLERY_DIR / "jindagi_sarakti_rahi_front_cover.png"
+LIFE_ENDLESS_EBB_COVER = GALLERY_DIR / "life_endless_ebb_front_cover.jpg"
 
 def load_config() -> dict:
     if not CONFIG_PATH.is_file():

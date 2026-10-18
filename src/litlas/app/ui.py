@@ -317,10 +317,12 @@ def render_chapter_navigation(active_page: str) -> None:
         ("Reading Density", "pages/1_Reading_Density.py", "Reading_Density"),
         ("Reading Statistics", "pages/2_Reading_Statistics.py", "Reading_Statistics"),
         ("Library Management", "pages/3_Library_Management.py", "Library_Management"),
+        ("Ink & Verse", "pages/4_My_Books.py", "My_Books"),
     ]
 
     active_route = next(
-        route for label, _, route in pages if label == active_page
+        (route for label, _, route in pages if label == active_page),
+        None,
     )
 
     # Highlight the active page using its navigation URL.
@@ -363,6 +365,7 @@ def render_chapter_navigation_deprecated() -> None:
         ("Reading Density", "pages/1_Reading_Density.py"),
         ("Reading Statistics", "pages/2_Reading_Statistics.py"),
         ("Library Management", "pages/3_Library_Management.py"),
+        ("Ink & Verse", "pages/4_My_Books.py")
     ]
 
     columns = st.columns(
