@@ -68,6 +68,10 @@ def authors_path(folder=None):
     root = Path(folder) if folder else library_dir()
     return root / load_config()["paths"]["litlas"] / "authors.csv"
 
+def works_path(folder=None) -> Path:
+    """Return the path of the Litlas works metadata CSV."""
+    root = Path(folder) if folder else library_dir()
+    return root / load_config()["paths"]["litlas"] / "works.csv"
 
 def enriched_books_path(folder=None):
     root = Path(folder) if folder else library_dir()

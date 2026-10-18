@@ -14,7 +14,8 @@ from litlas.processing.paths import (
     load_config,
     library_dir,
     latest_goodreads,
-    enriched_books_path
+    enriched_books_path,
+    works_path
 )
 from litlas.processing.goodreads import load_goodreads
 from litlas.processing.countries import iso3
@@ -58,11 +59,11 @@ def build_csv(source=None, folder=None):
     out["Volume"] = ""
 
     # 5. Apply manually verified work consolidation
-    works_path = folder / load_config()["paths"]["litlas"] / "works.csv"
+    works_file = works_path(folder)
 
-    if works_path.is_file():
+    if works_file.is_file():
         works = pd.read_csv(
-            works_path,
+            works_file,
             dtype=str,
             keep_default_na=False,
         )
