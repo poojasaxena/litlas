@@ -93,6 +93,14 @@ read_countries = set(mapped["ISO3"].unique())
 ## Load country boundaries for the map
 geojson = load_country_boundaries()
 
+for feature in geojson["features"]:
+    iso = feature["properties"].get("ISO3166-1-Alpha-3")
+
+    if iso:
+        feature["properties"]["litlas_country_name"] = country_name(iso)
+    else:
+        feature["properties"]["litlas_country_name"] = "Unknown"
+
 folium.GeoJson(
     geojson,
     name="Countries explored",
@@ -107,6 +115,12 @@ folium.GeoJson(
         "weight": 0.5,
         "opacity": 1,
     },
+    tooltip=folium.GeoJsonTooltip(
+        fields=["litlas_country_name"],
+        aliases=[""],
+        labels=False,
+        sticky=True,
+    ),
 ).add_to(m)
 
 # cluster=MarkerCluster(name='Countries',disableClusteringAtZoom=4,showCoverageOnHover=False).add_to(m)
