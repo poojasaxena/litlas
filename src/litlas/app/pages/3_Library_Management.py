@@ -141,7 +141,7 @@ st.markdown(
         background: #F7F0E4 !important;
         border: 1px solid #D4C1A7 !important;
         border-radius: 10px !important;
-        padding: 16px 20px 28px !important;
+        padding: 16px 20px 8px !important;
     }
 
 
@@ -196,6 +196,26 @@ st.markdown(
     [data-testid="stNumberInputContainer"]:focus-within {
         border-color: #A47B43 !important;
         box-shadow: 0 0 0 1px #A47B43 !important;
+    }
+
+    /* Date read — match the other Litlas fields */
+    .st-key-add_book_date [data-testid="stDateInputField"] {
+        background: #FFFCF7 !important;
+        color: #58412F !important;
+    }
+
+    .st-key-add_book_date [data-testid="stDateInputRootElement"],
+    .st-key-add_book_date .react-aria-DateField [role="group"],
+    .st-key-add_book_date .react-aria-DatePicker [role="group"] {
+        background: #FFFCF7 !important;
+        border: 1px solid #D4C1A7 !important;
+        border-radius: 7px !important;
+        box-shadow: none !important;
+    }
+
+    .st-key-add_book_date input {
+        background: transparent !important;
+        color: #58412F !important;
     }
 
     /* All text inputs — vintage ivory styling */

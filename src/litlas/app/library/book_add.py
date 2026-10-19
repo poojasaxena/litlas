@@ -3,6 +3,7 @@
 
 import streamlit as st
 import pycountry
+from html import escape
 
 from litlas.database.connection import connect
 from litlas.database.repository import add_book
@@ -137,21 +138,39 @@ def render_add_book():
             )
 
         with col6:
-            include_date = st.checkbox(
-                "Include reading date",
-                value=False,
-            )
-
-            date_read = (
-                st.date_input("Date read", value="today")
-                if include_date
-                else None
+            date_read = st.date_input(
+                "Date read (optional)",
+                value=None,
+                max_value="today",
+                format="DD.MM.YYYY",
+                key="add_book_date",
             )
 
         submitted = st.form_submit_button(
             "Add to Litlas",
             type="secondary",
             use_container_width=True,
+        )
+
+    if "added_book" in st.session_state:
+        added_title = st.session_state.pop("added_book")
+
+        st.markdown(
+            f"""
+            <div style="
+                position:relative;
+                margin-top:-45px;
+                margin-left:calc(50% + 115px);
+                margin-bottom:25px;
+                color:#6E4B3A;
+                font-family:Georgia,serif;
+                font-size:14px;
+                white-space:nowrap;
+            ">
+                ✓ Added: {escape(added_title)}
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
 
     # -------------------------------------------------
@@ -204,9 +223,4 @@ def render_add_book():
         else:
             st.session_state["added_book"] = title.strip()
             st.rerun()
-
-    if "added_book" in st.session_state:
-        st.success(
-            f"Added to Litlas: {st.session_state.pop('added_book')}"
-        )
 
