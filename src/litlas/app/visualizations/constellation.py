@@ -448,7 +448,10 @@ def build_constellation_figure(
         # Constellation heading with curved ornament
         # -------------------------------------------------
 
-        title_y = min(0.93, cy + (0.15 if n > 1 else 0.13), )
+        title_y = min(
+            0.93,
+            cy + (0.23 if name == "Ideas & Society" else (0.15 if n > 1 else 0.13)),
+        )
 
         # Group title
         fig.add_annotation(
