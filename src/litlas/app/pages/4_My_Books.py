@@ -113,6 +113,10 @@ st.markdown(
         height: 385px;
         object-fit: cover;
         margin: 0;
+
+        box-shadow:
+            12px 12px 12px rgba(35, 30, 25, 0.30),
+            3px 4px 3px rgba(35, 30, 25, 0.22);
     }
 
     @media (max-width: 650px) {
@@ -125,7 +129,7 @@ st.markdown(
     /* Slightly quieter titles */
     .litlas-gallery-title {
         font-size: 1.2rem;
-        margin: 10px 0 4px;
+        margin: 28px 0 4px;
     }
     </style>
     """,
@@ -177,85 +181,3 @@ st.markdown(
     + "</div>",
     unsafe_allow_html=True,
 )
-
-# gallery_html = []
-
-# for book in BOOKS:
-#     cover_path = Path(book["cover"])
-#     encoded = base64.b64encode(cover_path.read_bytes()).decode("ascii")
-#     mime = "image/png" if cover_path.suffix.lower() == ".png" else "image/jpeg"
-
-#     gallery_html.append(
-#         f"""
-#         <div class="litlas-gallery-book">
-#             <img
-#                 class="litlas-gallery-image"
-#                 src="data:{mime};base64,{encoded}"
-#                 alt="{escape(book['title'], quote=True)}"
-#             >
-#             <div class="litlas-gallery-title">
-#                 {escape(book["title"])}
-#             </div>
-#             <div class="litlas-gallery-meta">
-#                 {escape(book["language"])} · Poetry
-#             </div>
-#             <a class="litlas-gallery-link"
-#                href="{escape(book["url"], quote=True)}"
-#                target="_blank"
-#                rel="noopener noreferrer">
-#                 View published edition ↗
-#             </a>
-#         </div>
-#         """
-#     )
-
-# st.markdown(
-#     '<div class="litlas-gallery-grid">'
-#     + "".join(gallery_html)
-#     + "</div>",
-#     unsafe_allow_html=True,
-# )
-
-# left_margin, gallery, right_margin = st.columns(
-#     [1, 1.25, 1],
-#     gap="small",
-# )
-
-# with gallery:
-#     book_columns = st.columns(2, gap="large")
-
-#     for column, book in zip(book_columns, BOOKS):
-#         with column:
-#             cover_path = Path(book["cover"])
-#             encoded = base64.b64encode(cover_path.read_bytes()).decode("ascii")
-#             mime = "image/png" if cover_path.suffix.lower() == ".png" else "image/jpeg"
-
-#             st.markdown(
-#                 f"""
-#                 <div class="litlas-book-cover">
-#                     <img
-#                         src="data:{mime};base64,{encoded}"
-#                         alt="{escape(book['title'], quote=True)}"
-#                     >
-#                 </div>
-#                 """,
-#                 unsafe_allow_html=True,
-#             )
-#             st.markdown(
-#                 f"""
-#                 <div class="litlas-gallery-title">
-#                     {escape(book["title"])}
-#                 </div>
-#                 <div class="litlas-gallery-meta">
-#                     {escape(book["language"])} · Poetry
-#                 </div>
-#                 <a class="litlas-gallery-link"
-#                    href="{escape(book["url"], quote=True)}"
-#                    target="_blank"
-#                    rel="noopener noreferrer">
-#                     View published edition ↗
-#                 </a>
-#                 """,
-#                 unsafe_allow_html=True,
-#             )
-

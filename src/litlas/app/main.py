@@ -3,6 +3,7 @@
 import pandas as pd
 import streamlit as st
 import folium
+from branca.element import Element
 
 from streamlit_folium import st_folium
 from litlas.processing.paths import load_config
@@ -166,6 +167,69 @@ add_unexplored_lands_control(
     m,
     read_countries,
 )
+
+# -------------------------------------------------
+# Literary Journey — compact map information panel
+# -------------------------------------------------
+
+TOTAL_COUNTRIES = 195
+
+explored_count = len(read_countries)
+unexplored_count = max(0, TOTAL_COUNTRIES - explored_count)
+
+journey_html = f"""
+<div style="
+    position:fixed;
+    bottom:2px;
+    right:2px;
+    width:160px;
+    padding:6px 8px;
+    background:rgba(250,247,241,0.93);
+    border:1px solid #D4C1A7;
+    border-radius:7px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.12);
+    z-index:1000;
+    font-family:Georgia,serif;
+    color:#58412F;
+    pointer-events:none;
+">
+    <div style="
+        font-size:14px;
+        font-style:italic;
+        text-align:center;
+        margin-bottom:0;
+    ">
+        My Literary Journey
+    </div>
+
+    <div style="
+        display:flex;
+        justify-content:space-around;
+        text-align:center;
+    ">
+        <div>
+            <div style="font-size:23px;color:#8B634B;">
+                {explored_count}
+            </div>
+            <div style="font-size:11px;color:#81776E;">
+                Explored
+            </div>
+        </div>
+
+        <div>
+            <div style="font-size:23px;color:#8B634B;">
+                {unexplored_count}
+            </div>
+            <div style="font-size:11px;color:#81776E;">
+                Awaiting
+            </div>
+        </div>
+    </div>
+
+</div>
+"""
+
+m.get_root().html.add_child(Element(journey_html))
 
 st_folium(
     m,
