@@ -390,7 +390,7 @@ def page_milestone(label, value, title="", author=""):
             background:#F5EFE4;
             border:1px solid #D4C1A7;
             border-radius:7px;
-            padding:9px 15px;
+            padding:4px 6px;
             font-family:Georgia,serif;
             color:#58412F;
         ">
@@ -665,10 +665,10 @@ with country_col:
                 ),
                 text=top_density["works"],
                 textposition="outside",
-                hovertemplate=(
-                    "<b>%{y}</b><br>"
-                    "Unique works: %{x}<extra></extra>"
-                ),
+                # hovertemplate=(
+                #     "<b>%{y}</b><br>"
+                #     "Unique works: %{x}<extra></extra>"
+                # ),
             )
         )
 
@@ -683,7 +683,7 @@ with country_col:
                 color="#58412F",
             ),
             xaxis=dict(
-                title="Unique works",
+                #title="Unique works",
                 showgrid=True,
                 gridcolor="#DDD2C2",
                 zeroline=False,
@@ -720,7 +720,7 @@ with ratings_col:
     if ratings.empty:
         st.info("No rated books available yet.")
     else:
-        fig_ratings = build_rating_spines_figure(ratings)
+        fig_ratings = build_rating_spines_figure(ratings, image_height=400)
 
         st.plotly_chart(
             fig_ratings,

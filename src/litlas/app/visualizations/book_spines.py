@@ -170,7 +170,7 @@ def build_year_spines_figure(history: pd.DataFrame, spine_width: float = SPINE_W
     return figure
 
 
-def build_rating_spines_figure(ratings: pd.DataFrame) -> go.Figure:
+def build_rating_spines_figure(ratings: pd.DataFrame, image_height=420) -> go.Figure:
     """Render rating counts as antique book-spine bars.
 
     The underlying invisible bar trace keeps hover and value labels accurate.
@@ -259,7 +259,7 @@ def build_rating_spines_figure(ratings: pd.DataFrame) -> go.Figure:
     ymax = max(counts) if counts else 1
 
     figure.update_layout(
-        height=CHART_HEIGHT,
+        height=image_height,
         margin=dict(l=40, r=10, t=30, b=45),
         paper_bgcolor="#FAF7F1",
         plot_bgcolor="#EFE3D0",
