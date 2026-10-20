@@ -3,6 +3,7 @@
 from copy import deepcopy
 from math import log1p
 
+from branca.element import Element
 import folium
 import streamlit as st
 from branca.colormap import LinearColormap
@@ -31,16 +32,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 apply_page_style()
-# st.markdown(
-#     """
-#     <style>
-#     .st-key-litlas_sticky_header .litlas-logo {
-#         top: -10px !important;
-#     }
-#     </style>
-#     """,
-#     unsafe_allow_html=True,
-# )
+
 
 render_page_header(
     "Reading Density",
@@ -174,6 +166,52 @@ folium.GeoJsonPopup(
     ),
 ).add_to(layer)
 
+# Compact reading-density legend inside the map
+legend_counts = [1, 5, 15, 50, max_count]
+
+legend_segments = "".join(
+    f'<div style="flex:1;background:{colors(log1p(count))};"></div>'
+    for count in legend_counts
+)
+
+legend_labels = "".join(
+    f"<span>{count}</span>"
+    for count in legend_counts
+)
+
+legend_html = f"""
+<div style="
+    position:fixed;
+    bottom:2px;
+    right:2px;
+    width:180px;
+    padding:6px 8px;
+    background:rgba(250,247,241,0.93);
+    border:1px solid #D4C1A7;
+    border-radius:7px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.12);
+    z-index:1000;
+    font-family:Georgia,serif;
+    color:#58412F;
+">
+    <div style="font-size:13px;margin-bottom:7px;">
+        Reading density
+    </div>
+    <div style="display:flex;height:12px;">
+        {legend_segments}
+    </div>
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        font-size:11px;
+        margin-top:4px;
+    ">
+        {legend_labels}
+    </div>
+</div>
+"""
+
+m.get_root().html.add_child(Element(legend_html))
 
 st_folium(
     m,
@@ -183,33 +221,3 @@ st_folium(
     key="reading_density",
 )
 
-st.markdown("**Reading density — unique works**")
-
-# Display the legend using actual work counts, not logarithmic values.
-legend_counts = [1, 5, 15, 50, max_count]
-
-legend_html = """
-<div style="font-family: sans-serif; max-width: 600px;">
-    <div style="display: flex; height: 18px;">
-"""
-
-for count in legend_counts:
-    legend_html += f'<div style="flex:1; background:{colors(log1p(count))};"></div>'
-
-legend_html += """
-    </div>
-    <div style="display:flex; justify-content:space-between;
-                font-size:12px; margin-top:5px;">
-"""
-
-for count in legend_counts:
-    legend_html += f"<span>{count}</span>"
-
-legend_html += "</div></div>"
-
-st.components.v1.html(legend_html, height=55)
-st.caption(
-    f"{len(density)} countries represented · "
-    "Unique works counted once per country · "
-    "Colour intensity uses a logarithmic scale."
-)
