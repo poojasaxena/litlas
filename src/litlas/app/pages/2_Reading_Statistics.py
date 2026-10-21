@@ -928,6 +928,7 @@ with highlights_col:
 st.divider()
 st.subheader("My Literary Constellation")
 
+
 try:
     constellation_df = load_constellation_books(
         default_constellation_csv(),
@@ -947,7 +948,6 @@ try:
 
 except (ValueError, FileNotFoundError) as exc:
     st.warning(f"Constellation could not be loaded: {exc}")
-
 
 # ---------------------------------------------------------
 # My Literary Book of Honour

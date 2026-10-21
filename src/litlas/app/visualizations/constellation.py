@@ -6,6 +6,7 @@ from pathlib import Path
 
 from io import BytesIO
 from PIL import Image
+from functools import lru_cache
 import numpy as np
 from PIL import ImageFilter
 import pandas as pd
@@ -154,6 +155,26 @@ def _starburst_source(
 
     encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
     return f"data:image/png;base64,{encoded}"
+
+@lru_cache(maxsize=32)
+def _cached_starburst_sources(
+    image_path: str,
+    color: str,
+    significance: str,
+) -> tuple[str, str]:
+    with Image.open(image_path) as image:
+        original = image.convert("RGBA")
+        original.thumbnail((160, 160), Image.Resampling.LANCZOS)
+
+    sharp_source = _starburst_source(
+        original,
+        color,
+        significance,
+    )
+
+    glow_source = _starburst_glow(sharp_source)
+
+    return sharp_source, glow_source
 
 def load_constellation_books(
     csv_path: str | Path,
@@ -348,9 +369,6 @@ def build_constellation_figure(
             f"Starburst asset not found: {STARBURST_PATH}"
         )
 
-    with Image.open(STARBURST_PATH) as img:
-        original_star = img.convert("RGBA")
-
     # Create one colour variant per theme and significance.
     # Adding another book never requires another image file.
     star_sources = {}
@@ -533,15 +551,10 @@ def build_constellation_figure(
             source_key = (color, significance)
 
             if source_key not in star_sources:
-                sharp_source = _starburst_source(
-                    original_star,
+                star_sources[source_key] = _cached_starburst_sources(
+                    str(STARBURST_PATH),
                     color,
                     significance,
-                )
-
-                star_sources[source_key] = (
-                    sharp_source,
-                    _starburst_glow(sharp_source),
                 )
 
             starburst_source, glow_source = star_sources[source_key]
