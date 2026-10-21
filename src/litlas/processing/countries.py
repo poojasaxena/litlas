@@ -3,12 +3,18 @@
 litlas.processing.countries
 Shared country names for Litlas.
 """
+import json
+from pathlib import Path
 import country_converter as coco
 from functools import lru_cache
 import pycountry
 import requests
 import streamlit as st
 from countryinfo import CountryInfo
+from litlas.processing.paths import (
+    COUNTRY_BOUNDARIES_GEOJSON,
+    COUNTRY_COORDINATES_JSON,
+)
 
 COUNTRY_BOUNDARIES_URL = (
     "https://raw.githubusercontent.com/"
@@ -140,13 +146,26 @@ def sovereign_country_codes() -> frozenset[str]:
 
     return frozenset(sovereign)
 
+@lru_cache(maxsize=1)
+def _load_country_coordinates() -> dict:
+    """Load precomputed country coordinates."""
+    return json.loads(
+        COUNTRY_COORDINATES_JSON.read_text(encoding="utf-8")
+    )
 
+@lru_cache(maxsize=256)
 def country_coordinates(iso3: str) -> list[float] | None:
     """Return approximate map-marker coordinates for a country."""
 
     if iso3 in SPECIAL_COORDINATES:
         return SPECIAL_COORDINATES[iso3]
 
+    coordinates = _load_country_coordinates()
+
+    if iso3 in coordinates:
+        return coordinates[iso3]
+
+    # Existing CountryInfo fallback remains below.
     country = pycountry.countries.get(alpha_3=iso3)
     if country is None:
         return None
@@ -179,3 +198,10 @@ def load_country_boundaries() -> dict:
     response = requests.get(COUNTRY_BOUNDARIES_URL, timeout=30)
     response.raise_for_status()
     return response.json()
+
+@st.cache_data(show_spinner=False)
+def load_simplified_country_boundaries() -> dict:
+    """Load optimized country boundaries."""
+    return json.loads(
+        COUNTRY_BOUNDARIES_GEOJSON.read_text(encoding="utf-8")
+    )

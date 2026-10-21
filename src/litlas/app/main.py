@@ -20,11 +20,12 @@ from litlas.app.map_style import (
 from litlas.processing.countries import (
     country_name,
     country_coordinates,
-    load_country_boundaries,
+    load_simplified_country_boundaries,
 )
 from litlas.app.visualizations.unexplored_lands import (
     add_unexplored_lands_control,
 )
+
 
 ## Configuration constants for the map and flag display
 config = load_config()
@@ -43,18 +44,6 @@ render_page_header(
     illustration_size=220,
 )
 
-# st.page_link(
-#     "pages/1_Reading_Density.py",
-#     label="🌍 Explore reading density",
-# )
-# st.page_link(
-#     "pages/2_Author_Review.py",
-#     label="📚 Review author birthplaces",
-# )
-# st.page_link(
-#     "pages/3_Reading_Statistics.py",
-#     label="📊 Explore reading statistics",
-# )
 
 # SQLite requires a local database file; PostgreSQL does not.
 if not is_postgres():
@@ -92,7 +81,7 @@ read_countries = set(mapped["ISO3"].unique())
 
 
 ## Load country boundaries for the map
-geojson = load_country_boundaries()
+geojson = load_simplified_country_boundaries()
 
 for feature in geojson["features"]:
     iso = feature["properties"].get("ISO3166-1-Alpha-3")
@@ -101,6 +90,8 @@ for feature in geojson["features"]:
         feature["properties"]["litlas_country_name"] = country_name(iso)
     else:
         feature["properties"]["litlas_country_name"] = "Unknown"
+
+
 
 folium.GeoJson(
     geojson,
@@ -124,11 +115,14 @@ folium.GeoJson(
     ),
 ).add_to(m)
 
-# cluster=MarkerCluster(name='Countries',disableClusteringAtZoom=4,showCoverageOnHover=False).add_to(m)
-placed=0
-for iso, group in mapped.groupby('ISO3',sort=True):
+placed = 0
+
+for iso, group in mapped.groupby("ISO3", sort=True):
     position = country_coordinates(iso)
-    if not position: continue
+
+    if not position:
+        continue
+
     name = country_name(iso)
 
     html = f"""
@@ -145,6 +139,8 @@ for iso, group in mapped.groupby('ISO3',sort=True):
     </div>
     """
 
+    popup_content = pop_html(group, name, iso)
+
     folium.Marker(
         location=position,
         icon=folium.DivIcon(
@@ -154,12 +150,15 @@ for iso, group in mapped.groupby('ISO3',sort=True):
             icon_anchor=(10, 10),
         ),
         popup=folium.Popup(
-            pop_html(group, name, iso),
+            popup_content,
             max_width=400,
         ),
         tooltip=name,
     ).add_to(m)
-    placed+=1
+
+    placed += 1
+
+
 
 folium.LayerControl(position="topright").add_to(m)
 
@@ -231,6 +230,8 @@ journey_html = f"""
 
 m.get_root().html.add_child(Element(journey_html))
 
+
+
 st_folium(
     m,
     height=MAP_HEIGHT,
@@ -238,6 +239,7 @@ st_folium(
     returned_objects=[],
     key="literarymap",
 )
+
 
 if mapped.empty:
     st.info('No author birth countries assigned yet. Run `litlas-prepare` in your terminal, then refresh this page.')

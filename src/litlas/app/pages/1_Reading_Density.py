@@ -22,23 +22,7 @@ from litlas.app.map_style import (
     BORDER_COLOR,
     DENSITY_COLORS,
 )
-from litlas.processing.countries import country_name
-from litlas.processing.countries import country_name, load_country_boundaries
-import time
-
-_perf_start = time.perf_counter()
-_perf_last = _perf_start
-
-def perf(label):
-    global _perf_last
-    now = time.perf_counter()
-    print(
-        f"[DENSITY] {label:<30} "
-        f"step={now - _perf_last:.3f}s  "
-        f"total={now - _perf_start:.3f}s",
-        flush=True,
-    )
-    _perf_last = now
+from litlas.processing.countries import load_simplified_country_boundaries, country_name, load_country_boundaries
 
 st.set_page_config(
     page_title="Reading Density · Litlas",
@@ -69,7 +53,6 @@ def load_density_data(backend):
 
 
 density, books = load_density_data(backend_name())
-perf("Database data loaded")
 
 if density.empty:
     st.info("No countries with mapped literary works yet.")
@@ -121,17 +104,7 @@ def country_popup(country_books, country_name, count):
         + "</div>"
     )
 
-
-@st.cache_data(show_spinner=False)
-def load_simplified_boundaries():
-    path = (
-        Path(__file__).resolve().parents[2]
-        / "data"
-        / "countries_simplified.geojson"
-    )
-    return json.loads(path.read_text(encoding="utf-8"))
-geojson = load_simplified_boundaries()
-perf("Country boundaries loaded")
+geojson = load_simplified_country_boundaries()
 
 books_by_country = {iso: group for iso, group in books.groupby("ISO3")}
 
@@ -149,6 +122,8 @@ for feature in geojson["features"]:
 
     props["litlas_country"] = name
     props["litlas_works"] = count
+    props["litlas_country_name"] = name
+
     if count > 0 and iso in books_by_country:
         props["litlas_popup"] = pop_html(
             books_by_country[iso],
@@ -160,10 +135,8 @@ for feature in geojson["features"]:
             f"<strong>{escape(str(name))}</strong>" "<div>No mapped works</div>"
         )
 
-perf("Country GeoJSON processed")
 
 m = create_litlas_map()
-perf("Base map created")
 
 def style_country(feature):
     count = feature["properties"]["litlas_works"]
@@ -185,8 +158,13 @@ layer = folium.GeoJson(
     geojson,
     name="Reading density",
     style_function=style_country,
+    tooltip=folium.GeoJsonTooltip(
+        fields=["litlas_country"],
+        aliases=[""],
+        labels=False,
+        sticky=True,
+    ),
 ).add_to(m)
-perf("Folium GeoJSON layer created")
 
 folium.GeoJsonPopup(
     fields=["litlas_popup"],
@@ -248,21 +226,7 @@ legend_html = f"""
 
 m.get_root().html.add_child(Element(legend_html))
 
-perf("Before st_folium")
 
-# Temporary Folium performance diagnostics
-render_start = time.perf_counter()
-render_seconds = time.perf_counter() - render_start
-
-print(
-    f"[DENSITY] Folium HTML render: {render_seconds:.3f}s",
-    flush=True,
-)
-
-print(
-    f"[DENSITY] GeoJSON features: {len(geojson['features'])}",
-    flush=True,
-)
 st_folium(
     m,
     height=height,
@@ -270,5 +234,4 @@ st_folium(
     returned_objects=[],
     key="reading_density",
 )
-perf("After st_folium")
 

@@ -13,6 +13,10 @@ CONFIG_PATH = PROJECT_ROOT / "config.toml"
 
 DATA_DIR = PROJECT_ROOT / "data"
 
+GEOGRAPHY_DIR = DATA_DIR / "geography"
+COUNTRY_BOUNDARIES_GEOJSON = GEOGRAPHY_DIR / "countries_simplified.geojson"
+COUNTRY_COORDINATES_JSON = GEOGRAPHY_DIR / "country_coordinates.json"
+
 ASSETS_DIR = DATA_DIR / "assets"
 BOOK_SPINES_DIR = ASSETS_DIR / "book_spines"
 ILLUSTRATIONS_DIR = ASSETS_DIR / "illustrations"
@@ -37,6 +41,14 @@ def load_config() -> dict:
     with CONFIG_PATH.open("rb") as file:
         return tomllib.load(file)
 
+def resolve_project_path(value: str) -> Path:
+    """Resolve absolute or project-relative filesystem paths."""
+    path = Path(value).expanduser()
+
+    if not path.is_absolute():
+        path = PROJECT_ROOT / path
+
+    return path.resolve()
 
 def library_dir() -> Path:
     config = load_config()
@@ -95,7 +107,7 @@ def constellation_background_path() -> Path | None:
     if not configured:
         return None
 
-    return Path(configured).expanduser()
+    return resolve_project_path(configured)
 
 def illustration_path(name: str) -> Path:
     """Resolve a configured illustration by its name."""
@@ -108,4 +120,4 @@ def illustration_path(name: str) -> Path:
             f"Illustration '{name}' is not defined in {CONFIG_PATH}"
         ) from exc
 
-    return Path(configured).expanduser()
+    return resolve_project_path(configured)
