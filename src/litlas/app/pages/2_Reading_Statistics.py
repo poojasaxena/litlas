@@ -19,13 +19,14 @@ from litlas.app.visualizations.constellation import (
     load_constellation_books,
     build_constellation_figure,
 )
-
+from litlas.app.visualizations.book_of_honour import render_book_of_honour
 from litlas.app.visualizations.wanderlust import build_wanderlust_figure
 
 from litlas.db_backend import get_repository
 
 repository = get_repository()
 
+get_favourite_authors = repository.get_favourite_authors
 get_country_reading_density = repository.get_country_reading_density
 get_reading_summary = repository.get_reading_summary
 get_rating_distribution = repository.get_rating_distribution
@@ -675,7 +676,7 @@ with country_col:
         )
 
         fig.update_layout(
-            height=380,
+            height=400,
             margin=dict(l=20, r=40, t=20, b=40),
             paper_bgcolor="#FAF7F1",
             plot_bgcolor="#F5EFE4",
@@ -722,7 +723,7 @@ with ratings_col:
     if ratings.empty:
         st.info("No rated books available yet.")
     else:
-        fig_ratings = build_rating_spines_figure(ratings, image_height=380)
+        fig_ratings = build_rating_spines_figure(ratings, image_height=400)
 
         st.plotly_chart(
             fig_ratings,
@@ -946,6 +947,19 @@ try:
 
 except (ValueError, FileNotFoundError) as exc:
     st.warning(f"Constellation could not be loaded: {exc}")
+
+
+# ---------------------------------------------------------
+# My Literary Book of Honour
+# ---------------------------------------------------------
+
+st.divider()
+
+st.subheader("My Literary Book of Honour")
+
+favourite_authors = get_favourite_authors()
+
+render_book_of_honour(favourite_authors)
 
 # ---------------------------------------------------------
 # Row 3: Author statistics
