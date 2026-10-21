@@ -429,7 +429,7 @@ def add_book(
     if not title:
         raise ValueError("Book title cannot be empty.")
 
-    if rating not in (0, 1, 2, 3, 3.5, 4, 4.5, 5):
+    if rating not in (0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5):
         raise ValueError("Invalid rating.")
 
     if pages is not None and pages <= 0:
