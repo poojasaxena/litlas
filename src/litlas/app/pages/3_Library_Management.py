@@ -36,6 +36,19 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+if not st.user.is_logged_in:
+    st.button("Log in with Google", on_click=st.login)
+    st.stop()
+
+admin_email = st.secrets["admin_email"].strip().casefold()
+user_email = str(st.user.get("email", "")).strip().casefold()
+email_verified = st.user.get("email_verified") is True
+
+if not email_verified or user_email != admin_email:
+    st.error("Library Management is restricted to the owner.")
+    st.button("Log out", on_click=st.logout)
+    st.stop()
+    
 apply_page_style()
 
 render_page_header(

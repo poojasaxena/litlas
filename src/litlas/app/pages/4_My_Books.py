@@ -25,7 +25,7 @@ render_page_header(
     "Ink & Verse",
     "A little corner of my literary world, written in my own words...",
     illustration="book_author",
-    illustration_size=220,
+    illustration_size=200,
 )
 
 # For now, publication information stays with this small presentation page.
