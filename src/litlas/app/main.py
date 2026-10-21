@@ -9,7 +9,7 @@ from streamlit_folium import st_folium
 from litlas.processing.paths import load_config
 from litlas.app.popups import flag, pop_html
 from litlas.database.connection import database_path
-from litlas.database.repository import load_read_books
+from litlas.db_backend import get_repository, is_postgres
 from litlas.app.ui import apply_page_style, render_page_header
 from litlas.app.map_style import (
     create_litlas_map,
@@ -56,18 +56,18 @@ render_page_header(
 #     label="📊 Explore reading statistics",
 # )
 
-# Load the literary map data from SQLite.
-source = database_path()
+# SQLite requires a local database file; PostgreSQL does not.
+if not is_postgres():
+    source = database_path()
 
-if not source.is_file():
-    st.warning("Litlas database not found. Initialise and import the database first.")
-    st.stop()
-
+    if not source.is_file():
+        st.warning("Litlas database not found. Initialise and import the database first.")
+        st.stop()
 
 try:
-    books = load_read_books()
+    books = get_repository().load_read_books()
 except Exception as exc:
-    st.error(f"Could not read Litlas database: {exc}")
+    st.error("Could not read the Litlas database.")
     st.stop()
 
 books["My Rating"] = pd.to_numeric(books["My Rating"], errors="coerce").fillna(0)

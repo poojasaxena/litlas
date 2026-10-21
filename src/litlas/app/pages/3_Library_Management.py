@@ -7,7 +7,11 @@ import streamlit as st
 import base64
 from pathlib import Path
 import pandas as pd
+from textwrap import dedent
+
 from html import escape
+from litlas.db_backend import is_postgres
+
 from litlas.app.library.author_favourites import (
     render_author_favourites,
     render_favourite_collection,
@@ -36,19 +40,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-if not st.user.is_logged_in:
-    st.button("Log in with Google", on_click=st.login)
-    st.stop()
 
-admin_email = st.secrets["admin_email"].strip().casefold()
-user_email = str(st.user.get("email", "")).strip().casefold()
-email_verified = st.user.get("email_verified") is True
-
-if not email_verified or user_email != admin_email:
-    st.error("Library Management is restricted to the owner.")
-    st.button("Log out", on_click=st.logout)
-    st.stop()
-    
 apply_page_style()
 
 render_page_header(
@@ -61,6 +53,62 @@ render_page_header(
     heading_gap=20,
 )
 
+# Local SQLite: preserve existing Library Management access.
+# Cloud PostgreSQL: require authenticated owner access.
+if is_postgres():
+    auth_config = st.secrets.get("auth", {})
+    admin_email = str(st.secrets.get("admin_email", "")).strip().casefold()
+
+    if not auth_config or not admin_email:
+        st.error("Library Management authentication is not configured.")
+        st.stop()
+
+    if not getattr(st.user, "is_logged_in", False):
+        st.markdown(
+            dedent("""
+            <div style="font-family: Georgia, serif; color: #58412F; margin-top: 20px;">
+                <div style="font-size: 26px; font-weight: bold; margin-bottom: 18px;">
+                    Owner's Library
+                </div>
+                <p style="font-size: 17px; line-height: 1.7; color: #8B634B;">
+                    This section is reserved for the owner of Litlas.
+                    Books, authors, ratings and literary collections are managed here.
+                </p>
+                <p style="font-size: 14px; color: #81776E; margin-top: 22px;">
+                    🔒 Owner authentication required.
+                </p>
+            </div>
+            """),
+            unsafe_allow_html=True,
+        )
+
+        st.button("Log in with Google", on_click=st.login)
+        st.stop()
+
+    user_email = str(st.user.get("email", "")).strip().casefold()
+    email_verified = st.user.get("email_verified") is True
+
+    if not email_verified or user_email != admin_email:
+        st.markdown(
+            dedent("""
+            <div style="font-family: Georgia, serif; color: #58412F; margin-top: 20px;">
+                <div style="font-size: 26px; font-weight: bold; margin-bottom: 18px;">
+                    Owner's Library
+                </div>
+                <p style="font-size: 17px; line-height: 1.7; color: #8B634B;">
+                    Library Management is reserved for the owner of Litlas.
+                    This account does not have permission to manage the literary collection.
+                </p>
+                <p style="font-size: 14px; color: #81776E; margin-top: 22px;">
+                    🔒 Owner access only.
+                </p>
+            </div>
+            """),
+            unsafe_allow_html=True,
+        )
+
+        st.button("Log out", on_click=st.logout)
+        st.stop()
 
 # ---------------------------------------------------------
 # Library Management tools
