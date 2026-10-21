@@ -4,20 +4,21 @@
 from difflib import SequenceMatcher
 import pycountry
 from html import escape
-from litlas.database.repository import (
-    add_author,
-    update_author_details,
-    delete_author,
-    get_author_dependencies,
-)
+import streamlit as st
+
 from litlas.processing.countries import (
     COUNTRY_DISPLAY_NAMES,
     country_name,
 )
-import streamlit as st
+from litlas.db_backend import connect, is_postgres
+from litlas.db_backend import get_repository
 
-from litlas.database.connection import connect
+repository = get_repository()
 
+add_author = repository.add_author
+update_author_details = repository.update_author_details
+delete_author = repository.delete_author
+get_author_dependencies = repository.get_author_dependencies
 
 def normalize_author_name(name: str) -> str:
     """Ignore differences in spacing and capitalization."""
@@ -37,7 +38,7 @@ def find_author_matches(name: str):
             """
             SELECT id, name, country, iso3
             FROM authors
-            ORDER BY name COLLATE NOCASE
+            ORDER BY LOWER(name), name
             """
         ).fetchall()
 
@@ -146,12 +147,15 @@ def render_author_details():
     # EXISTING AUTHOR
     # --------------------------------------------------
     if selected_id is not None:
+
+        placeholder = "%s" if is_postgres() else "?"
+
         with connect() as db:
             author = db.execute(
-                """
+                f"""
                 SELECT id, name, country, iso3
                 FROM authors
-                WHERE id = ?
+                WHERE id = {placeholder}
                 """,
                 (selected_id,),
             ).fetchone()

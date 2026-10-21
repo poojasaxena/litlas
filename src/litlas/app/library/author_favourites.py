@@ -3,11 +3,13 @@
 
 import streamlit as st
 
-from litlas.database.repository import (
-    get_authors_for_favourites,
-    set_author_favourite,
-    get_favourite_authors,
-)
+from litlas.db_backend import get_repository
+
+repository = get_repository()
+
+get_authors_for_favourites = repository.get_authors_for_favourites
+set_author_favourite = repository.set_author_favourite
+get_favourite_authors = repository.get_favourite_authors
 
 FAVOURITE_TIERS = {
     0: "Not selected",

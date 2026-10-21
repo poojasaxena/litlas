@@ -5,10 +5,12 @@ import pandas as pd
 import streamlit as st
 from html import escape
 
-from litlas.database.repository import (
-    get_editable_books,
-    update_book_details,
-)
+from litlas.db_backend import get_repository
+
+repository = get_repository()
+
+get_editable_books = repository.get_editable_books
+update_book_details = repository.update_book_details
 
 
 RATING_OPTIONS = {

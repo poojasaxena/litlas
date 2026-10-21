@@ -5,18 +5,19 @@ import streamlit as st
 import pycountry
 from html import escape
 
-from litlas.database.connection import connect
-from litlas.database.repository import add_book
 from litlas.app.library.book_editor import RATING_OPTIONS
 from litlas.app.library.author_details import find_author_matches
 from litlas.processing.countries import COUNTRY_DISPLAY_NAMES, country_name
+from litlas.db_backend import connect, get_repository
+
+add_book = get_repository().add_book
 
 def render_add_book():
     """Render the Add a Book workspace."""
 
     with connect() as db:
         authors = db.execute(
-            "SELECT id, name FROM authors ORDER BY name COLLATE NOCASE"
+            "SELECT id, name FROM authors ORDER BY LOWER(name), name"
         ).fetchall()
 
     author_options = {
