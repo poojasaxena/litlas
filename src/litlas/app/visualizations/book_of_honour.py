@@ -4,6 +4,9 @@ from html import escape
 
 import streamlit as st
 from textwrap import dedent
+import base64
+from litlas.processing.paths import ILLUSTRATIONS_DIR
+from litlas.processing.paths import HONOUR_BOOK_BACKGROUND
 
 def render_book_of_honour(authors):
     """Render the curated literary author collection as an antique open book."""
@@ -38,6 +41,7 @@ def render_book_of_honour(authors):
     favourites_count = len(grouped[2])
     good_count = len(grouped[3])
 
+
     st.markdown(
         """
         <style>
@@ -48,64 +52,57 @@ def render_book_of_honour(authors):
         }
 
         .honour-book {
-            width: min(1250px, 95vw);
+            width: min(1000px, 95vw);
             max-width: none;
             flex-shrink: 0;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            background: #d6c0a0;
-            border: 7px solid #7b5942;
-            border-radius: 14px;
-            box-shadow: 0 10px 24px rgba(65, 40, 22, 0.18);
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
             overflow: hidden;
         }
 
         .honour-page {
             position: relative;
-            background:
-                linear-gradient(
-                    100deg,
-                    #ead9bd 0%,
-                    #faf1df 14%,
-                    #f8efdc 84%,
-                    #e6d3b2 100%
-                );
+            background:transparent;
             color: #58412F;
             font-family: Georgia, serif;
             padding: 18px 22px 20px;
         }
 
         .honour-page {
-            min-height: 400px;
+            min-height: 420px;
             box-sizing: border-box;
         }
                 
         .honour-left-page {
-            border-right: 2px solid #b79b74;
-            box-shadow: inset -10px 0 16px rgba(120, 90, 55, 0.08);
+            border-right: none;
+            box-shadow: none;
         }
 
         .honour-right-page {
-            box-shadow: inset 10px 0 16px rgba(120, 90, 55, 0.08);
+            box-shadow: none;
         }
 
         .honour-page::before {
-            content: "";
-            position: absolute;
-            inset: 10px;
-            border: 1px solid rgba(164, 123, 67, 0.42);
-            pointer-events: none;
+            display: none;
         }
 
         .honour-page-inner {
             position: relative;
             z-index: 1;
-            min-height: 490px;
+            min-height: 480px;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
 
+        /* Align Exceptional with the headings on the right page */
+        .honour-left-page .honour-page-inner {
+            transform: translateY(-30px);
+        }
         .honour-symbol {
             text-align: center;
             font-size: 21px;
@@ -210,9 +207,21 @@ def render_book_of_honour(authors):
         unsafe_allow_html=True,
     )
 
+
+
+    ## Load book background image and encode it as base64
+    book_background = base64.b64encode(
+        HONOUR_BOOK_BACKGROUND.read_bytes()).decode("ascii")
+
+
     html = f"""
     <div class="honour-book-wrap">
-        <div class="honour-book">
+        <div class="honour-book" style="
+            background-image: url('data:image/png;base64,{book_background}');
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+        ">
             <div class="honour-page honour-left-page">
                 <div class="honour-page-inner">
                     <div class="honour-symbol">❦</div>

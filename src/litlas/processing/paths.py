@@ -27,6 +27,7 @@ CONSTELLATION_DIR = DATA_DIR / "constellation"
 CONSTELLATION_BOOKS_CSV = CONSTELLATION_DIR / "constellation_books.csv"
 CONSTELLATION_COLLECTION_CSV = CONSTELLATION_DIR / "constellation_collection.csv"
 
+HONOUR_BOOK_BACKGROUND = ILLUSTRATIONS_DIR / "honour_book_background_transparent.png"
 GALLERY_DIR = ASSETS_DIR / "gallery"
 
 JINDAGI_COVER = GALLERY_DIR / "jindagi_sarakti_rahi_front_cover.png"
