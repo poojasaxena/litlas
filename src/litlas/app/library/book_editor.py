@@ -16,6 +16,7 @@ update_book_details = repository.update_book_details
 RATING_OPTIONS = {
     "Unrated": 0.0,
     "1 ★": 1.0,
+    "1.5 ★": 1.5,
     "2 ★": 2.0,
     "2.5 ★": 2.5,
     "3 ★": 3.0,
