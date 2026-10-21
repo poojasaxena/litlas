@@ -7,18 +7,8 @@ from textwrap import dedent
 import plotly.graph_objects as go
 import streamlit as st
 from pathlib import Path
-import pandas as pd
 from litlas.app.ui import apply_page_style, render_page_header
-from litlas.database.repository import (
-    get_country_reading_density,
-    get_reading_summary,
-    get_rating_distribution,
-    get_books_read_by_year,
-    get_top_authors,
-    get_page_statistics,
-    get_books_for_reading_year,
-    get_yearly_highlights,
-)
+
 from litlas.processing.paths import default_constellation_csv
 from litlas.app.visualizations.book_spines import (
     build_rating_spines_figure,
@@ -29,12 +19,24 @@ from litlas.app.visualizations.constellation import (
     load_constellation_books,
     build_constellation_figure,
 )
-from litlas.database.repository import get_constellation_book_details
-from litlas.database.repository import get_literary_wanderlust
 
-from litlas.app.visualizations.wanderlust import (
-    build_wanderlust_figure,
-)
+from litlas.app.visualizations.wanderlust import build_wanderlust_figure
+
+from litlas.db_backend import get_repository
+
+repository = get_repository()
+
+get_country_reading_density = repository.get_country_reading_density
+get_reading_summary = repository.get_reading_summary
+get_rating_distribution = repository.get_rating_distribution
+get_books_read_by_year = repository.get_books_read_by_year
+get_top_authors = repository.get_top_authors
+get_page_statistics = repository.get_page_statistics
+get_books_for_reading_year = repository.get_books_for_reading_year
+get_yearly_highlights = repository.get_yearly_highlights
+get_constellation_book_details = repository.get_constellation_book_details
+get_literary_wanderlust = repository.get_literary_wanderlust
+
 # ---------------------------------------------------------
 # Page setup
 # ---------------------------------------------------------
@@ -1052,7 +1054,8 @@ with favourite_col:
     favourites = all_authors[
         all_authors["rated_books"] >= 2
     ].copy()
-
+    favourites["avg_rating"] = favourites["avg_rating"].astype(float)
+    
     if favourites.empty:
         st.info("Not enough rated authors yet.")
     else:
