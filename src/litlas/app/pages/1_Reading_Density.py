@@ -8,13 +8,13 @@ import folium
 import streamlit as st
 from branca.colormap import LinearColormap
 from streamlit_folium import st_folium
+import json
+from pathlib import Path
+
 from litlas.app.popups import pop_html
 from litlas.processing.paths import load_config
 from html import escape
-from litlas.database.repository import (
-    get_country_reading_density,
-    load_read_books,
-)
+from litlas.db_backend import get_repository, backend_name
 from litlas.app.ui import apply_page_style, render_page_header
 from litlas.app.map_style import (
     create_litlas_map,
@@ -24,6 +24,21 @@ from litlas.app.map_style import (
 )
 from litlas.processing.countries import country_name
 from litlas.processing.countries import country_name, load_country_boundaries
+import time
+
+_perf_start = time.perf_counter()
+_perf_last = _perf_start
+
+def perf(label):
+    global _perf_last
+    now = time.perf_counter()
+    print(
+        f"[DENSITY] {label:<30} "
+        f"step={now - _perf_last:.3f}s  "
+        f"total={now - _perf_start:.3f}s",
+        flush=True,
+    )
+    _perf_last = now
 
 st.set_page_config(
     page_title="Reading Density · Litlas",
@@ -44,8 +59,17 @@ render_page_header(
     heading_gap=20,
 )
 
-density = get_country_reading_density()
-books = load_read_books()
+@st.cache_data(ttl=60, show_spinner=False)
+def load_density_data(backend):
+    repo = get_repository()
+    return (
+        repo.get_country_reading_density(),
+        repo.load_read_books(),
+    )
+
+
+density, books = load_density_data(backend_name())
+perf("Database data loaded")
 
 if density.empty:
     st.info("No countries with mapped literary works yet.")
@@ -98,7 +122,16 @@ def country_popup(country_books, country_name, count):
     )
 
 
-geojson = deepcopy(load_country_boundaries())
+@st.cache_data(show_spinner=False)
+def load_simplified_boundaries():
+    path = (
+        Path(__file__).resolve().parents[2]
+        / "data"
+        / "countries_simplified.geojson"
+    )
+    return json.loads(path.read_text(encoding="utf-8"))
+geojson = load_simplified_boundaries()
+perf("Country boundaries loaded")
 
 books_by_country = {iso: group for iso, group in books.groupby("ISO3")}
 
@@ -127,8 +160,10 @@ for feature in geojson["features"]:
             f"<strong>{escape(str(name))}</strong>" "<div>No mapped works</div>"
         )
 
-m = create_litlas_map()
+perf("Country GeoJSON processed")
 
+m = create_litlas_map()
+perf("Base map created")
 
 def style_country(feature):
     count = feature["properties"]["litlas_works"]
@@ -151,7 +186,7 @@ layer = folium.GeoJson(
     name="Reading density",
     style_function=style_country,
 ).add_to(m)
-
+perf("Folium GeoJSON layer created")
 
 folium.GeoJsonPopup(
     fields=["litlas_popup"],
@@ -213,6 +248,21 @@ legend_html = f"""
 
 m.get_root().html.add_child(Element(legend_html))
 
+perf("Before st_folium")
+
+# Temporary Folium performance diagnostics
+render_start = time.perf_counter()
+render_seconds = time.perf_counter() - render_start
+
+print(
+    f"[DENSITY] Folium HTML render: {render_seconds:.3f}s",
+    flush=True,
+)
+
+print(
+    f"[DENSITY] GeoJSON features: {len(geojson['features'])}",
+    flush=True,
+)
 st_folium(
     m,
     height=height,
@@ -220,4 +270,5 @@ st_folium(
     returned_objects=[],
     key="reading_density",
 )
+perf("After st_folium")
 
