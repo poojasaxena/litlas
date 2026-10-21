@@ -129,24 +129,6 @@ def render_book_editor_contents(show_heading=True):
     original_rating = float(row["rating"])
     original_pages = row["pages"]
 
-    saved = st.session_state.get("book_editor_saved")
-
-    if saved and saved[0] == selected_id:
-        st.markdown(
-            f"""
-            <div style="
-                color:#6E4B3A;
-                font-family:Georgia,serif;
-                font-size:14px;
-                padding:0;
-                margin:0;
-            ">
-                ✓ Saved: {escape(str(row["display_title"]))}
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
     # -------------------------------------------------
     # Row 2: rating + pages + save
     # -------------------------------------------------
@@ -193,6 +175,28 @@ def render_book_editor_contents(show_heading=True):
                 use_container_width=True,
             )
 
+
+
+    saved = st.session_state.get("book_editor_saved")
+
+    if saved and saved[0] == selected_id:
+        st.markdown(
+            f"""
+            <div style="
+                position:relative;
+                margin-top:-45px;
+                margin-left:calc(50% + 115px);
+                margin-bottom:25px;
+                color:#6E4B3A;
+                font-family:Georgia,serif;
+                font-size:14px;
+                white-space:nowrap;
+            ">
+                ✓ Saved: {escape(str(row["display_title"]))}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     if submitted:
         selected_rating = RATING_OPTIONS[rating_label]

@@ -542,7 +542,7 @@ if selected_tool:
         st.caption("A special place for the authors you treasure.")
 
         editor_col, collection_col = st.columns(
-            [1, 2],
+            [1.2, 1.8],
             gap="large",
         )
 
@@ -571,7 +571,7 @@ if selected_tool:
         st.subheader("Author Details")
         st.caption("Find, correct, or add authors to your literary atlas.")
 
-        editor_col, _ = st.columns([2, 1], gap="large")
+        editor_col, _ = st.columns([1.2, 1.8], gap="large")
 
         with editor_col:
             with st.container(border=True, key="litlas_editor_card"):

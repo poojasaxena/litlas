@@ -2,6 +2,7 @@
 """Manage personal literary favourites in Litlas."""
 
 import streamlit as st
+from html import escape
 
 from litlas.db_backend import get_repository
 
@@ -50,7 +51,7 @@ def render_author_favourites():
 
         st.session_state.pop("favourite_saved", None)
 
-    # Outside the form: selecting an author updates the category.
+    # Selecting an author updates the category.
     author_id = st.selectbox(
         "Author",
         options=list(author_options),
@@ -72,19 +73,48 @@ def render_author_favourites():
             key="favourite_tier_editor",
         )
 
-        submitted = st.form_submit_button(
-            "Save Category",
-            type="secondary",
-            use_container_width=True,
+        # Centered button with confirmation beside it.
+        spacer_col, button_col, message_col = st.columns(
+            [1, 1.6, 1],
+            gap="small",
+            vertical_alignment="center",
         )
+
+        with button_col:
+            submitted = st.form_submit_button(
+                "Save Category",
+                type="secondary",
+                use_container_width=True,
+            )
+
+        with message_col:
+            saved = st.session_state.get("favourite_saved")
+
+            if saved and saved[0] == author_id:
+                st.markdown(
+                    f"""
+                    <div style="
+                        color:#6E4B3A;
+                        font-family:Georgia,serif;
+                        font-size:13px;
+                        white-space:nowrap;
+                        line-height:42px;
+                    ">
+                        ✓ Saved: {escape(saved[1])}
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
 
     if submitted:
         tier = st.session_state["favourite_tier_editor"]
 
         try:
             set_author_favourite(author_id, tier)
+
         except ValueError as exc:
             st.error(str(exc))
+
         else:
             st.session_state["favourite_saved"] = (
                 author_id,
@@ -93,12 +123,6 @@ def render_author_favourites():
             )
             st.rerun()
 
-    saved = st.session_state.get("favourite_saved")
-
-    if saved and saved[0] == author_id:
-        st.success(
-            f"Saved: {saved[1]} — {saved[2]}"
-        )
 
 def render_favourite_collection():
     """Display all three literary categories compactly."""

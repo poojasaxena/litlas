@@ -68,14 +68,17 @@ def render_author_details():
     # --------------------------------------------------
     def show_confirmation(message):
         st.markdown(
-            (
-                '<div style="background:#E8DCC8;'
-                'border:1px solid #CDAE86;'
-                'border-radius:8px;padding:12px 16px;'
-                'margin-top:10px;font-family:Georgia,serif;'
-                'font-size:15px;color:#6E4B3A;">'
-                f'✓ {escape(message)}</div>'
-            ),
+            f"""
+            <div style="
+                color:#6E4B3A;
+                font-family:Georgia,serif;
+                font-size:14px;
+                padding:0;
+                margin:0;
+            ">
+                ✓ {escape(message)}
+            </div>
+            """,
             unsafe_allow_html=True,
         )
 
@@ -218,6 +221,27 @@ def render_author_details():
                     key="author_delete_button",
                 )
 
+        ## Show confirmation if author details were recently saved.
+        saved = st.session_state.get("author_details_saved")
+
+        if saved and saved[0] == author_id:
+            st.markdown(
+                f"""
+                <div style="
+                    color:#6E4B3A;
+                    font-family:Georgia,serif;
+                    font-size:14px;
+                    margin-top:-18px;
+                    margin-bottom:14px;
+                    padding-left:6px;
+                ">
+                    ✓ Saved: {escape(saved[1])}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+
         # Save changes.
         if save_submitted:
             try:
@@ -294,10 +318,6 @@ def render_author_details():
                         f"Deleted: {deleted_name}"
                     )
                     st.rerun()
-
-        saved = st.session_state.get("author_details_saved")
-        if saved and saved[0] == author_id:
-            show_confirmation(f"Saved: {saved[1]}")
 
         return
 
