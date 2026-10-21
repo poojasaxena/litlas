@@ -701,7 +701,7 @@ with country_col:
 
         st.plotly_chart(
             fig,
-            use_container_width=True,
+            width="stretch",
             config={"displayModeBar": False},
         )
 
@@ -726,7 +726,7 @@ with ratings_col:
 
         st.plotly_chart(
             fig_ratings,
-            use_container_width=True,
+            width="stretch",
             config={"displayModeBar": False},
         )
 
@@ -816,7 +816,7 @@ with history_col:
  
         event = st.plotly_chart(
             fig_history,
-            use_container_width=True,
+            width="stretch",
             config={"displayModeBar": False},
             key="litlas_reading_history",
             on_select="rerun",
@@ -940,7 +940,7 @@ try:
 
     st.plotly_chart(
         constellation_fig,
-        use_container_width=True,
+        width="stretch",
         config={"displayModeBar": False},
     )
 
@@ -1178,7 +1178,7 @@ with wanderlust_col:
 
         st.plotly_chart(
             fig_wanderlust,
-            use_container_width=True,
+            width="stretch",
             config={"displayModeBar": False},
         )
 

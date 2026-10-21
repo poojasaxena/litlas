@@ -230,7 +230,7 @@ m.get_root().html.add_child(Element(legend_html))
 st_folium(
     m,
     height=height,
-    use_container_width=True,
+    width="stretch",
     returned_objects=[],
     key="reading_density",
 )

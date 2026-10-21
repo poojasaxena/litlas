@@ -84,7 +84,7 @@ def render_author_favourites():
             submitted = st.form_submit_button(
                 "Save Category",
                 type="secondary",
-                use_container_width=True,
+                width="stretch",
             )
 
         with message_col:

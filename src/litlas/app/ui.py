@@ -376,7 +376,7 @@ def render_chapter_navigation_deprecated() -> None:
 
     for index, (label, path) in enumerate(pages):
         with columns[index * 2]:
-            st.page_link(path, label=label, use_container_width=True)
+            st.page_link(path, label=label, width="stretch")
 
         if index < len(pages) - 1:
             with columns[index * 2 + 1]:

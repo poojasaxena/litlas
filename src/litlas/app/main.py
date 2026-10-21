@@ -235,7 +235,7 @@ m.get_root().html.add_child(Element(journey_html))
 st_folium(
     m,
     height=MAP_HEIGHT,
-    use_container_width=True,
+    width="stretch",
     returned_objects=[],
     key="literarymap",
 )

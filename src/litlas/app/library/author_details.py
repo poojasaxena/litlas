@@ -119,14 +119,29 @@ def render_author_details():
         on_change=author_name_changed,
     ).strip()
 
+
     if not name:
-        deleted_message = st.session_state.get(
-            "author_deleted_message"
+        deleted_message = st.session_state.pop(
+            "author_deleted_message", None
         )
+
         if deleted_message:
-            show_confirmation(deleted_message)
+            st.markdown(
+                f"""
+                <div style="
+                    color:#6E4B3A;
+                    font-family:Georgia,serif;
+                    font-size:14px;
+                    padding:8px 0 18px 6px;
+                ">
+                    ✓ {escape(deleted_message)}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
         else:
             st.caption("Find an existing author or enter a new name.")
+
         return
 
     exact, possible = find_author_matches(name)
@@ -205,7 +220,7 @@ def render_author_details():
                 save_submitted = st.form_submit_button(
                     "Save Changes",
                     type="secondary",
-                    use_container_width=True,
+                    width="stretch",
                 )
 
         with delete_col:
@@ -217,7 +232,7 @@ def render_author_details():
                     "Delete Author",
                     type="secondary",
                     disabled=deletion_blocked,
-                    use_container_width=True,
+                    width="stretch",
                     key="author_delete_button",
                 )
 
@@ -300,7 +315,7 @@ def render_author_details():
                         "Confirm Deletion",
                         disabled=not confirmed,
                         type="secondary",
-                        use_container_width=True,
+                        width="stretch",
                         key="author_confirm_delete_button",
                     )
 
@@ -358,7 +373,7 @@ def render_author_details():
             "Add Author",
             type="secondary",
             disabled=not confirmed or iso3 is None,
-            use_container_width=True,
+            width="stretch",
         )
 
     if submitted:

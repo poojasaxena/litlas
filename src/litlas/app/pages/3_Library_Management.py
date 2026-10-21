@@ -495,7 +495,7 @@ for column, (name, symbol) in zip(columns, TOOLS):
             icon=symbol,
             key="tool_add_book" if name == "Add a Book" else f"tool_{name}",
             type="primary" if selected else "secondary",
-            use_container_width=True,
+            width="stretch",
         ):
             st.session_state.library_tool = None if selected else name
             st.rerun()

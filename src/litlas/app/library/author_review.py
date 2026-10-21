@@ -120,7 +120,7 @@ with left:
         "Save & Next",
         type="primary",
         disabled=(selected == 0),
-        use_container_width=True,
+        width="stretch",
     ):
         country, iso3 = countries[selected - 1]
 
@@ -138,7 +138,7 @@ with left:
         st.rerun()
 
 with right:
-    if st.button("Skip", use_container_width=True):
+    if st.button("Skip", width="stretch"):
         next_index = (selected_index + 1) % len(author_ids)
         st.session_state.review_author_id = author_ids[next_index]
         st.rerun()

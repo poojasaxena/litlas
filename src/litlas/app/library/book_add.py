@@ -172,7 +172,7 @@ def render_add_book():
         submitted = st.form_submit_button(
             "Add to Litlas",
             type="secondary",
-            use_container_width=True,
+            width="stretch",
         )
 
     if "added_book" in st.session_state:

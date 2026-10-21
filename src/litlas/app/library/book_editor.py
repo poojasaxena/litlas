@@ -173,7 +173,7 @@ def render_book_editor_contents(show_heading=True):
             submitted = st.form_submit_button(
                 "Save to Litlas",
                 type="secondary",
-                use_container_width=True,
+                width="stretch",
             )
 
 
@@ -348,7 +348,7 @@ def render_book_editor_contents_sidebar(show_heading=True):
         submitted = st.form_submit_button(
             "Save to Litlas",
             type="secondary",
-            use_container_width=True,
+            width="stretch",
         )
 
     if submitted:
