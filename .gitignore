@@ -23,7 +23,7 @@ env/
 .env.*
 
 # Personal and generated datasets
-data/
+#data/
 *.csv
 *.ods
 *.xlsx
