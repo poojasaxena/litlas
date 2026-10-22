@@ -1,0 +1,35 @@
+[paths]
+library = "/home/pooja-saxena/PoojaVault/Personal/Learning/Library"
+goodreads = "Goodreads"
+litlas = "Litlas"
+reading_date = "Reading_Dates"
+
+
+[database]
+filename = "litlas.db"
+backup_dir = "Backups"
+
+[map]
+flag_size = 14
+height = 600
+
+[cleaning]
+remove_subtitles = true
+
+[branding]
+logo = "data/assets/branding/author_logo.png"
+
+[illustrations]
+literary_atlas = "data/assets/illustrations/literary_atlas.png"
+reading_density = "data/assets/illustrations/reading_density.png"
+reading_statistics = "data/assets/illustrations/reading_statistics.png"
+lib_management = "data/assets/illustrations/library_management.png"
+book_author = "data/assets/illustrations/book_author.png"
+add_book = "data/assets/illustrations/add_book.png"
+constellation_illustration = "data/assets/illustrations/constellation_background.png"
+
+[client]
+showSidebarNavigation = false
+
+[theme]
+backgroundColor = "#FAF7F1"
