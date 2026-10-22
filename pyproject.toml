@@ -18,7 +18,7 @@ maintainers = [
 ]
 
 dependencies = [
-    "streamlit>=1.38,<2",
+    "streamlit[auth]>=1.38,<2",
     "streamlit-folium>=0.22,<1",
     "folium>=0.17,<1",
     "pandas>=2,<3",

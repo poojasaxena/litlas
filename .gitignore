@@ -24,7 +24,7 @@ env/
 
 # Personal and generated datasets
 #data/
-*.csv
+#*.csv
 *.ods
 *.xlsx
 
