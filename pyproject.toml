@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68", "wheel", "numpy>=1.26,<3", "plotly>=5.20,<7", "Pillow>=10,<13",]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -15,6 +15,20 @@ authors = [
 
 maintainers = [
     { name = "Pooja Saxena" }
+]
+
+dependencies = [
+    "streamlit>=1.38,<2",
+    "streamlit-folium>=0.22,<1",
+    "folium>=0.17,<1",
+    "pandas>=2,<3",
+    "numpy>=1.26,<3",
+    "plotly>=5.20,<7",
+    "Pillow>=10,<13",
+    "pycountry>=24,<27",
+    "countryinfo>=0.1.2,<1",
+    "requests>=2.31,<3",
+    "country_converter>=0.7,<1",
 ]
 
 [project.scripts]
