@@ -676,7 +676,7 @@ with country_col:
         )
 
         fig.update_layout(
-            height=400,
+            height=380,
             margin=dict(l=20, r=40, t=20, b=40),
             paper_bgcolor="#FAF7F1",
             plot_bgcolor="#F5EFE4",
@@ -723,7 +723,7 @@ with ratings_col:
     if ratings.empty:
         st.info("No rated books available yet.")
     else:
-        fig_ratings = build_rating_spines_figure(ratings, image_height=400)
+        fig_ratings = build_rating_spines_figure(ratings, image_height=380)
 
         st.plotly_chart(
             fig_ratings,

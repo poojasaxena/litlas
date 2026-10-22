@@ -17,7 +17,7 @@ height = 600
 remove_subtitles = true
 
 [branding]
-logo = "data/assets/branding/author_logo.png"
+logo = "data/assets/branding/nostalgic.svg"
 
 [illustrations]
 literary_atlas = "data/assets/illustrations/literary_atlas.png"

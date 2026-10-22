@@ -401,9 +401,11 @@ def render_page_header(
             logo.read_bytes()
         ).decode("ascii")
 
+        mime_type = "image/svg+xml" if logo.suffix.lower() == ".svg" else "image/png"
+
         logo_html = (
             f'<img class="litlas-logo" '
-            f'src="data:image/png;base64,{encoded}" '
+            f'src="data:{mime_type};base64,{encoded}" '
             f'alt="Personal signature">'
         )
 
