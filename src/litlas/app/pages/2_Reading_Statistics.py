@@ -1096,6 +1096,7 @@ with history_col:
 # ---------------------------------------------------------
 
 with highlights_col:
+    perf_checkpoint("Reading history completed")
     st.subheader("Literary Highlights")
 
     highlights = get_yearly_highlights()
@@ -1189,6 +1190,7 @@ try:
 except (ValueError, FileNotFoundError) as exc:
     st.warning(f"Constellation could not be loaded: {exc}")
 
+perf_checkpoint("Constellation completed")
 # ---------------------------------------------------------
 # My Literary Book of Honour
 # ---------------------------------------------------------
@@ -1200,6 +1202,7 @@ st.subheader("My Literary Book of Honour")
 favourite_authors = get_favourite_authors()
 
 render_book_of_honour(favourite_authors)
+perf_checkpoint("Book of Honour completed")
 
 # ---------------------------------------------------------
 # Row 3: Author statistics
@@ -1214,6 +1217,7 @@ most_read_col, favourite_col, wanderlust_col = st.columns(
 # Get a sufficiently large pool of authors, not just the
 # ten most-read, so favourite rankings are not biased.
 all_authors = get_top_authors(limit=10000)
+perf_checkpoint("Author statistics loaded")
 
 # ---------------------------------------------------------
 # Most-read authors: quantity
