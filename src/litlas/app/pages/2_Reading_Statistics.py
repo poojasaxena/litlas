@@ -49,32 +49,53 @@ get_yearly_highlights = repository.get_yearly_highlights
 get_constellation_book_details = repository.get_constellation_book_details
 get_literary_wanderlust = repository.get_literary_wanderlust
 
+
 @st.cache_data(ttl=3600, show_spinner=False)
-def load_popup_books():
+def load_popup_books(read_books):
+    books_by_rating = {}
+    books_by_year = {}
 
-    ratings = repository.get_rating_distribution()
-    history = repository.get_books_read_by_year()
+    for _, book in read_books.iterrows():
+        title = str(book["Display Title"])
+        author = str(book["Author"])
 
-    books_by_rating = {
-        f"{float(r):g}": repository.get_books_for_rating(float(r))
-        for r in ratings["rating"]
-    }
+        rating = (
+            float(book["My Rating"])
+            if pd.notna(book["My Rating"])
+            else 0
+        )
 
-    books_by_year = {
-        str(y): repository.get_books_for_reading_year(str(y))
-        for y in history["year"]
-    }
+        stars = "★" * int(rating)
+        if rating % 1 >= 0.5:
+            stars += "½"
+
+        entry = {
+            "title": title,
+            "author": author,
+            "stars": stars or "—",
+        }
+
+        # Rating popup
+        if pd.notna(book["My Rating"]):
+            key = f"{rating:g}"
+            books_by_rating.setdefault(key, []).append(entry)
+
+        # Reading-year popup
+        date_read = book["Date Read"]
+
+        if pd.notna(date_read) and str(date_read).strip():
+            year = str(date_read)[:4]
+            books_by_year.setdefault(year, []).append(
+                (str(date_read).replace("/", "-"), title.lower(), entry)
+            )
+
+    # Preserve the reading-year SQL ordering.
+    for year, entries in books_by_year.items():
+        entries.sort(key=lambda item: item[1])
+        entries.sort(key=lambda item: item[0], reverse=True)
+        books_by_year[year] = [entry for _, _, entry in entries]
 
     return books_by_rating, books_by_year
-
-## Load cached popup books
-from time import perf_counter
-
-start = perf_counter()
-cached_ratings, cached_years = load_popup_books()
-perf_checkpoint("Popup data loaded")
-print(f"[LITLAS PERFORMANCE] Popup data: {perf_counter() - start:.2f}s", flush=True)
-
 
 # ---------------------------------------------------------
 # Page setup
@@ -325,6 +346,15 @@ summary = get_reading_summary()
 start_books = perf_counter()
 
 read_books = repository.load_read_books()
+print(f"[LITLAS PERFORMANCE] Read books loaded: {perf_counter() - start_books:.2f}s", flush=True)
+
+# Load cached popup books
+start = perf_counter()
+
+cached_ratings, cached_years = load_popup_books(read_books)
+
+perf_checkpoint("Popup data loaded")
+print(f"[LITLAS PERFORMANCE] Popup data: {perf_counter() - start:.2f}s", flush=True)
 
 print(
     f"[LITLAS CLOUD PERF] load_read_books alone: "
@@ -973,70 +1003,13 @@ blue_spine_path = make_book_spine_asset(
 )
 
 ratings = get_rating_distribution()
-books_by_rating = {}
 
-for rating in ratings["rating"]:
-    rating = float(rating)
-    books = books = cached_ratings[f"{rating:g}"]
-
-    books_by_rating[f"{rating:g}"] = [
-        {
-            "title": str(book["title"]),
-            "author": str(book["author"]),
-        }
-        for _, book in books.iterrows()
-    ]
-@st.dialog("Books From My Rating", width="small")
-def show_rating_books(rating: float):
-    st.html('<span class="litlas-rating-dialog-marker"></span>')
-    books = books = cached_ratings[f"{rating:g}"]
-
-    st.html(
-        f'<div style="font-family:Georgia,serif;color:#96785D;'
-        f'font-size:13px;margin-bottom:6px;">'
-        f'{rating:g} ★ · {len(books)} books'
-        f'</div>'
+books_by_rating = {
+    f"{float(rating):g}": cached_ratings.get(
+        f"{float(rating):g}", []
     )
-
-    with st.container(height=250, key="litlas_rating_books"):
-        rows = []
-
-        for _, book in books.iterrows():
-            title = escape(str(book["title"]))
-            author = escape(str(book["author"]))
-
-            whole = int(rating)
-            stars = "★" * whole
-            if rating - whole >= 0.5:
-                stars += "½"
-
-            rows.append(f"""
-                <div style="
-                    display:flex;
-                    align-items:baseline;
-                    gap:10px;
-                    padding:5px 2px;
-                    border-bottom:1px solid #E2D5C3;
-                    font-family:Georgia,serif;
-                    font-size:13px;
-                    line-height:1.3;
-                ">
-                    <span style="flex:1;min-width:0;color:#58412F;">
-                        <i>{title}</i>
-                        <span style="color:#81776E;">· {author}</span>
-                    </span>
-                    <span style="
-                        color:#A47B43;
-                        white-space:nowrap;
-                        font-size:12px;
-                    ">{stars}</span>
-                </div>
-            """)
-
-        st.html("\n".join(rows))
-
-perf_checkpoint("Rating books dialog built")
-
+    for rating in ratings["rating"]
+}
 
 with ratings_col:
     st.subheader("Ratings")
@@ -1090,97 +1063,13 @@ perf_checkpoint("Rating plot is built")
 history_col, highlights_col = st.columns([2, 1], gap="large")
 
 history = get_books_read_by_year()
-books_by_year = {}
 
-for year in history["year"]:
-    year = str(year)
-    books = cached_years[year]
+books_by_year = {
+    str(year): cached_years.get(str(year), [])
+    for year in history["year"]
+}
 
-    entries = []
 
-    for _, book in books.iterrows():
-        rating = float(book["rating"]) if pd.notna(book["rating"]) else 0
-        whole = int(rating)
-
-        stars = "★" * whole
-        if rating - whole >= 0.5:
-            stars += "½"
-
-        entries.append({
-            "title": str(book["title"]),
-            "author": str(book["author"]),
-            "stars": stars or "—",
-        })
-
-    books_by_year[year] = entries
-
-@st.dialog("Books From My Reading Year", width="small")
-def show_year_books(year: str):
-    books = cached_years[year]
-
-    st.markdown(
-        f"""
-        <div style="
-            font-family:Georgia,serif;
-            color:#96785D;
-            font-size:13px;
-            margin:0 0 6px;
-        ">
-            {escape(year)} · {len(books)} books completed
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    with st.container(height=250, key="litlas_year_books"):
-        rows = []
-
-        for _, book in books.iterrows():
-            title = escape(str(book["title"]))
-            author = escape(str(book["author"]))
-
-            rating = float(book["rating"] or 0)
-            stars = "★" * int(rating)
-
-            if rating % 1 >= 0.5:
-                stars += "½"
-
-            if not stars:
-                stars = "—"
-
-            rows.append(
-                f"""
-                <div style="
-                    display:flex;
-                    align-items:baseline;
-                    gap:10px;
-                    padding:5px 2px;
-                    border-bottom:1px solid #E2D5C3;
-                    font-family:Georgia,serif;
-                    font-size:13px;
-                    line-height:1.3;
-                ">
-                    <span style="
-                        flex:1;
-                        min-width:0;
-                        color:#58412F;
-                    ">
-                        <i>{title}</i>
-                        <span style="color:#81776E;">
-                            · {author}
-                        </span>
-                    </span>
-
-                    <span style="
-                        color:#A47B43;
-                        white-space:nowrap;
-                        font-size:12px;
-                    ">{stars}</span>
-                </div>
-                """
-            )
-
-        st.html("\n".join(rows))
 with history_col:
     st.subheader("Books Read Through the Years")
 

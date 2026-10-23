@@ -20,7 +20,8 @@ def load_read_books():
             a.name AS "Author",
             COALESCE(a.iso3, '') AS "ISO3",
             COALESCE(a.country, '') AS "Country",
-            b.rating AS "My Rating",
+            COALESCE(b.rating_override, b.rating) AS "My Rating",
+            b.date_read AS "Date Read",
             b.work_id AS "Work ID",
             COALESCE(w.title, b.display_title) AS "Work Title",
             COALESCE(b.volume_label, '') AS "Volume"
@@ -695,6 +696,7 @@ def get_books_for_reading_year(year: str):
             a.name AS author,
             b.date_read,
             COALESCE(b.rating_override, b.rating) AS rating
+            b.data_read AS "Date Read"
         FROM books AS b
         JOIN authors AS a ON a.id = b.author_id
         WHERE b.shelf = 'read'

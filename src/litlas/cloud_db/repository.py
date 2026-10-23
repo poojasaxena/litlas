@@ -727,6 +727,7 @@ def get_books_for_reading_year(year: str):
             a.name AS author,
             b.date_read,
             COALESCE(b.rating_override, b.rating) AS rating
+            b.date_read AS "Date Read",
         FROM books AS b
         JOIN authors AS a ON a.id = b.author_id
         WHERE b.shelf = 'read'
