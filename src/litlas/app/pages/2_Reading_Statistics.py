@@ -41,6 +41,8 @@ get_yearly_highlights = repository.get_yearly_highlights
 get_constellation_book_details = repository.get_constellation_book_details
 get_literary_wanderlust = repository.get_literary_wanderlust
 
+
+# Cached statistics avoid repeated PostgreSQL queries on page reload.
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_statistics_data(backend):
     repo = get_repository()
