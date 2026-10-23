@@ -179,8 +179,8 @@ unexplored_count = max(0, TOTAL_COUNTRIES - explored_count)
 journey_html = f"""
 <div style="
     position:fixed;
-    bottom:15px;
-    right:15px;
+    bottom:4px;
+    right:4px;
     width:160px;
     padding:6px 8px;
     background:rgba(250,247,241,0.93);

@@ -195,8 +195,8 @@ legend_labels = "".join(
 legend_html = f"""
 <div style="
     position:fixed;
-    bottom:16px;
-    right:16px;
+    bottom:4px;
+    right:4px;
     width:180px;
     padding:6px 8px;
     background:rgba(250,247,241,0.93);
