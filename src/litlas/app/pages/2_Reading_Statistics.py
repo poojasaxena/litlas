@@ -27,14 +27,6 @@ from litlas.app.visualizations.wanderlust import build_wanderlust_figure
 
 from litlas.db_backend import get_repository, backend_name
 
-from time import perf_counter
-
-PAGE_START = perf_counter()
-
-def perf_checkpoint(label):
-    elapsed = perf_counter() - PAGE_START
-    print(f"[LITLAS CLOUD PERF] {label}: {elapsed:.2f}s", flush=True)
-
 repository = get_repository()
 get_favourite_authors = repository.get_favourite_authors
 get_country_reading_density = repository.get_country_reading_density
@@ -360,18 +352,10 @@ stats = load_statistics_data(backend_name())
 summary = stats["summary"]
 
 # Automatically compare completed-book authors with Nobel laureates.
-start_books = perf_counter()
 
 read_books = repository.load_read_books()
-print(f"[LITLAS PERFORMANCE] Read books loaded: {perf_counter() - start_books:.2f}s", flush=True)
-
-# Load cached popup books
-start = perf_counter()
 
 cached_ratings, cached_years = load_popup_books(read_books)
-
-perf_checkpoint("Popup data loaded")
-print(f"[LITLAS PERFORMANCE] Popup data: {perf_counter() - start:.2f}s", flush=True)
 
 read_authors = read_books["Author"].dropna().unique()
 
@@ -901,7 +885,6 @@ for iso3, group in read_books.groupby("ISO3"):
 
     country_books[str(iso3)] = entries
 
-perf_checkpoint("Country books entries are built")
 
 with country_col:
     st.subheader("Literary works by country")
@@ -1005,7 +988,6 @@ with country_col:
             country_names=country_names,
         )
 
-perf_checkpoint("Top-Let-Most Plot is built")
 
 blue_spine_path = make_book_spine_asset(
     name="rating_3_blue",
@@ -1066,7 +1048,6 @@ with ratings_col:
 
         render_rating_popup(books_by_rating)
 
-perf_checkpoint("Rating plot is built")
 
 # ---------------------------------------------------------
 # Row 2: Reading history
@@ -1108,7 +1089,6 @@ with history_col:
 # ---------------------------------------------------------
 
 with highlights_col:
-    perf_checkpoint("Reading history completed")
     st.subheader("Literary Highlights")
 
     highlights = stats["highlights"]
@@ -1202,7 +1182,6 @@ try:
 except (ValueError, FileNotFoundError) as exc:
     st.warning(f"Constellation could not be loaded: {exc}")
 
-perf_checkpoint("Constellation completed")
 # ---------------------------------------------------------
 # My Literary Book of Honour
 # ---------------------------------------------------------
@@ -1214,7 +1193,6 @@ st.subheader("My Literary Book of Honour")
 favourite_authors = stats["favourite_authors"]
 
 render_book_of_honour(favourite_authors)
-perf_checkpoint("Book of Honour completed")
 
 # ---------------------------------------------------------
 # Row 3: Author statistics
@@ -1229,7 +1207,6 @@ most_read_col, favourite_col, wanderlust_col = st.columns(
 # Get a sufficiently large pool of authors, not just the
 # ten most-read, so favourite rankings are not biased.
 all_authors = stats["all_authors"]
-perf_checkpoint("Author statistics loaded")
 
 # ---------------------------------------------------------
 # Most-read authors: quantity
@@ -1456,4 +1433,3 @@ with wanderlust_col:
         #     "later books count as returns. "
         #     "Based on available reading dates."
         # )
-perf_checkpoint("Page script completed")
