@@ -322,7 +322,15 @@ render_page_header(
 summary = get_reading_summary()
 
 # Automatically compare completed-book authors with Nobel laureates.
+start_books = perf_counter()
+
 read_books = repository.load_read_books()
+
+print(
+    f"[LITLAS CLOUD PERF] load_read_books alone: "
+    f"{perf_counter() - start_books:.2f}s",
+    flush=True,
+)
 read_authors = read_books["Author"].dropna().unique()
 
 nobel_authors = match_nobel_authors(read_authors)
@@ -1543,3 +1551,4 @@ with wanderlust_col:
         #     "later books count as returns. "
         #     "Based on available reading dates."
         # )
+perf_checkpoint("Page script completed")
