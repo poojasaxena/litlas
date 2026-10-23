@@ -7,6 +7,7 @@ RATING_POPUP_JS = """
 export default function(component) {
     const books = component.data.books;
     const isYear = component.data.mode === "year";
+    const isCountry = component.data.mode === "country";
     const chartKey = component.data.chart_key;
     let chart = null;
     let popup = null;
@@ -23,7 +24,9 @@ export default function(component) {
         if (!point) return;
 
         const rating = Number(point.x);
-        const key = isYear ? String(point.customdata) : String(rating);
+        const key = (isYear || isCountry)
+            ? String(point.customdata)
+            : String(rating);
         const entries = books[key] || [];
 
         closePopup();
@@ -55,9 +58,11 @@ export default function(component) {
         });
 
         const title = document.createElement("strong");
-        title.textContent = isYear
-            ? "Books From My Reading Year"
-            : "Books From My Rating";
+        title.textContent = isCountry
+            ? "Books From This Country"
+            : isYear
+                ? "Books From My Reading Year"
+                : "Books From My Rating";
         title.style.fontSize = "20px";
 
         const close = document.createElement("button");
@@ -76,9 +81,11 @@ export default function(component) {
         header.append(title, close);
 
         const caption = document.createElement("div");
-        caption.textContent = isYear
-            ? `${key} · ${entries.length} books completed`
-            : `${rating} ★ · ${entries.length} books`;
+        caption.textContent = isCountry
+            ? `${component.data.country_names[key] || key} · ${entries.length} books`
+            : isYear
+                ? `${key} · ${entries.length} books completed`
+                : `${rating} ★ · ${entries.length} books`;
         Object.assign(caption.style, {
             margin: "14px 0 10px",
             color: "#96785D",
@@ -127,7 +134,7 @@ export default function(component) {
             description.append(title, author);
 
             const ratingStars = document.createElement("span");
-            ratingStars.textContent = isYear ? book.stars : stars;
+            ratingStars.textContent = (isYear || isCountry) ? book.stars : stars;
             Object.assign(ratingStars.style, {
                 color: "#A47B43",
                 whiteSpace: "nowrap",
@@ -150,7 +157,7 @@ export default function(component) {
 
         // Place popup left of the clicked spine.
         // Keep it within the viewport.
-        const preferredLeft = isYear
+        const preferredLeft = (isYear || isCountry)
             ? clickX + 16
             : clickX - width - 16;
 
@@ -228,12 +235,12 @@ rating_popup_component = st.components.v2.component(
 )
 
 
-def render_rating_popup(books, mode="rating"):
-    chart_key = (
-        "litlas_reading_history"
-        if mode == "year"
-        else "litlas_ratings"
-    )
+def render_rating_popup(books, mode="rating", country_names=None):
+    chart_key = {
+        "rating": "litlas_ratings",
+        "year": "litlas_reading_history",
+        "country": "litlas_country_density",
+    }[mode]
 
     rating_popup_component(
         key=f"litlas_anchored_{mode}_popup",
@@ -241,6 +248,7 @@ def render_rating_popup(books, mode="rating"):
             "books": books,
             "mode": mode,
             "chart_key": chart_key,
+            "country_names": country_names or {},
         },
         height=0,
     )

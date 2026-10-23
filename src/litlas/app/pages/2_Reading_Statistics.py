@@ -28,7 +28,6 @@ from litlas.app.visualizations.wanderlust import build_wanderlust_figure
 from litlas.db_backend import get_repository
 
 repository = get_repository()
-
 get_favourite_authors = repository.get_favourite_authors
 get_country_reading_density = repository.get_country_reading_density
 get_reading_summary = repository.get_reading_summary
@@ -41,6 +40,29 @@ get_books_for_rating = repository.get_books_for_rating
 get_yearly_highlights = repository.get_yearly_highlights
 get_constellation_book_details = repository.get_constellation_book_details
 get_literary_wanderlust = repository.get_literary_wanderlust
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def load_popup_books():
+
+    ratings = repository.get_rating_distribution()
+    history = repository.get_books_read_by_year()
+
+    books_by_rating = {
+        f"{float(r):g}": repository.get_books_for_rating(float(r))
+        for r in ratings["rating"]
+    }
+
+    books_by_year = {
+        str(y): repository.get_books_for_reading_year(str(y))
+        for y in history["year"]
+    }
+
+    return books_by_rating, books_by_year
+
+## Load cached popup books
+cached_ratings, cached_years = load_popup_books()
+
+
 
 # ---------------------------------------------------------
 # Page setup
@@ -789,6 +811,34 @@ country_col, ratings_col = st.columns([2, 1], gap="large")
 
 density = get_country_reading_density()
 
+# Group read books by author's country of birth.
+country_books = {}
+
+for iso3, group in read_books.groupby("ISO3"):
+    if not iso3:
+        continue
+
+    entries = []
+
+    for _, book in group.iterrows():
+        rating = (
+            float(book["My Rating"])
+            if pd.notna(book["My Rating"])
+            else 0
+        )
+
+        stars = "★" * int(rating)
+        if rating % 1 >= 0.5:
+            stars += "½"
+
+        entries.append({
+            "title": str(book["Display Title"]),
+            "author": str(book["Author"]),
+            "stars": stars or "—",
+        })
+
+    country_books[str(iso3)] = entries
+
 with country_col:
     st.subheader("Literary works by country")
 
@@ -818,6 +868,7 @@ with country_col:
                 x=top_density["works"],
                 y=top_density["country"],
                 orientation="h",
+                customdata=top_density["iso3"].tolist(),
                 marker=dict(
                     color=bar_colors,
                     line=dict(color="#8E735B", width=1),
@@ -855,7 +906,7 @@ with country_col:
             ),
             bargap=0.22,
             showlegend=False,
-            hovermode=False,
+            hovermode="closest",
         )
         fig.add_annotation(
             xref="paper",
@@ -877,9 +928,18 @@ with country_col:
             fig,
             width="stretch",
             config={"displayModeBar": False},
+            key="litlas_country_density",
         )
 
+        country_names = dict(
+            zip(top_density["iso3"], top_density["country"])
+        )
 
+        render_rating_popup(
+            country_books,
+            mode="country",
+            country_names=country_names,
+        )
 
 blue_spine_path = make_book_spine_asset(
     name="rating_3_blue",
@@ -893,7 +953,7 @@ books_by_rating = {}
 
 for rating in ratings["rating"]:
     rating = float(rating)
-    books = get_books_for_rating(rating)
+    books = books = cached_ratings[f"{rating:g}"]
 
     books_by_rating[f"{rating:g}"] = [
         {
@@ -905,7 +965,7 @@ for rating in ratings["rating"]:
 @st.dialog("Books From My Rating", width="small")
 def show_rating_books(rating: float):
     st.html('<span class="litlas-rating-dialog-marker"></span>')
-    books = get_books_for_rating(rating)
+    books = books = cached_ratings[f"{rating:g}"]
 
     st.html(
         f'<div style="font-family:Georgia,serif;color:#96785D;'
@@ -1005,7 +1065,7 @@ books_by_year = {}
 
 for year in history["year"]:
     year = str(year)
-    books = get_books_for_reading_year(year)
+    books = cached_years[year]
 
     entries = []
 
@@ -1027,7 +1087,7 @@ for year in history["year"]:
 
 @st.dialog("Books From My Reading Year", width="small")
 def show_year_books(year: str):
-    books = get_books_for_reading_year(year)
+    books = cached_years[year]
 
     st.markdown(
         f"""
