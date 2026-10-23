@@ -180,7 +180,7 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     cursor: pointer;
     color: #96785D;
     font-family: Georgia, serif;
-    font-size: 0.95rem;
+    font-size: 0.875rem;
     font-weight: 400;
     line-height: 1.5;
 }
