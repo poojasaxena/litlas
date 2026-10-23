@@ -54,7 +54,7 @@ def load_density_data(backend):
 # Books grouped by author's country of birth (ISO3).
 country_books = {}
 
-for iso3, group in read_books.groupby("ISO3"):
+for iso3, group in books.groupby("ISO3"):
     if not iso3:
         continue
 
