@@ -19,6 +19,7 @@ from litlas.app.visualizations.constellation import (
     load_constellation_books,
     build_constellation_figure,
 )
+from litlas.app.visualizations.rating_popup import render_rating_popup
 from litlas.app.nobel import match_nobel_authors, load_literature_laureates
 from litlas.app.visualizations.book_of_honour import render_book_of_honour
 from litlas.app.visualizations.wanderlust import build_wanderlust_figure
@@ -35,6 +36,7 @@ get_books_read_by_year = repository.get_books_read_by_year
 get_top_authors = repository.get_top_authors
 get_page_statistics = repository.get_page_statistics
 get_books_for_reading_year = repository.get_books_for_reading_year
+get_books_for_rating = repository.get_books_for_rating
 get_yearly_highlights = repository.get_yearly_highlights
 get_constellation_book_details = repository.get_constellation_book_details
 get_literary_wanderlust = repository.get_literary_wanderlust
@@ -139,14 +141,14 @@ div[role="dialog"]:has(.st-key-litlas_year_books) {
 }
 
 /* Dialog title */
-div[role="dialog"]:has(.st-key-litlas_year_books)
+div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 [data-testid="stDialogHeader"] {
     padding-bottom: 0 !important;
 }
 
-div[role="dialog"]:has(.st-key-litlas_year_books)
+div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 [data-testid="stDialogHeader"] p,
-div[role="dialog"]:has(.st-key-litlas_year_books)
+div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 [data-testid="stDialogHeader"] h2 {
     font-family: Georgia, serif !important;
     color: #58412F !important;
@@ -154,7 +156,8 @@ div[role="dialog"]:has(.st-key-litlas_year_books)
 }
 
 /* Compact scrollable book list */
-.st-key-litlas_year_books {
+.st-key-litlas_year_books,
+.st-key-litlas_rating_books {
     background: #F5EFE4 !important;
     border: 1px solid #D4C1A7 !important;
     border-radius: 7px !important;
@@ -261,6 +264,7 @@ div[role="dialog"]:has(.st-key-litlas_year_books)
     font-weight: 400;
     color: #96785D;
     margin: 0 0 12px;
+}
 }
 </style>
 """, unsafe_allow_html=True)
@@ -867,6 +871,67 @@ blue_spine_path = make_book_spine_asset(
 )
 
 ratings = get_rating_distribution()
+books_by_rating = {}
+
+for rating in ratings["rating"]:
+    rating = float(rating)
+    books = get_books_for_rating(rating)
+
+    books_by_rating[f"{rating:g}"] = [
+        {
+            "title": str(book["title"]),
+            "author": str(book["author"]),
+        }
+        for _, book in books.iterrows()
+    ]
+@st.dialog("Books From My Rating", width="small")
+def show_rating_books(rating: float):
+    st.html('<span class="litlas-rating-dialog-marker"></span>')
+    books = get_books_for_rating(rating)
+
+    st.html(
+        f'<div style="font-family:Georgia,serif;color:#96785D;'
+        f'font-size:13px;margin-bottom:6px;">'
+        f'{rating:g} ★ · {len(books)} books'
+        f'</div>'
+    )
+
+    with st.container(height=250, key="litlas_rating_books"):
+        rows = []
+
+        for _, book in books.iterrows():
+            title = escape(str(book["title"]))
+            author = escape(str(book["author"]))
+
+            whole = int(rating)
+            stars = "★" * whole
+            if rating - whole >= 0.5:
+                stars += "½"
+
+            rows.append(f"""
+                <div style="
+                    display:flex;
+                    align-items:baseline;
+                    gap:10px;
+                    padding:5px 2px;
+                    border-bottom:1px solid #E2D5C3;
+                    font-family:Georgia,serif;
+                    font-size:13px;
+                    line-height:1.3;
+                ">
+                    <span style="flex:1;min-width:0;color:#58412F;">
+                        <i>{title}</i>
+                        <span style="color:#81776E;">· {author}</span>
+                    </span>
+                    <span style="
+                        color:#A47B43;
+                        white-space:nowrap;
+                        font-size:12px;
+                    ">{stars}</span>
+                </div>
+            """)
+
+        st.html("\n".join(rows))
 
 with ratings_col:
     st.subheader("Ratings")
@@ -901,12 +966,15 @@ with ratings_col:
             bgcolor="rgba(0,0,0,0)",
         )
 
+
         st.plotly_chart(
             fig_ratings,
             width="stretch",
             config={"displayModeBar": False},
+            key="litlas_ratings",
         )
 
+        render_rating_popup(books_by_rating)
 
 # ---------------------------------------------------------
 # Row 2: Reading history

@@ -696,6 +696,27 @@ def get_yearly_highlights():
     with connect() as db:
         return _read_dataframe(db, query)
 
+
+def get_books_for_rating(rating: float):
+    """Return read books with the specified effective personal rating."""
+
+    query = """
+        SELECT
+            b.display_title AS title,
+            a.name AS author,
+            COALESCE(b.rating_override, b.rating) AS rating
+        FROM books AS b
+        JOIN authors AS a ON a.id = b.author_id
+        WHERE b.shelf = 'read'
+          AND b.excluded_from_display = 0
+          AND COALESCE(b.rating_override, b.rating) = %s
+        ORDER BY LOWER(b.display_title)
+    """
+
+    with connect() as db:
+        return _read_dataframe(db, query, (float(rating),))
+    
+
 def get_books_for_reading_year(year: str):
     """Return all books completed in a given year."""
 

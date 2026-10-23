@@ -199,7 +199,7 @@ def build_rating_spines_figure(ratings: pd.DataFrame, image_height=420) -> go.Fi
             width=SPINE_WIDTH,
             customdata=plot["rating_label"],
             marker=dict(
-                color="rgba(0,0,0,0)",
+                color="rgba(0,0,0,0.001)",
                 line=dict(width=0),
             ),
             text=counts,
@@ -286,7 +286,8 @@ def build_rating_spines_figure(ratings: pd.DataFrame, image_height=420) -> go.Fi
         ),
         bargap=0.25,
         showlegend=False,
-        hovermode="closest",
+        #hovermode="closest",
+        clickmode="event+select",
     )
 
     return figure
