@@ -50,36 +50,6 @@ def load_density_data(backend):
         repo.get_country_reading_density(),
         repo.load_read_books(),
     )
-
-# Books grouped by author's country of birth (ISO3).
-country_books = {}
-
-for iso3, group in books.groupby("ISO3"):
-    if not iso3:
-        continue
-
-    entries = []
-
-    for _, book in group.iterrows():
-        rating = (
-            float(book["My Rating"])
-            if pd.notna(book["My Rating"])
-            else 0
-        )
-
-        whole = int(rating)
-        stars = "★" * whole
-
-        if rating - whole >= 0.5:
-            stars += "½"
-
-        entries.append({
-            "title": str(book["Display Title"]),
-            "author": str(book["Author"]),
-            "stars": stars or "—",
-        })
-
-    country_books[str(iso3)] = entries
     
 density, books = load_density_data(backend_name())
 
