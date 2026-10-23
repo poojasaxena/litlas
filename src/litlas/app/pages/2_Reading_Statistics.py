@@ -5,6 +5,7 @@ from html import escape
 from textwrap import dedent
 
 import plotly.graph_objects as go
+import pandas as pd
 import streamlit as st
 from pathlib import Path
 from litlas.app.ui import apply_page_style, render_page_header
@@ -823,6 +824,7 @@ with country_col:
                 ),
                 text=top_density["works"],
                 textposition="outside",
+                hoverinfo="none",
                 # hovertemplate=(
                 #     "<b>%{y}</b><br>"
                 #     "Unique works: %{x}<extra></extra>"
@@ -832,7 +834,7 @@ with country_col:
 
         fig.update_layout(
             height=380,
-            margin=dict(l=20, r=40, t=20, b=40),
+            margin=dict(l=20, r=40, t=30, b=45),
             paper_bgcolor="#FAF7F1",
             plot_bgcolor="#F5EFE4",
             font=dict(
@@ -853,6 +855,22 @@ with country_col:
             ),
             bargap=0.22,
             showlegend=False,
+            hovermode=False,
+        )
+        fig.add_annotation(
+            xref="paper",
+            yref="paper",
+            x=-0.01,
+            y=1.08,
+            xanchor="left",
+            yanchor="top",
+            showarrow=False,
+            text="✧ Click a country to explore its literary journeys",
+            font=dict(
+                family="Georgia, serif",
+                size=11,
+                color="#96785D",
+            ),
         )
 
         st.plotly_chart(
@@ -983,6 +1001,29 @@ with ratings_col:
 history_col, highlights_col = st.columns([2, 1], gap="large")
 
 history = get_books_read_by_year()
+books_by_year = {}
+
+for year in history["year"]:
+    year = str(year)
+    books = get_books_for_reading_year(year)
+
+    entries = []
+
+    for _, book in books.iterrows():
+        rating = float(book["rating"]) if pd.notna(book["rating"]) else 0
+        whole = int(rating)
+
+        stars = "★" * whole
+        if rating - whole >= 0.5:
+            stars += "½"
+
+        entries.append({
+            "title": str(book["title"]),
+            "author": str(book["author"]),
+            "stars": stars or "—",
+        })
+
+    books_by_year[year] = entries
 
 @st.dialog("Books From My Reading Year", width="small")
 def show_year_books(year: str):
@@ -1059,36 +1100,13 @@ with history_col:
     else:
         fig_history = build_year_spines_figure(history, spine_width=0.60, image_height=400)
  
-        event = st.plotly_chart(
+        st.plotly_chart(
             fig_history,
             width="stretch",
             config={"displayModeBar": False},
             key="litlas_reading_history",
-            on_select="rerun",
-            selection_mode="points",
         )
-
-        points = event.selection.points
-
-        if points:
-            selected_index = int(points[0]["x"])
-
-            if 0 <= selected_index < len(history):
-                selected_year = str(
-                    history.iloc[selected_index]["year"]
-                )
-
-                if (
-                    st.session_state.get("_last_opened_history_year")
-                    != selected_year
-                ):
-                    st.session_state["_last_opened_history_year"] = selected_year
-                    show_year_books(selected_year)
-        else:
-            st.session_state["_last_opened_history_year"] = None
-
-        dated_books = int(history["books"].sum())
-        missing_dates = int(summary["books"]) - dated_books
+        render_rating_popup(books_by_year, mode="year")
 
         # st.caption(
         #     f"Based on {dated_books} books with recorded reading dates. "
@@ -1439,7 +1457,6 @@ with wanderlust_col:
             width="stretch",
             config={"displayModeBar": False},
         )
-
         # st.caption(
         #     "First dated book by an author counts as a discovery; "
         #     "later books count as returns. "

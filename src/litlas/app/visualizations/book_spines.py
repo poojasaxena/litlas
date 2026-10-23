@@ -92,10 +92,8 @@ def build_year_spines_figure(history: pd.DataFrame, spine_width: float = SPINE_W
                 color="#7A4F32",
             ),
             cliponaxis=False,
-            hovertemplate=(
-                "<b>%{customdata}</b><br>"
-                "%{y} books read<extra></extra>"
-            ),
+            hovertemplate=None,
+            hoverinfo="none",
         )
     )
 
@@ -166,7 +164,22 @@ def build_year_spines_figure(history: pd.DataFrame, spine_width: float = SPINE_W
         hovermode="closest",
         clickmode="event+select",
     )
-
+    figure.add_annotation(
+        xref="paper",
+        yref="paper",
+        x=-0.01,
+        y=1.08,
+        xanchor="left",
+        yanchor="top",
+        showarrow=False,
+        align="left",
+        text="✧ Click a book spine to explore its stories",
+        font=dict(
+            family="Georgia, serif",
+            size=11,
+            color="#96785D",
+        ),
+    )
     return figure
 
 
@@ -210,10 +223,8 @@ def build_rating_spines_figure(ratings: pd.DataFrame, image_height=420) -> go.Fi
                 color="#7A4F32",
             ),
             cliponaxis=False,
-            hovertemplate=(
-                "<b>%{customdata}</b><br>"
-                "%{y} books<extra></extra>"
-            ),
+            hovertemplate=None,
+            hoverinfo="none",
         )
     )
 
@@ -286,8 +297,25 @@ def build_rating_spines_figure(ratings: pd.DataFrame, image_height=420) -> go.Fi
         ),
         bargap=0.25,
         showlegend=False,
-        #hovermode="closest",
+        hovermode="closest",
         clickmode="event+select",
     )
 
+
+    figure.add_annotation(
+        xref="paper",
+        yref="paper",
+        x=-0.03,
+        y=1.08,
+        xanchor="left",
+        yanchor="top",
+        showarrow=False,
+        align="left",
+        text="✧ Click a book spine to explore its stories",
+        font=dict(
+            family="Georgia, serif",
+            size=11,
+            color="#96785D",
+        ),
+    )
     return figure

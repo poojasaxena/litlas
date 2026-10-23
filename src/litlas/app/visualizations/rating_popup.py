@@ -6,6 +6,8 @@ import streamlit as st
 RATING_POPUP_JS = """
 export default function(component) {
     const books = component.data.books;
+    const isYear = component.data.mode === "year";
+    const chartKey = component.data.chart_key;
     let chart = null;
     let popup = null;
 
@@ -21,7 +23,8 @@ export default function(component) {
         if (!point) return;
 
         const rating = Number(point.x);
-        const entries = books[String(rating)] || [];
+        const key = isYear ? String(point.customdata) : String(rating);
+        const entries = books[key] || [];
 
         closePopup();
 
@@ -31,7 +34,7 @@ export default function(component) {
         Object.assign(popup.style, {
             position: "fixed",
             zIndex: "99999",
-            width: "380px",
+            width: "420px",
             maxWidth: "calc(100vw - 24px)",
             boxSizing: "border-box",
             padding: "20px 22px",
@@ -52,7 +55,9 @@ export default function(component) {
         });
 
         const title = document.createElement("strong");
-        title.textContent = "Books From My Rating";
+        title.textContent = isYear
+            ? "Books From My Reading Year"
+            : "Books From My Rating";
         title.style.fontSize = "20px";
 
         const close = document.createElement("button");
@@ -71,7 +76,9 @@ export default function(component) {
         header.append(title, close);
 
         const caption = document.createElement("div");
-        caption.textContent = `${rating} ★ · ${entries.length} books`;
+        caption.textContent = isYear
+            ? `${key} · ${entries.length} books completed`
+            : `${rating} ★ · ${entries.length} books`;
         Object.assign(caption.style, {
             margin: "14px 0 10px",
             color: "#96785D",
@@ -88,9 +95,10 @@ export default function(component) {
             overflowY: "auto"
         });
 
-        const whole = Math.floor(rating);
-        const stars = "★".repeat(whole)
-            + (rating - whole >= 0.5 ? "½" : "");
+        const stars = isYear
+            ? ""
+            : "★".repeat(Math.floor(rating))
+            + (rating % 1 >= 0.5 ? "½" : "");
 
         for (const book of entries) {
             const row = document.createElement("div");
@@ -119,7 +127,7 @@ export default function(component) {
             description.append(title, author);
 
             const ratingStars = document.createElement("span");
-            ratingStars.textContent = stars;
+            ratingStars.textContent = isYear ? book.stars : stars;
             Object.assign(ratingStars.style, {
                 color: "#A47B43",
                 whiteSpace: "nowrap",
@@ -142,9 +150,13 @@ export default function(component) {
 
         // Place popup left of the clicked spine.
         // Keep it within the viewport.
+        const preferredLeft = isYear
+            ? clickX + 16
+            : clickX - width - 16;
+
         const left = Math.max(
             12,
-            Math.min(clickX - width - 16, window.innerWidth - width - 12)
+            Math.min(preferredLeft, window.innerWidth - width - 12)
         );
         const top = Math.max(
             12,
@@ -156,8 +168,11 @@ export default function(component) {
     }
 
     function onOutsideClick(event) {
-        if (popup && !popup.contains(event.target)
-            && !event.target.closest(".st-key-litlas_ratings")) {
+        if (
+            popup &&
+            !popup.contains(event.target) &&
+            !event.target.closest(`.st-key-${chartKey}`)
+        ) {
             closePopup();
         }
     }
@@ -168,7 +183,7 @@ export default function(component) {
 
     function attach() {
         const found = document.querySelector(
-            ".st-key-litlas_ratings .js-plotly-plot"
+            `.st-key-${chartKey} .js-plotly-plot`
         );
 
         if (!found || found === chart || typeof found.on !== "function") {
@@ -213,9 +228,19 @@ rating_popup_component = st.components.v2.component(
 )
 
 
-def render_rating_popup(books_by_rating):
+def render_rating_popup(books, mode="rating"):
+    chart_key = (
+        "litlas_reading_history"
+        if mode == "year"
+        else "litlas_ratings"
+    )
+
     rating_popup_component(
-        key="litlas_anchored_rating_popup",
-        data={"books": books_by_rating},
+        key=f"litlas_anchored_{mode}_popup",
+        data={
+            "books": books,
+            "mode": mode,
+            "chart_key": chart_key,
+        },
         height=0,
     )
