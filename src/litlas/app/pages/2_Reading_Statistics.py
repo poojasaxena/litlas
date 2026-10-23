@@ -19,6 +19,7 @@ from litlas.app.visualizations.constellation import (
     load_constellation_books,
     build_constellation_figure,
 )
+from litlas.app.nobel import match_nobel_authors, load_literature_laureates
 from litlas.app.visualizations.book_of_honour import render_book_of_honour
 from litlas.app.visualizations.wanderlust import build_wanderlust_figure
 
@@ -159,6 +160,108 @@ div[role="dialog"]:has(.st-key-litlas_year_books)
     border-radius: 7px !important;
     padding: 5px 12px !important;
 }
+
+/* Nobel statistic — self-contained, no Streamlit popover or modal */
+.litlas-nobel-stat {
+    position: relative;
+    font-family: Georgia, serif;
+    color: #58412F;
+}
+
+.litlas-nobel-stat summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    list-style: none;
+    cursor: pointer;
+    color: #96785D;
+    font-family: Georgia, serif;
+    font-size: 0.95rem;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+.litlas-nobel-stat summary::-webkit-details-marker {
+    display: none;
+}
+
+.litlas-nobel-stat summary:focus-visible {
+    outline: 2px solid #A47B43;
+    outline-offset: 3px;
+    border-radius: 3px;
+}
+
+.litlas-nobel-value {
+    font-family: Georgia, serif;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #6E4B3A;
+    margin-top: 3px;
+}
+
+/* Anchored literary list — same visual language as Reading Year. */
+.litlas-nobel-panel {
+    position: absolute;
+    top: 28px;
+    right: 0;
+    z-index: 1000;
+    box-sizing: border-box;
+    width: 280px;
+    max-width: min(280px, calc(100vw - 24px));
+    padding: 22px 24px 24px;
+    background: #FAF7F1;
+    border: 1px solid #E8DED0;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(60, 40, 28, 0.14);
+}
+
+.litlas-nobel-title {
+    font-family: Georgia, serif;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #58412F;
+    margin: 0 0 14px;
+}
+
+/* Match the existing Reading Year panel's parchment and row styling. */
+.litlas-nobel-list {
+    height: 250px;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    background: #F5EFE4;
+    border: 1px solid #D4C1A7;
+    border-radius: 7px;
+    padding: 5px 12px;
+}
+
+.litlas-nobel-author {
+    padding: 5px 2px;
+    border-bottom: 1px solid #E2D5C3;
+    font-family: Georgia, serif;
+    font-size: 13px;
+    line-height: 1.3;
+    color: #58412F;
+}
+
+.litlas-nobel-author:last-child {
+    border-bottom: none;
+}
+
+.litlas-nobel-empty {
+    font-family: Georgia, serif;
+    font-size: 13px;
+    color: #81776E;
+    padding: 8px 2px;
+}
+.litlas-nobel-caption {
+    font-family: Georgia, serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: #96785D;
+    margin: 0 0 12px;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -179,7 +282,14 @@ render_page_header(
 
 summary = get_reading_summary()
 
-col1, col2, col3 = st.columns(3)
+# Automatically compare completed-book authors with Nobel laureates.
+read_books = repository.load_read_books()
+read_authors = read_books["Author"].dropna().unique()
+
+nobel_authors = match_nobel_authors(read_authors)
+nobel_data_available = bool(load_literature_laureates())
+
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     st.metric("Books devoured", summary["books"])
@@ -190,6 +300,47 @@ with col2:
 with col3:
     st.metric("Countries explored", summary["countries"])
 
+with col4:
+    if nobel_data_available:
+        rows = "".join(
+            f'<div class="litlas-nobel-author">'
+            f'<span>{escape(author)}</span>'
+            f'<span style="float:right;color:#A47B43;">{escape(str(year))}</span>'
+            f'</div>'
+            for author, year in nobel_authors
+        )
+        content = (
+            f'<div class="litlas-nobel-list">{rows}</div>'
+            if rows
+            else '<div class="litlas-nobel-empty">No laureates identified yet.</div>'
+        )
+    else:
+        content = (
+            '<div class="litlas-nobel-empty">'
+            'Laureate data is temporarily unavailable.'
+            '</div>'
+        )
+
+    count = str(len(nobel_authors)) if nobel_data_available else "—"
+
+    st.html(
+        '<div class="litlas-nobel-stat">'
+        '<details>'
+        '<summary title="View Nobel laureates">'
+        '<span aria-hidden="true">🏅</span>'
+        '<span>Nobel Laureates Read</span>'
+        '</summary>'
+        '<div class="litlas-nobel-panel">'
+        '<div class="litlas-nobel-title">Nobel Laureates</div>'
+        '<div class="litlas-nobel-caption">'
+        'Distinguished voices discovered'
+        '</div>'
+        f'{content}'
+        '</div>'
+        '</details>'
+        f'<div class="litlas-nobel-value">{count}</div>'
+        '</div>'
+    )
 
 # ---------------------------------------------------------
 # Page milestones
@@ -724,6 +875,31 @@ with ratings_col:
         st.info("No rated books available yet.")
     else:
         fig_ratings = build_rating_spines_figure(ratings, image_height=380)
+
+        fig_ratings.add_annotation(
+            xref="paper",
+            yref="paper",
+            x=1.0,
+            y=1.0,
+            xanchor="right",
+            yanchor="top",
+            showarrow=False,
+            align="left",
+            text=(
+                "<b>Personal Rating Scale</b><br>"
+                "   5 ★  Masterpiece<br>"
+                "   4 ★  Excellent<br>"
+                "   3 ★  Enjoyed it<br>"
+                "   2 ★  Didn't enjoy<br>"
+                "   1 ★  Disappointing"
+            ),
+            font=dict(
+                family="Georgia, serif",
+                size=12,
+                color="#58412F",
+            ),
+            bgcolor="rgba(0,0,0,0)",
+        )
 
         st.plotly_chart(
             fig_ratings,
