@@ -25,7 +25,7 @@ from litlas.app.nobel import match_nobel_authors, load_literature_laureates
 from litlas.app.visualizations.book_of_honour import render_book_of_honour
 from litlas.app.visualizations.wanderlust import build_wanderlust_figure
 
-from litlas.db_backend import get_repository
+from litlas.db_backend import get_repository, backend_name
 
 from time import perf_counter
 
@@ -49,6 +49,22 @@ get_yearly_highlights = repository.get_yearly_highlights
 get_constellation_book_details = repository.get_constellation_book_details
 get_literary_wanderlust = repository.get_literary_wanderlust
 
+@st.cache_data(ttl=3600, show_spinner=False)
+def load_statistics_data(backend):
+    repo = get_repository()
+
+    return {
+        "summary": repo.get_reading_summary(),
+        "density": repo.get_country_reading_density(),
+        "ratings": repo.get_rating_distribution(),
+        "history": repo.get_books_read_by_year(),
+        "page_stats": repo.get_page_statistics(),
+        "highlights": repo.get_yearly_highlights(),
+        "constellation": repo.get_constellation_book_details(),
+        "favourite_authors": repo.get_favourite_authors(),
+        "all_authors": repo.get_top_authors(limit=10000),
+        "wanderlust": repo.get_literary_wanderlust(),
+    }
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_popup_books(read_books):
@@ -321,7 +337,6 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     color: #96785D;
     margin: 0 0 12px;
 }
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -335,12 +350,14 @@ render_page_header(
     heading_gap=20,
 )
 
+## Load reading statistics
+stats = load_statistics_data(backend_name())
 
 # ---------------------------------------------------------
 # Reading summary
 # ---------------------------------------------------------
 
-summary = get_reading_summary()
+summary = stats["summary"]
 
 # Automatically compare completed-book authors with Nobel laureates.
 start_books = perf_counter()
@@ -356,11 +373,6 @@ cached_ratings, cached_years = load_popup_books(read_books)
 perf_checkpoint("Popup data loaded")
 print(f"[LITLAS PERFORMANCE] Popup data: {perf_counter() - start:.2f}s", flush=True)
 
-print(
-    f"[LITLAS CLOUD PERF] load_read_books alone: "
-    f"{perf_counter() - start_books:.2f}s",
-    flush=True,
-)
 read_authors = read_books["Author"].dropna().unique()
 
 nobel_authors = match_nobel_authors(read_authors)
@@ -424,7 +436,7 @@ with col4:
 # ---------------------------------------------------------
 
 # Retrieve page statistics from the database.
-page_stats = get_page_statistics()
+page_stats = stats["page_stats"]
 
 longest = page_stats["longest"]
 shortest = page_stats["shortest"]
@@ -859,7 +871,7 @@ def add_horizontal_book_stacks(fig, counts):
 
 country_col, ratings_col = st.columns([2, 1], gap="large")
 
-density = get_country_reading_density()
+density = stats["density"]
 
 # Group read books by author's country of birth.
 country_books = {}
@@ -1002,7 +1014,7 @@ blue_spine_path = make_book_spine_asset(
     gold_color="#D8B36A",
 )
 
-ratings = get_rating_distribution()
+ratings = stats["ratings"]
 
 books_by_rating = {
     f"{float(rating):g}": cached_ratings.get(
@@ -1062,7 +1074,7 @@ perf_checkpoint("Rating plot is built")
 
 history_col, highlights_col = st.columns([2, 1], gap="large")
 
-history = get_books_read_by_year()
+history = stats["history"]
 
 books_by_year = {
     str(year): cached_years.get(str(year), [])
@@ -1099,7 +1111,7 @@ with highlights_col:
     perf_checkpoint("Reading history completed")
     st.subheader("Literary Highlights")
 
-    highlights = get_yearly_highlights()
+    highlights = stats["highlights"]
 
     if highlights.empty:
         st.caption("No rated books with reading dates available.")
@@ -1173,7 +1185,7 @@ st.subheader("My Literary Constellation")
 try:
     constellation_df = load_constellation_books(
         default_constellation_csv(),
-        get_constellation_book_details(),
+        stats["constellation"],
     )
 
     constellation_fig = build_constellation_figure(
@@ -1199,7 +1211,7 @@ st.divider()
 
 st.subheader("My Literary Book of Honour")
 
-favourite_authors = get_favourite_authors()
+favourite_authors = stats["favourite_authors"]
 
 render_book_of_honour(favourite_authors)
 perf_checkpoint("Book of Honour completed")
@@ -1216,7 +1228,7 @@ most_read_col, favourite_col, wanderlust_col = st.columns(
 )
 # Get a sufficiently large pool of authors, not just the
 # ten most-read, so favourite rankings are not biased.
-all_authors = get_top_authors(limit=10000)
+all_authors = stats["all_authors"]
 perf_checkpoint("Author statistics loaded")
 
 # ---------------------------------------------------------
@@ -1427,7 +1439,7 @@ with favourite_col:
 with wanderlust_col:
     st.subheader("Literary Wanderlust")
 
-    wanderlust = get_literary_wanderlust()
+    wanderlust = stats["wanderlust"]
 
     if wanderlust.empty:
         st.info("Not enough reading history available yet.")
