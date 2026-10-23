@@ -27,6 +27,14 @@ from litlas.app.visualizations.wanderlust import build_wanderlust_figure
 
 from litlas.db_backend import get_repository
 
+from time import perf_counter
+
+PAGE_START = perf_counter()
+
+def perf_checkpoint(label):
+    elapsed = perf_counter() - PAGE_START
+    print(f"[LITLAS CLOUD PERF] {label}: {elapsed:.2f}s", flush=True)
+
 repository = get_repository()
 get_favourite_authors = repository.get_favourite_authors
 get_country_reading_density = repository.get_country_reading_density
@@ -60,8 +68,12 @@ def load_popup_books():
     return books_by_rating, books_by_year
 
 ## Load cached popup books
-cached_ratings, cached_years = load_popup_books()
+from time import perf_counter
 
+start = perf_counter()
+cached_ratings, cached_years = load_popup_books()
+perf_checkpoint("Popup data loaded")
+print(f"[LITLAS PERFORMANCE] Popup data: {perf_counter() - start:.2f}s", flush=True)
 
 
 # ---------------------------------------------------------
@@ -839,6 +851,8 @@ for iso3, group in read_books.groupby("ISO3"):
 
     country_books[str(iso3)] = entries
 
+perf_checkpoint("Country books entries are built")
+
 with country_col:
     st.subheader("Literary works by country")
 
@@ -941,6 +955,8 @@ with country_col:
             country_names=country_names,
         )
 
+perf_checkpoint("Top-Let-Most Plot is built")
+
 blue_spine_path = make_book_spine_asset(
     name="rating_3_blue",
     base_color="#4F647A",
@@ -1011,6 +1027,9 @@ def show_rating_books(rating: float):
 
         st.html("\n".join(rows))
 
+perf_checkpoint("Rating books dialog built")
+
+
 with ratings_col:
     st.subheader("Ratings")
 
@@ -1053,6 +1072,8 @@ with ratings_col:
         )
 
         render_rating_popup(books_by_rating)
+
+perf_checkpoint("Rating plot is built")
 
 # ---------------------------------------------------------
 # Row 2: Reading history
