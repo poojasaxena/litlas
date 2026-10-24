@@ -21,6 +21,7 @@ def apply_page_style():
     st.markdown(
         """
         <style>
+        @import url('https://fonts.googleapis.com/css2?family=Italianno&display=swap');
             [data-testid="stHeader"] {
                 background: transparent !important;
                 box-shadow: none !important;
@@ -442,6 +443,11 @@ a[data-testid="stPageLink-NavLink"] p {
     padding-left: 0 !important;
     margin: 8px 0 0 !important;
     text-align: left !important;
+}
+
+/* Use Vivaldi where available, otherwise Italianno on mobile */
+.litlas-heading h1 {
+    font-family: "Vivaldi", "Italianno", Georgia, serif !important;
 }
 
 }
