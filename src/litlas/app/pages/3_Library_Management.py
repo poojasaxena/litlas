@@ -692,6 +692,24 @@ st.markdown(
         color: #58412F;
     }
 }
+/* Compact selection menus on mobile only */
+@media screen and (max-width: 640px) {
+
+    div[role="option"] {
+        height: 30px !important;
+        min-height: 30px !important;
+        padding: 0 6px !important;
+        box-sizing: border-box !important;
+    }
+
+    div[role="option"] > div {
+        height: 30px !important;
+        min-height: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        box-sizing: border-box !important;
+    }
+}
     </style>
     """,
     unsafe_allow_html=True,
