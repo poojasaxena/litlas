@@ -184,11 +184,13 @@ st.markdown("""
     font-weight: 700 !important;
     font-size: 2rem !important;
 }
-/* Reading Statistics — prevent the header shifting upward */
-[data-testid="stLayoutWrapper"]:has(
-    > .st-key-litlas_sticky_header
-) {
-    top: 45px !important;
+/* Reading Statistics — desktop header positioning only */
+@media screen and (min-width: 641px) {
+    [data-testid="stLayoutWrapper"]:has(
+        > .st-key-litlas_sticky_header
+    ) {
+        top: 45px !important;
+    }
 }
 /* Reading Statistics — section headings */
 [data-testid="stHeading"] h3 {
@@ -331,6 +333,119 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     color: #96785D;
     margin: 0 0 12px;
 }
+
+/* Reading Statistics — mobile summary grid */
+@media screen and (max-width: 640px) {
+
+    [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat) {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        column-gap: 6px !important;
+        row-gap: 10px !important;
+    }
+
+    [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+    > [data-testid="stColumn"] {
+        width: 100% !important;
+        min-width: 0 !important;
+        flex: none !important;
+    }
+/* Align all four statistics */
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+> [data-testid="stColumn"] {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+}
+
+/* Standard metric labels */
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+[data-testid="stMetricLabel"] {
+    min-height: 28px !important;
+    margin-bottom: 4px !important;
+}
+
+/* Match Streamlit metric numbers to the Nobel number */
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+[data-testid="stMetricValue"],
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+[data-testid="stMetricValue"] > div,
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+[data-testid="stMetricValue"] p {
+    font-family: Georgia, serif !important;
+    font-size: 28.8px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    color: #6E4B3A !important;
+}
+
+/* Nobel label — match the standard metrics */
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+.litlas-nobel-stat summary {
+    min-height: 28px !important;
+    margin-bottom: 4px !important;
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
+}
+
+/* Nobel number — match the other three */
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+.litlas-nobel-value {
+    font-size: 1.8rem !important;
+    line-height: 1.2 !important;
+    margin-top: 0 !important;
+}
+
+/* Compact each standard metric */
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+[data-testid="stMetric"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+}
+
+/* Remove extra space inside metric labels */
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+[data-testid="stMetricLabel"] {
+    min-height: 0 !important;
+    margin: 0 !important;
+}
+
+/* Remove extra space around metric values */
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+[data-testid="stMetricValue"] {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.2 !important;
+}
+
+/* Compact the Nobel label and value */
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+.litlas-nobel-stat summary {
+    min-height: 0 !important;
+    margin: 0 0 2px !important;
+    line-height: 1.2 !important;
+}
+
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+.litlas-nobel-value {
+    margin: 0 !important;
+    line-height: 1.2 !important;
+}
+/* All four metric labels use the same typography */
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+[data-testid="stMetricLabel"] p,
+
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+.litlas-nobel-stat summary span {
+    font-family: Georgia, serif !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.5 !important;
+    color: #96785D !important;
+}
+}
+
 </style>
 """, unsafe_allow_html=True)
 

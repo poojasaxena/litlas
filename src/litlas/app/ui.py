@@ -435,6 +435,15 @@ a[data-testid="stPageLink-NavLink"],
 a[data-testid="stPageLink-NavLink"] p {
     color: #58412F !important;
 }
+
+.st-key-litlas_sticky_header .litlas-heading p {
+    font-size: 0.65rem !important;
+    line-height: 1.3 !important;
+    padding-left: 0 !important;
+    margin: 8px 0 0 !important;
+    text-align: left !important;
+}
+
 }
  
         </style>
