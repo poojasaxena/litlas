@@ -448,6 +448,79 @@ st.markdown(
         background: #6E4B3A !important;
         border-color: #6E4B3A !important;
     }
+
+/* ==========================================
+   LIBRARY NAVIGATION — MOBILE ONLY
+   ========================================== */
+
+@media screen and (max-width: 640px) {
+
+    /* Keep all five Streamlit columns in one row */
+    .st-key-litlas_library_navigation
+    [data-testid="stHorizontalBlock"] {
+        display: grid !important;
+        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+        gap: 5px !important;
+    }
+
+    .st-key-litlas_library_navigation
+    [data-testid="stHorizontalBlock"]
+    > [data-testid="stColumn"] {
+        width: 100% !important;
+        min-width: 0 !important;
+        flex: none !important;
+    }
+
+    /* Compact navigation buttons */
+    .st-key-litlas_library_navigation
+    div[class*="st-key-tool_"]
+    button:is([kind="secondary"], [kind="primary"]) {
+        height: 72px !important;
+        min-height: 72px !important;
+        padding: 5px 2px !important;
+        overflow: hidden !important;
+    }
+
+    /* Smaller icons, closer to their labels */
+    .st-key-litlas_library_navigation
+    div[class*="st-key-tool_"]
+    button:is([kind="secondary"], [kind="primary"])
+    span[data-has-shortcut="false"] {
+        gap: 5px !important;
+    }
+
+    .st-key-litlas_library_navigation
+    div[class*="st-key-tool_"]
+    button:is([kind="secondary"], [kind="primary"])
+    span[data-has-shortcut="false"] > span:first-child,
+    .st-key-litlas_library_navigation
+    div[class*="st-key-tool_"]
+    button:is([kind="secondary"], [kind="primary"])
+    span[data-has-shortcut="false"] > span:first-child span {
+        font-size: 25px !important;
+    }
+
+    /* Labels fit into narrow cards */
+    .st-key-litlas_library_navigation
+    div[class*="st-key-tool_"]
+    button:is([kind="secondary"], [kind="primary"])
+    [data-testid="stMarkdownContainer"] p {
+        font-size: 10px !important;
+        line-height: 1.15 !important;
+        bottom: 5px !important;
+        padding: 0 2px !important;
+        white-space: normal !important;
+    }
+
+    /* Scale down the custom Add a Book illustration */
+    .st-key-litlas_library_navigation
+    .st-key-tool_add_book
+    span[data-has-shortcut="false"] > span:first-child {
+        width: 33px !important;
+        height: 30px !important;
+        background-size: contain !important;
+    }
+}
     </style>
     """,
     unsafe_allow_html=True,
@@ -484,21 +557,24 @@ if "library_tool" not in st.session_state:
     st.session_state.library_tool = None
 
 
-columns = st.columns(5, gap="small")
+with st.container(key="litlas_library_navigation"):
 
-for column, (name, symbol) in zip(columns, TOOLS):
-    with column:
-        selected = st.session_state.library_tool == name
+    columns = st.columns(5, gap="small")
 
-        if st.button(
-            name,
-            icon=symbol,
-            key="tool_add_book" if name == "Add a Book" else f"tool_{name}",
-            type="primary" if selected else "secondary",
-            width="stretch",
-        ):
-            st.session_state.library_tool = None if selected else name
-            st.rerun()
+    for column, (name, symbol) in zip(columns, TOOLS):
+        with column:
+            selected = st.session_state.library_tool == name
+
+            if st.button(
+                name,
+                icon=symbol,
+                key="tool_add_book" if name == "Add a Book" else f"tool_{name}",
+                type="primary" if selected else "secondary",
+                width="stretch",
+            ):
+                st.session_state.library_tool = None if selected else name
+                st.rerun()
+
 
 selected_tool = st.session_state.library_tool
 
