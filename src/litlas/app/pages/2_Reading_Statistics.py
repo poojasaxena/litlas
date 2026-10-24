@@ -444,6 +444,29 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     line-height: 1.5 !important;
     color: #96785D !important;
 }
+/* Hide country chart axis title on mobile */
+.st-key-litlas_country_density .ytitle {
+    display: none !important;
+}
+
+/* Country and Ratings — compact mobile stacking */
+[data-testid="stHorizontalBlock"]:has(.st-key-litlas_country_density) {
+    gap: 0 !important;
+}
+/* Reduce internal spacing in the country chart column */
+[data-testid="stVerticalBlock"]:has(
+    .st-key-litlas_country_density
+) {
+    row-gap: 0 !important;
+}
+
+/* Reading history — compact mobile spacing */
+[data-testid="stVerticalBlock"]:has(
+    .st-key-litlas_reading_history
+) {
+    row-gap: 0 !important;
+}
+
 }
 
 </style>
@@ -970,7 +993,7 @@ def add_horizontal_book_stacks(fig, counts):
 # Row 1: Country distribution and ratings
 # ---------------------------------------------------------
 
-country_col, ratings_col = st.columns([2, 1], gap="large")
+country_col, ratings_col = st.columns([2, 1], gap="small")
 
 density = stats["density"]
 
@@ -1011,6 +1034,10 @@ with country_col:
     else:
         density["country"] = density["iso3"].apply(country_name)
 
+        density["country"] = density["country"].replace({
+            "United States": "USA",
+            "United Kingdom": "UK",})
+        
         top_density = (
             density.sort_values("works", ascending=False)
             .head(15)
@@ -1063,10 +1090,13 @@ with country_col:
                 gridcolor="#DDD2C2",
                 zeroline=False,
                 showline=False,
+                range=[0, top_density["works"].max() * 1.20],
             ),
             yaxis=dict(
-                title="Country of author's birth",
+                title=None,
                 showgrid=False,
+                tickfont=dict(size=11),
+                automargin=True,
             ),
             bargap=0.22,
             showlegend=False,
@@ -1095,9 +1125,7 @@ with country_col:
             key="litlas_country_density",
         )
 
-        country_names = dict(
-            zip(top_density["iso3"], top_density["country"])
-        )
+        country_names = dict(zip(top_density["iso3"], top_density["country"]))
 
         render_rating_popup(
             country_books,
@@ -1129,7 +1157,10 @@ with ratings_col:
         st.info("No rated books available yet.")
     else:
         fig_ratings = build_rating_spines_figure(ratings, image_height=380)
-
+        fig_ratings.update_layout(
+            paper_bgcolor="#FAF7F1",
+            plot_bgcolor="#F5EFE4",
+        )
         fig_ratings.add_annotation(
             xref="paper",
             yref="paper",
@@ -1140,7 +1171,7 @@ with ratings_col:
             showarrow=False,
             align="left",
             text=(
-                "<b>Personal Rating Scale</b><br>"
+                "Personal Rating Scale<br>"
                 "   5 ★  Masterpiece<br>"
                 "   4 ★  Excellent<br>"
                 "   3 ★  Enjoyed it<br>"
@@ -1149,8 +1180,8 @@ with ratings_col:
             ),
             font=dict(
                 family="Georgia, serif",
-                size=12,
-                color="#58412F",
+                size=11,
+                color="#81776E",
             ),
             bgcolor="rgba(0,0,0,0)",
         )
@@ -1170,7 +1201,7 @@ with ratings_col:
 # Row 2: Reading history
 # ---------------------------------------------------------
 
-history_col, highlights_col = st.columns([2, 1], gap="large")
+history_col, highlights_col = st.columns([2, 1], gap="small")
 
 history = stats["history"]
 
@@ -1187,7 +1218,8 @@ with history_col:
         st.info("No books have a recorded reading date yet.")
     else:
         fig_history = build_year_spines_figure(history, spine_width=0.60, image_height=400)
- 
+        fig_history.update_yaxes(title_text=None)
+
         st.plotly_chart(
             fig_history,
             width="stretch",
