@@ -521,6 +521,98 @@ st.markdown(
         background-size: contain !important;
     }
 }
+/* Add a Book — mobile spacing only */
+@media screen and (max-width: 640px) {
+
+    .st-key-litlas_editor_card
+    [data-testid="stVerticalBlock"] {
+        gap: 10px !important;
+    }
+
+    .st-key-litlas_editor_card
+    [data-testid="stHorizontalBlock"] {
+        gap: 8px !important;
+    }
+
+    .st-key-litlas_editor_card
+    [data-testid="stWidgetLabel"] {
+        margin-bottom: 3px !important;
+    }
+}
+
+/* ==========================================
+   ADD A BOOK — COMPACT MOBILE FORM
+   ========================================== */
+
+@media screen and (max-width: 640px) {
+
+    /* Row 1: title full width
+       Row 2: author and country side by side */
+    .st-key-litlas_add_book_identity
+    [data-testid="stHorizontalBlock"] {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px 8px !important;
+        align-items: start !important;
+    }
+
+    .st-key-litlas_add_book_identity
+    [data-testid="stHorizontalBlock"]
+    > [data-testid="stColumn"] {
+        width: 100% !important;
+        min-width: 0 !important;
+        flex: none !important;
+    }
+
+    /* Book title occupies both columns */
+    .st-key-litlas_add_book_identity
+    [data-testid="stHorizontalBlock"]
+    > [data-testid="stColumn"]:first-child {
+        grid-column: 1 / -1;
+    }
+
+    /* Rating | Pages | Date */
+    .st-key-litlas_add_book_details
+    [data-testid="stHorizontalBlock"] {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 6px !important;
+        align-items: start !important;
+    }
+
+    .st-key-litlas_add_book_details
+    [data-testid="stHorizontalBlock"]
+    > [data-testid="stColumn"] {
+        width: 100% !important;
+        min-width: 0 !important;
+        flex: none !important;
+    }
+
+    /* Compact gaps inside both field groups */
+    .st-key-litlas_add_book_identity
+    [data-testid="stVerticalBlock"],
+    .st-key-litlas_add_book_details
+    [data-testid="stVerticalBlock"] {
+        gap: 4px !important;
+    }
+
+    /* Allow inputs to shrink with their columns */
+    .st-key-litlas_add_book_identity
+    [data-testid="stColumn"] *,
+    .st-key-litlas_add_book_details
+    [data-testid="stColumn"] * {
+        min-width: 0;
+    }
+
+    /* Smaller field labels */
+    .st-key-litlas_add_book_identity
+    [data-testid="stWidgetLabel"] p,
+    .st-key-litlas_add_book_details
+    [data-testid="stWidgetLabel"] p {
+        font-size: 12px !important;
+        line-height: 1.25 !important;
+    }
+}
     </style>
     """,
     unsafe_allow_html=True,

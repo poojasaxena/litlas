@@ -35,86 +35,87 @@ def render_add_book():
     # -------------------------------------------------
     # Row 1: title + author + country
     # -------------------------------------------------
-    col1, col2, col3 = st.columns(3, gap="large")
+    with st.container(key="litlas_add_book_identity"):
+        col1, col2, col3 = st.columns(3, gap="small")
 
-    with col1:
-        title = st.text_input(
-            "Book title",
-            placeholder="Enter book title...",
-            key="add_book_title",
-        )
-
-    with col2:
-        author_name = st.selectbox(
-            "Author",
-            options=list(author_options),
-            index=None,
-            placeholder="Find or add an author...",
-            accept_new_options=True,
-            key="add_book_author",
-        )
-
-    normalized_name = (
-        " ".join(author_name.split()) if author_name else ""
-    )
-
-    existing_name = next(
-        (
-            name for name in author_options
-            if name.casefold() == normalized_name.casefold()
-        ),
-        None,
-    )
-
-    new_author = bool(normalized_name and existing_name is None)
-
-    author_id = (
-        author_options[existing_name]
-        if existing_name is not None
-        else None
-    )
-
-    iso3 = None
-    confirm_similar = False
-    possible = []
-
-    with col3:
-        if new_author:
-            country_codes = sorted(
-                {country.alpha_3 for country in pycountry.countries}
-                | set(COUNTRY_DISPLAY_NAMES),
-                key=lambda code: country_name(code).casefold(),
+        with col1:
+            title = st.text_input(
+                "Book title",
+                placeholder="Enter book title...",
+                key="add_book_title",
             )
 
-            iso3 = st.selectbox(
-                "Country of birth",
-                options=country_codes,
+        with col2:
+            author_name = st.selectbox(
+                "Author",
+                options=list(author_options),
                 index=None,
-                format_func=country_name,
-                placeholder="Select country...",
-                key="add_book_country",
+                placeholder="Find or add an author...",
+                accept_new_options=True,
+                key="add_book_author",
             )
 
-        else:
-            existing_iso3 = (
-                author_countries.get(existing_name)
-                if existing_name is not None
-                else None
-            )
+        normalized_name = (
+            " ".join(author_name.split()) if author_name else ""
+        )
 
-            st.text_input(
-                "Country of birth",
-                value=(
-                    country_name(existing_iso3)
-                    if existing_iso3
-                    else "Country not recorded"
+        existing_name = next(
+            (
+                name for name in author_options
+                if name.casefold() == normalized_name.casefold()
+            ),
+            None,
+        )
+
+        new_author = bool(normalized_name and existing_name is None)
+
+        author_id = (
+            author_options[existing_name]
+            if existing_name is not None
+            else None
+        )
+
+        iso3 = None
+        confirm_similar = False
+        possible = []
+
+        with col3:
+            if new_author:
+                country_codes = sorted(
+                    {country.alpha_3 for country in pycountry.countries}
+                    | set(COUNTRY_DISPLAY_NAMES),
+                    key=lambda code: country_name(code).casefold(),
+                )
+
+                iso3 = st.selectbox(
+                    "Country of birth",
+                    options=country_codes,
+                    index=None,
+                    format_func=country_name,
+                    placeholder="Select country...",
+                    key="add_book_country",
+                )
+
+            else:
+                existing_iso3 = (
+                    author_countries.get(existing_name)
                     if existing_name is not None
-                    else ""
-                ),
-                placeholder="Select an author first...",
-                disabled=True,
-                key="add_book_existing_country",
-            )
+                    else None
+                )
+
+                st.text_input(
+                    "Country of birth",
+                    value=(
+                        country_name(existing_iso3)
+                        if existing_iso3
+                        else "Country not recorded"
+                        if existing_name is not None
+                        else ""
+                    ),
+                    placeholder="Select an author first...",
+                    disabled=True,
+                    key="add_book_existing_country",
+                )
 
     # -------------------------------------------------
     # New-author duplicate protection
@@ -142,32 +143,33 @@ def render_add_book():
         clear_on_submit=False,
         border=False,
     ):
-        col4, col5, col6 = st.columns(3, gap="large")
+        with st.container(key="litlas_add_book_details"):
+            col4, col5, col6 = st.columns(3, gap="small")
 
-        with col4:
-            rating_label = st.selectbox(
-                "My rating",
-                list(RATING_OPTIONS),
-                index=0,
-            )
+            with col4:
+                rating_label = st.selectbox(
+                    "My rating",
+                    list(RATING_OPTIONS),
+                    index=0,
+                )
 
-        with col5:
-            pages = st.number_input(
-                "Number of pages",
-                min_value=0,
-                value=0,
-                step=1,
-                help="Leave at 0 if unknown.",
-            )
+            with col5:
+                pages = st.number_input(
+                    "Number of pages",
+                    min_value=0,
+                    value=0,
+                    step=1,
+                    help="Leave at 0 if unknown.",
+                )
 
-        with col6:
-            date_read = st.date_input(
-                "Date read (optional)",
-                value=None,
-                max_value="today",
-                format="DD.MM.YYYY",
-                key="add_book_date",
-            )
+            with col6:
+                date_read = st.date_input(
+                    "Date read (optional)",
+                    value=None,
+                    max_value="today",
+                    format="DD.MM.YYYY",
+                    key="add_book_date",
+                )
 
         submitted = st.form_submit_button(
             "Add to Litlas",
