@@ -180,26 +180,108 @@ def render_book_of_honour(authors):
             line-height: 1.42;
         }
 
-        @media (max-width: 900px) {
-            .honour-book {
-                grid-template-columns: 1fr;
+@media (max-width: 700px) {
+
+    .honour-book-wrap {
+        margin: 8px 0 20px;
+    }
+
+    .honour-book {
+        width: min(430px, 96vw);
+        max-width: none;
+        grid-template-columns: 1fr 1fr !important;
+        background-size: 100% 100% !important;
+        background-position: center top !important;
+        background-repeat: no-repeat !important;
+    }
+
+    .honour-page {
+        padding: 14px 12px 16px !important;
+        min-height: 0 !important;
+    }
+
+    .honour-page-inner {
+        min-height: 0 !important;
+        justify-content: flex-start !important;
+    }
+
+    /* Move Exceptional onto the left page a bit more cleanly */
+    .honour-left-page .honour-page-inner {
+        transform: translateX(-8px) translateY(-6px) !important;
+    }
+
+    .honour-symbol {
+        font-size: 14px !important;
+        margin-bottom: 0 !important;
+    }
+
+    .honour-heading {
+        font-size: 16px !important;
+        margin-bottom: 2px !important;
+    }
+
+    .honour-count {
+        font-size: 10px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .honour-author {
+        font-size: 8px !important;
+        line-height: 1.22 !important;
+        padding: 0 !important;
+    }
+
+    .honour-divider {
+        font-size: 8px !important;
+        letter-spacing: 2px !important;
+        margin: 7px 0 3px !important;
+    }
+
+    /* Right page: stack the two categories vertically */
+    .honour-right-columns {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+        align-items: start !important;
+    }
+
+    .honour-subheading {
+        font-size: 14px !important;
+        margin-bottom: 2px !important;
+    }
+
+    .honour-subcount {
+        font-size: 9px !important;
+        margin-bottom: 6px !important;
+    }
+
+    .honour-column .honour-author {
+        font-size: 8px !important;
+        line-height: 1.18 !important;
+    }
+}
+        /* Compact Book of Honour on mobile only */
+        @media screen and (max-width: 640px) {
+
+            .honour-book-wrap {
+                margin: 8px 0 16px;
             }
 
-            .honour-left-page {
-                border-right: none;
-                border-bottom: 2px solid #b79b74;
-                box-shadow: inset 0 -8px 14px rgba(120, 90, 55, 0.08);
+            .honour-page {
+                min-height: 0;
+                padding: 45px 20px 24px;
             }
 
-            .honour-right-page {
-                box-shadow: inset 0 8px 14px rgba(120, 90, 55, 0.08);
+            .honour-page-inner {
+                min-height: 0;
+                justify-content: flex-start;
             }
-        }
 
-        @media (max-width: 700px) {
+            .honour-left-page .honour-page-inner {
+                transform: none;
+            }
+
             .honour-right-columns {
-                grid-template-columns: 1fr;
-                gap: 14px;
+                gap: 24px;
             }
         }
         </style>

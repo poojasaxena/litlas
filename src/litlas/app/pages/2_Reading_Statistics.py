@@ -467,6 +467,11 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     row-gap: 0 !important;
 }
 
+/* Hide the desktop-only constellation on mobile */
+.st-key-litlas_constellation_section {
+    display: none !important;
+}
+
 }
 
 </style>
@@ -1307,29 +1312,31 @@ with highlights_col:
     #     "Ties resolved by length, then completion date."
     # )
 
-st.divider()
-st.subheader("My Literary Constellation")
+### Constellation Plot
 
+with st.container(key="litlas_constellation_section"):
+    st.divider()
+    st.subheader("My Literary Constellation")
 
-try:
-    constellation_df = load_constellation_books(
-        default_constellation_csv(),
-        stats["constellation"],
-    )
+    try:
+        constellation_df = load_constellation_books(
+            default_constellation_csv(),
+            stats["constellation"],
+        )
 
-    constellation_fig = build_constellation_figure(
-        constellation_df,
-        height=530,
-    )
+        constellation_fig = build_constellation_figure(
+            constellation_df,
+            height=530,
+        )
 
-    st.plotly_chart(
-        constellation_fig,
-        width="stretch",
-        config={"displayModeBar": False},
-    )
+        st.plotly_chart(
+            constellation_fig,
+            width="stretch",
+            config={"displayModeBar": False},
+        )
 
-except (ValueError, FileNotFoundError) as exc:
-    st.warning(f"Constellation could not be loaded: {exc}")
+    except (ValueError, FileNotFoundError) as exc:
+        st.warning(f"Constellation could not be loaded: {exc}")
 
 # ---------------------------------------------------------
 # My Literary Book of Honour
