@@ -334,12 +334,90 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     margin: 0 0 12px;
 }
 
+/* =====================================================
+   Page milestones — separate desktop and mobile layouts
+   ===================================================== */
+
+.st-key-litlas_desktop_milestones {
+    display: block;
+}
+
+.st-key-litlas_mobile_milestones {
+    display: none;
+}
+
+@media screen and (max-width: 640px) {
+
+    .st-key-litlas_desktop_milestones {
+        display: none !important;
+    }
+
+    .st-key-litlas_mobile_milestones {
+        display: block !important;
+        margin-top: 12px !important;
+    }
+
+    .litlas-mobile-milestones {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 5px;
+        width: 100%;
+    }
+
+    .litlas-mobile-card {
+        min-width: 0;
+        background: #F5EFE4;
+        border: 1px solid #D4C1A7;
+        border-radius: 7px;
+        padding: 9px 5px;
+        text-align: center;
+        font-family: Georgia, serif;
+        color: #58412F;
+    }
+
+.litlas-mobile-label {
+    color: #96785D;
+    font-size: 11px;
+    line-height: 1.2;
+    min-height: 0;
+    margin-bottom: 2px;
+}
+
+.litlas-mobile-number {
+    color: #6E4B3A;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+.litlas-mobile-unit {
+    color: #96785D;
+    font-size: 10px;
+    line-height: 1.1;
+    margin-top: 1px;
+}
+
+.litlas-mobile-detail {
+    color: #58412F;
+    font-size: 10px;
+    line-height: 1.25;
+    margin-top: 5px;
+
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+}
+}
+
 /* Reading Statistics — mobile summary grid */
 @media screen and (max-width: 640px) {
 
     [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat) {
         display: grid !important;
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
         column-gap: 6px !important;
         row-gap: 10px !important;
     }
@@ -365,15 +443,36 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     margin-bottom: 4px !important;
 }
 
-/* Match Streamlit metric numbers to the Nobel number */
+/* Align Nobel with the other metric headings */
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+.litlas-nobel-stat {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+.litlas-nobel-stat summary {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    height: 18px !important;
+    min-height: 18px !important;
+    padding: 0 !important;
+    margin: 0 0 2px !important;
+    line-height: 18px !important;
+}
+
+/* Four summary numbers — identical typography */
 [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
 [data-testid="stMetricValue"],
 [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
 [data-testid="stMetricValue"] > div,
 [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
-[data-testid="stMetricValue"] p {
+[data-testid="stMetricValue"] p,
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+.litlas-nobel-value {
     font-family: Georgia, serif !important;
-    font-size: 28.8px !important;
+    font-size: 20px !important;
     font-weight: 700 !important;
     line-height: 1.2 !important;
     color: #6E4B3A !important;
@@ -471,6 +570,97 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 .st-key-litlas_constellation_section {
     display: none !important;
 }
+
+/* Four compact statistics in one row */
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat) {
+    align-items: start !important;
+    column-gap: 4px !important;
+    row-gap: 0 !important;
+}
+
+/* Keep all four values compact */
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+[data-testid="stMetricValue"] p,
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+.litlas-nobel-value {
+    font-size: 22px !important;
+    line-height: 1.2 !important;
+}
+
+/* Replace long labels visually on mobile */
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+[data-testid="stMetricLabel"] p {
+    font-size: 0 !important;
+    line-height: 18px !important;
+}
+
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+[data-testid="stColumn"]:nth-child(1)
+[data-testid="stMetricLabel"] p::after {
+    content: "Books";
+}
+
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+[data-testid="stColumn"]:nth-child(2)
+[data-testid="stMetricLabel"] p::after {
+    content: "Authors";
+}
+
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+[data-testid="stColumn"]:nth-child(3)
+[data-testid="stMetricLabel"] p::after {
+    content: "Countries";
+}
+
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+[data-testid="stMetricLabel"] p::after {
+    font-family: Georgia, serif;
+    font-size: 11px;
+    color: #96785D;
+}
+
+/* Shorten Nobel label while keeping its popup functional */
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+.litlas-nobel-stat summary span {
+    display: none !important;
+}
+
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+.litlas-nobel-stat summary::after {
+    content: "Nobel";
+    font-family: Georgia, serif;
+    font-size: 11px;
+    color: #96785D;
+}
+
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+.litlas-nobel-stat summary {
+    min-height: 0 !important;
+    height: 18px;
+    margin-bottom: 2px !important;
+}
+/* Book title and author on separate lines */
+.litlas-mobile-detail {
+    margin-top: 5px;
+    font-size: 10px;
+    line-height: 1.25;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: clip;
+    display: block;
+}
+
+.litlas-mobile-book-title {
+    color: #58412F;
+    overflow-wrap: anywhere;
+}
+
+.litlas-mobile-book-author {
+    color: #81776E;
+    margin-top: 3px;
+    overflow-wrap: anywhere;
+}
+
 
 }
 
@@ -799,31 +989,83 @@ def page_milestone(label, value, title="", author=""):
     )
 
 
-longest_col, pages_col, shortest_col = st.columns(3, gap="medium")
+## Desktop Reading Milestones
+with st.container(key="litlas_desktop_milestones"):
 
-with longest_col:
-    page_milestone(
+    longest_col, pages_col, shortest_col = st.columns(3, gap="medium")
+
+    with longest_col:
+        page_milestone(
+            "Longest Book",
+            f"{longest['pages']:,} pages" if longest else "—",
+            longest["title"] if longest else "",
+            longest["author"] if longest else "",
+        )
+
+    with pages_col:
+        page_milestone(
+            "Total Pages Read",
+            f"{total_pages:,}",
+            "A lifetime between pages",
+        )
+
+    with shortest_col:
+        page_milestone(
+            "Shortest Book",
+            f"{shortest['pages']:,} pages" if shortest else "—",
+            shortest["title"] if shortest else "",
+            shortest["author"] if shortest else "",
+        )
+
+
+def mobile_milestone(label, number, title="", author="", unit=""):
+    return f"""
+    <div class="litlas-mobile-card">
+        <div class="litlas-mobile-label">{escape(label)}</div>
+        <div class="litlas-mobile-number">{escape(str(number))}</div>
+        <div class="litlas-mobile-unit">{escape(unit) if unit else "&nbsp;"}</div>
+        <div class="litlas-mobile-detail">
+            <div class="litlas-mobile-book-title">
+                <i>{escape(title)}</i>
+            </div>
+            <div class="litlas-mobile-book-author">
+                {escape(author)}
+            </div>
+        </div>
+    </div>
+    """
+
+mobile_milestones = f"""
+<div class="litlas-mobile-milestones">
+
+    {mobile_milestone(
         "Longest Book",
-        f"{longest['pages']:,} pages" if longest else "—",
+        f"{longest['pages']:,}" if longest else "—",
         longest["title"] if longest else "",
         longest["author"] if longest else "",
-    )
+        "pages" if longest else "",
+    )}
 
-with pages_col:
-    page_milestone(
+    {mobile_milestone(
         "Total Pages Read",
         f"{total_pages:,}",
-        "A lifetime between pages",
-    )
+        "A lifetime between",
+        "pages",
+    )}
 
-with shortest_col:
-    page_milestone(
+    {mobile_milestone(
         "Shortest Book",
-        f"{shortest['pages']:,} pages" if shortest else "—",
+        f"{shortest['pages']:,}" if shortest else "—",
         shortest["title"] if shortest else "",
         shortest["author"] if shortest else "",
-    )
+        "pages" if shortest else "",
+    )}
 
+</div>
+"""
+
+with st.container(key="litlas_mobile_milestones"):
+    st.html(dedent(mobile_milestones))
 
 def add_book_spine_details(fig, x_vals, y_vals):
     """Subtle antique-book details over Plotly bars."""
