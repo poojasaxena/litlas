@@ -333,7 +333,7 @@ def render_book_of_honour(authors):
 
     /* Move Exceptional and left-page content slightly downward */
         .honour-mobile .honour-left-page {
-            padding-top: 35px !important;
+            padding-top: 22px !important;
         }
 
     .honour-mobile .honour-author {
@@ -347,7 +347,7 @@ def render_book_of_honour(authors):
     }
 
     .honour-mobile-continuation {
-        margin-top: 10px;
+        margin-top: 3px;
     }
 
     .honour-mobile-good {
