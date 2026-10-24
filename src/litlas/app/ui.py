@@ -448,7 +448,7 @@ a[data-testid="stPageLink-NavLink"] p {
 /* Use Vivaldi where available, otherwise Italianno on mobile */
 .litlas-heading h1 {
     font-family: "Vivaldi", "Italianno", Georgia, serif !important;
-    font-size: 28rem !important;
+    font-size: 8rem !important;
 }
 
 }
