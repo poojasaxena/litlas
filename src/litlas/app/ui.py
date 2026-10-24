@@ -445,10 +445,10 @@ a[data-testid="stPageLink-NavLink"] p {
     text-align: left !important;
 }
 
-/* Use Vivaldi where available, otherwise Italianno on mobile */
-.litlas-heading h1 {
+/* Mobile decorative heading */
+.st-key-litlas_sticky_header .litlas-heading h1 {
     font-family: "Vivaldi", "Italianno", Georgia, serif !important;
-    font-size: 8rem !important;
+    font-size: clamp(2.5rem, 9vw, 3.5rem) !important;
 }
 
 }

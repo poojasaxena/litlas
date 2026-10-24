@@ -3,7 +3,8 @@
 import pandas as pd
 import streamlit as st
 import folium
-from branca.element import Element
+from branca.element import Element, MacroElement
+from jinja2 import Template
 
 from streamlit_folium import st_folium
 from litlas.processing.paths import load_config
@@ -63,18 +64,9 @@ books["My Rating"] = pd.to_numeric(books["My Rating"], errors="coerce").fillna(0
 
 mapped = books[books["ISO3"].astype(bool)].copy()
 
-
-m = folium.Map(
-    location=[15, 0],
-    zoom_start=2,
-    tiles=None,
-    control_scale=True,
-    prefer_canvas=False,
-    world_copy_jump=True,
-    zoom_control=True,
-)
-
 m = create_litlas_map()
+if st.context.url.startswith("https://"):
+    pass
 
 ## Highlight countries that have been read
 read_countries = set(mapped["ISO3"].unique())
@@ -231,7 +223,6 @@ journey_html = f"""
 m.get_root().html.add_child(Element(journey_html))
 
 
-
 st_folium(
     m,
     height=MAP_HEIGHT,
@@ -240,6 +231,23 @@ st_folium(
     key="literarymap",
 )
 
+# -------------------------------------------------
+# Mobile-only initial map zoom
+# -------------------------------------------------
+
+mobile_zoom = MacroElement()
+
+mobile_zoom._template = Template("""
+{% macro script(this, kwargs) %}
+    if (window.innerWidth <= 640) {
+        {{ this._parent.get_name() }}.setZoom(
+            {{ this._parent.get_name() }}.getZoom() + 1
+        );
+    }
+{% endmacro %}
+""")
+
+m.add_child(mobile_zoom)
 
 if mapped.empty:
     st.info('No author birth countries assigned yet. Run `litlas-prepare` in your terminal, then refresh this page.')
