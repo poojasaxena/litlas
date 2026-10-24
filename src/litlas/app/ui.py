@@ -15,8 +15,6 @@ def load_logo_path() -> Path | None:
     return path if path.is_file() else None
 
 
-
-
 def apply_page_style():
     """Apply consistent styling across all Litlas pages."""
 
@@ -251,6 +249,143 @@ def apply_page_style():
             [data-testid="stSidebarCollapseButton"] {
                 display: none !important;
             }
+
+            
+/* =====================================================
+   LITLAS MOBILE LAYOUT
+   Desktop styling remains completely unchanged
+   ===================================================== */
+
+@media screen and (max-width: 640px) {
+
+    /* -----------------------------------------
+       Main page spacing
+       ----------------------------------------- */
+
+    .stApp .block-container {
+        padding-top: 0 !important;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+
+
+    /* -----------------------------------------
+       Compact header: illustration beside title
+       ----------------------------------------- */
+
+    .st-key-litlas_sticky_header {
+        position: relative !important;
+        min-height: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 10px !important;
+        margin-top: 0 !important;
+    }
+
+    .st-key-litlas_sticky_header .litlas-page-illustration {
+        width: 65px !important;
+        height: 65px !important;
+        top: 0 !important;
+        left: 0 !important;
+        transform: none !important;
+    }
+
+    .st-key-litlas_sticky_header .litlas-heading {
+        padding-left: 80px !important;
+        padding-top: 0 !important;
+        min-height: 80px !important;
+        text-align: left !important;
+    }
+
+    .st-key-litlas_sticky_header .litlas-logo {
+        display: none !important;
+    }
+
+
+    /* -----------------------------------------
+       Header typography
+       ----------------------------------------- */
+
+    .st-key-litlas_sticky_header .litlas-heading h1 {
+        font-size: clamp(1.65rem, 7vw, 2.4rem) !important;
+        line-height: 1.1 !important;
+        white-space: normal !important;
+        overflow-wrap: normal !important;
+        word-break: normal !important;
+    }
+
+    .st-key-litlas_sticky_header .litlas-heading h1::after {
+        width: 100% !important;
+        margin: 8px 0 0 !important;
+    }
+
+    .st-key-litlas_sticky_header .litlas-heading p {
+        font-size: 0.75rem !important;
+        line-height: 1.3 !important;
+        padding-left: 0 !important;
+        margin: 8px 0 0 !important;
+        text-align: left !important;
+    }
+
+
+    /* -----------------------------------------
+       Disable desktop sticky positioning
+       ----------------------------------------- */
+
+    [data-testid="stLayoutWrapper"]:has(
+        > .st-key-litlas_sticky_header
+    ) {
+        position: relative !important;
+        top: 0 !important;
+    }
+
+    /* Desktop's decorative 45px cover is unnecessary on mobile */
+    [data-testid="stLayoutWrapper"]:has(
+        > .st-key-litlas_sticky_header
+    )::before {
+        display: none !important;
+    }
+
+
+    /* -----------------------------------------
+       Mobile typography
+       ----------------------------------------- */
+
+    .stApp h2 {
+        font-size: 1.55rem !important;
+        line-height: 1.2 !important;
+    }
+
+    .stApp h3 {
+        font-size: 1.4rem !important;
+        line-height: 1.2 !important;
+    }
+
+    .stApp p,
+    .stApp li {
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+
+    .stApp [data-testid="stHeading"] h3 {
+        font-size: 1.5rem !important;
+        line-height: 1.15 !important;
+    }
+
+
+    /* -----------------------------------------
+       Statistics metrics
+       ----------------------------------------- */
+
+    .stApp [data-testid="stMetricValue"] {
+        font-size: 1.8rem !important;
+    }
+
+    .stApp [data-testid="stMetricLabel"] {
+        font-size: 0.8rem !important;
+    }
+
+}
+ 
         </style>
         """,
         unsafe_allow_html=True,
