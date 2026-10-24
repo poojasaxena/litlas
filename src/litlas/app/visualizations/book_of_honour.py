@@ -42,8 +42,8 @@ def render_book_of_honour(authors):
     good_count = len(grouped[3])
 
     # Mobile layout: Favourites continue from the left page to the right.
-    mobile_favourites_left = grouped[2][:2]
-    mobile_favourites_right = grouped[2][2:]
+    mobile_favourites_left = grouped[2][:3]
+    mobile_favourites_right = grouped[2][3:]
 
     def mobile_author_rows(names):
         return "".join(
@@ -347,7 +347,7 @@ def render_book_of_honour(authors):
     }
 
     .honour-mobile-continuation {
-        margin-top: 20px;
+        margin-top: 10px;
     }
 
     .honour-mobile-good {
@@ -374,6 +374,26 @@ def render_book_of_honour(authors):
     font-size: 12px;
     color: #70472F;
     line-height: 0.5;
+}
+
+/* Compact heading, count and author list */
+.honour-mobile .honour-mobile-title-row {
+    margin-bottom: 0 !important;
+}
+
+.honour-mobile .honour-count,
+.honour-mobile .honour-subcount {
+    margin-bottom: 2px !important;
+}
+/* Keep decorative stars close to the author lists */
+.honour-mobile .honour-divider {
+    margin-top: 1px !important;
+    margin-bottom: 2px !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+}
+.honour-left-page .honour-page-inner {
+    padding-top: 2px !important;
 }
         </style>
         """,
@@ -466,6 +486,7 @@ def render_book_of_honour(authors):
                             {mobile_author_rows(mobile_favourites_left)}
 
                         </div>
+                        
 
                     </div>
                 </div>
