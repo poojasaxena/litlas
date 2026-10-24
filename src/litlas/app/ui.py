@@ -250,7 +250,10 @@ def apply_page_style():
                 display: none !important;
             }
 
-            
+            /* Hide mobile navigation on desktop */
+            .st-key-litlas_mobile_nav {
+                display: none !important;
+            }   
 /* =====================================================
    LITLAS MOBILE LAYOUT
    Desktop styling remains completely unchanged
@@ -384,6 +387,54 @@ def apply_page_style():
         font-size: 0.8rem !important;
     }
 
+    
+    /* Mobile: replace chapter links with menu */
+    .st-key-litlas_desktop_nav {
+        display: none !important;
+    }
+
+    .st-key-litlas_mobile_nav {
+        display: block !important;
+    }
+
+    /* Mobile menu button */
+.st-key-litlas_mobile_nav button {
+    background-color: #F5EFE4 !important;
+    color: #58412F !important;
+    border: 1px solid #D4C1A7 !important;
+    font-family: Georgia, serif !important;
+}
+
+/* Mobile menu popup panel */
+
+/* Popup's inner content */
+div[data-baseweb="popover"]:has(
+    a[data-testid="stPageLink-NavLink"]
+) > div {
+    background-color: #FAF7F1 !important;
+}
+
+/* Litlas mobile menu — popover background */
+[data-testid="stPopoverBody"]:has(
+    a[data-testid="stPageLink-NavLink"]
+) {
+    background: #FAF7F1 !important;
+    border: 1px solid #D4C1A7 !important;
+    border-radius: 10px !important;
+    color: #58412F !important;
+    width: 170px !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 32px) !important;
+    box-sizing: border-box !important;
+}
+
+/* Mobile menu link text */
+[data-testid="stPopoverBody"]
+a[data-testid="stPageLink-NavLink"],
+[data-testid="stPopoverBody"]
+a[data-testid="stPageLink-NavLink"] p {
+    color: #58412F !important;
+}
 }
  
         </style>
@@ -478,7 +529,9 @@ def render_chapter_navigation(active_page: str) -> None:
         unsafe_allow_html=True,
     )
 
+    # Existing desktop navigation
     with st.container(
+        key="litlas_desktop_nav",
         horizontal=True,
         horizontal_alignment="center",
         gap="small",
@@ -492,30 +545,13 @@ def render_chapter_navigation(active_page: str) -> None:
 
             st.page_link(path, label=label)
 
-def render_chapter_navigation_deprecated() -> None:
-    """Render Litlas chapter navigation within the shared header."""
 
-    pages = [
-        ("Literary Atlas", "main.py"),
-        ("Reading Density", "pages/1_Reading_Density.py"),
-        ("Reading Statistics", "pages/2_Reading_Statistics.py"),
-        ("Library Management", "pages/3_Library_Management.py"),
-        ("Ink & Verse", "pages/4_My_Books.py")
-    ]
+    # New mobile navigation
+    with st.container(key="litlas_mobile_nav"):
+        with st.popover("☰ Menu"):
+            for label, path, _ in pages:
+                st.page_link(path, label=label)
 
-    columns = st.columns(
-        [1.5, 0.15, 1.6, 0.15, 1.8, 0.15, 2.0],
-        gap="small",
-        vertical_alignment="center",
-    )
-
-    for index, (label, path) in enumerate(pages):
-        with columns[index * 2]:
-            st.page_link(path, label=label, width="stretch")
-
-        if index < len(pages) - 1:
-            with columns[index * 2 + 1]:
-                st.markdown("❦")
 
 def render_page_header(
     title: str,
