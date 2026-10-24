@@ -613,6 +613,85 @@ st.markdown(
         line-height: 1.25 !important;
     }
 }
+/* Literary Collection — desktop retains original appearance */
+.litlas-desktop-favourite-collection {
+    display: block;
+}
+
+.litlas-mobile-favourite-collection {
+    display: none;
+}
+
+@media screen and (max-width: 640px) {
+
+    .litlas-desktop-favourite-collection {
+        display: none !important;
+    }
+
+    .litlas-mobile-favourite-collection {
+        display: block !important;
+    }
+
+    .litlas-mobile-favourite-section {
+        border-bottom: 1px solid #D4C1A7;
+        font-family: Georgia, serif;
+        color: #58412F;
+    }
+
+    .litlas-mobile-favourite-section summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 12px 3px;
+        cursor: pointer;
+        list-style: none;
+    }
+
+    .litlas-mobile-favourite-section summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .litlas-mobile-favourite-heading {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #58412F;
+    }
+
+    .litlas-mobile-favourite-heading small {
+        font-family: Georgia, serif;
+        font-size: 12px;
+        font-weight: normal;
+        color: #81776E;
+    }
+
+    .litlas-mobile-favourite-chevron {
+        font-size: 22px;
+        color: #A47B43;
+        transition: transform 0.2s ease;
+    }
+
+    .litlas-mobile-favourite-section[open]
+    .litlas-mobile-favourite-chevron {
+        transform: rotate(180deg);
+    }
+
+    .litlas-mobile-favourite-list {
+        padding: 0 12px 14px;
+    }
+
+    .litlas-mobile-favourite-author {
+        font-family: Georgia, serif;
+        font-size: 14px;
+        line-height: 1.6;
+        padding: 3px 0;
+        color: #58412F;
+    }
+}
     </style>
     """,
     unsafe_allow_html=True,

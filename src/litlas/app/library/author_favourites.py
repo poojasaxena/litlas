@@ -137,6 +137,7 @@ def render_favourite_collection():
         if tier != 0
     }
     sections = []
+    mobile_sections = []
 
     for tier, (symbol, title) in categories.items():
         names = [
@@ -183,7 +184,46 @@ def render_favourite_collection():
             </div>
         """)
 
-    st.markdown(
-        " ".join(" ".join(section.split()) for section in sections),
-        unsafe_allow_html=True,
+
+        mobile_names = (
+            "".join(
+                f'<div class="litlas-mobile-favourite-author">'
+                f'{html.escape(name)}</div>'
+                for name in names
+            )
+            if names
+            else '<div class="litlas-mobile-favourite-author">No authors yet</div>'
+        )
+
+        mobile_sections.append(f"""
+            <details class="litlas-mobile-favourite-section">
+                <summary>
+                    <span class="litlas-mobile-favourite-heading">
+                        <span>{html.escape(symbol)} {html.escape(title)}</span>
+                        <small>{len(names)} authors</small>
+                    </span>
+                    <span class="litlas-mobile-favourite-chevron"
+                          aria-hidden="true">⌄</span>
+                </summary>
+                <div class="litlas-mobile-favourite-list">
+                    {mobile_names}
+                </div>
+            </details>
+        """)
+
+        
+    desktop_html = " ".join(
+        " ".join(section.split()) for section in sections
     )
+
+    mobile_html = "".join(mobile_sections)
+
+    st.html(f"""
+        <div class="litlas-desktop-favourite-collection">
+            {desktop_html}
+        </div>
+
+        <div class="litlas-mobile-favourite-collection">
+            {mobile_html}
+        </div>
+    """)
