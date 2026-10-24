@@ -422,7 +422,7 @@ div[data-baseweb="popover"]:has(
     border: 1px solid #D4C1A7 !important;
     border-radius: 10px !important;
     color: #58412F !important;
-    width: 170px !important;
+    width: 200px !important;
     min-width: 0 !important;
     max-width: calc(100vw - 32px) !important;
     box-sizing: border-box !important;

@@ -692,22 +692,49 @@ st.markdown(
         color: #58412F;
     }
 }
-/* Compact selection menus on mobile only */
+
+/* Compact mobile dropdown menus */
 @media screen and (max-width: 640px) {
 
-    div[role="option"] {
-        height: 30px !important;
-        min-height: 30px !important;
-        padding: 0 6px !important;
-        box-sizing: border-box !important;
+    div[role="listbox"] {
+        max-height: 190px !important;
+        overflow-y: auto !important;
     }
 
-    div[role="option"] > div {
-        height: 30px !important;
-        min-height: 0 !important;
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
+    div[role="option"] {
+        height: 32px !important;
+        min-height: 32px !important;
+        padding: 3px 8px !important;
+        font-size: 13px !important;
+        line-height: 1.2 !important;
         box-sizing: border-box !important;
+    }
+}
+/* Library Management — compact mobile dropdowns */
+@media screen and (max-width: 640px) {
+
+    div[role="listbox"] {
+        max-height: 240px !important;
+        overflow-y: auto !important;
+        -webkit-text-size-adjust: 100% !important;
+        text-size-adjust: 100% !important;
+    }
+
+    div[role="option"] {
+        height: 34px !important;
+        min-height: 34px !important;
+        padding: 3px 8px !important;
+        font-family: Georgia, serif !important;
+        font-size: 13px !important;
+        line-height: 1.2 !important;
+        box-sizing: border-box !important;
+        -webkit-text-size-adjust: none !important;
+        text-size-adjust: none !important;
+    }
+
+    div[role="option"] * {
+        font-size: inherit !important;
+        line-height: inherit !important;
     }
 }
     </style>
