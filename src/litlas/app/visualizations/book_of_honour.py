@@ -41,17 +41,6 @@ def render_book_of_honour(authors):
     favourites_count = len(grouped[2])
     good_count = len(grouped[3])
 
-    # Mobile layout: Favourites continue from the left page to the right.
-    mobile_favourites_left = grouped[2][:3]
-    mobile_favourites_right = grouped[2][3:]
-
-    def mobile_author_rows(names):
-        return "".join(
-            f'<div class="honour-author">{name}</div>'
-            for name in names
-        )
-
-
     st.markdown(
         """
         <style>
@@ -392,8 +381,147 @@ def render_book_of_honour(authors):
     padding: 0 !important;
     line-height: 1 !important;
 }
-.honour-left-page .honour-page-inner {
-    padding-top: 2px !important;
+
+/* Fixed-size, scrollable two-page mobile book */
+@media screen and (max-width: 640px) {
+
+    .honour-mobile .honour-book {
+        width: min(430px, 96vw) !important;
+        height: min(60vw, 260px) !important;
+        grid-template-columns: 1fr 1fr !important;
+        grid-template-rows: minmax(0, 1fr) !important;
+    }
+
+    .honour-mobile .honour-page {
+        height: 100% !important;
+        min-height: 0 !important;
+        padding: 28px 12px 12px !important;
+        overflow: hidden;
+    }
+
+    .honour-mobile .honour-page-inner {
+        height: 100% !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        transform: none !important;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Left page: Exceptional */
+    .honour-mobile .honour-left-page .honour-page-inner {
+        justify-content: flex-start !important;
+    }
+
+    /* Right page: two equally allocated sections */
+    .honour-mobile .honour-right-page .honour-page-inner {
+        display: grid;
+        grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 6px;
+    }
+
+    .honour-mobile .honour-mobile-group {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    /* Only the author lists scroll */
+    .honour-mobile .honour-mobile-list {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: #D4C1A7 transparent;
+    }
+
+    .honour-mobile .honour-author {
+        font-size: 9px !important;
+        line-height: 1.3 !important;
+        padding: 1px 0 !important;
+    }
+
+    .honour-mobile .honour-mobile-title-row {
+        flex-shrink: 0;
+        margin-bottom: 3px !important;
+    }
+
+    .honour-mobile .honour-mobile-heading {
+        font-size: 13px !important;
+        line-height: 1.2 !important;
+    }
+
+    .honour-mobile .honour-count,
+    .honour-mobile .honour-subcount {
+        flex-shrink: 0;
+        margin-bottom: 5px !important;
+    }
+    }
+
+    @media (max-width: 900px) {
+
+    .honour-page-inner.honour-mobile-right-page {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 8px;
+        min-height: 100%;
+    }
+
+    .honour-mobile-panel {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        flex: 1 1 0;
+        min-height: 0;
+    }
+
+    .honour-inline-heading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-style: italic;
+        font-size: 18px;
+        color: #70472F;
+        margin-bottom: 2px;
+        line-height: 1.1;
+    }
+
+    .honour-inline-heading span {
+        display: inline-block;
+    }
+
+    .honour-subcount {
+        text-align: center;
+        font-size: 11px;
+        color: #8A735B;
+        margin-bottom: 6px;
+    }
+
+    .honour-mobile-scroll {
+        width: 100%;
+        max-width: 140px;
+        height: 20px;          /* main control: ~3 author lines visible */
+        overflow-y: auto;
+        overflow-x: hidden;
+        text-align: center;
+        padding-right: 2px;
+        box-sizing: border-box;
+    }
+
+    .honour-mobile-scroll .honour-author {
+        font-size: 12px;
+        line-height: 1.3;
+        padding: 0;
+        margin: 0;
+    }
 }
         </style>
         """,
@@ -425,94 +553,99 @@ def render_book_of_honour(authors):
                 </div>
             </div>
 
-            <div class="honour-page honour-right-page">
-                <div class="honour-page-inner">
-                    <div class="honour-right-columns">
-                        <div class="honour-column">
-                            <div class="honour-symbol">♥</div>
-                            <div class="honour-subheading">Favourites</div>
-                            <div class="honour-subcount">{favourites_count} author{"s" if favourites_count != 1 else ""}</div>
-                            {author_rows(2)}
-                            <div class="honour-divider">✦ ❧ ✦</div>
+                <div class="honour-page honour-right-page">
+                    <div class="honour-page-inner honour-mobile-right-page">
+
+                        <div class="honour-mobile-panel">
+                            <div class="honour-inline-heading">♥ <span>Favourites</span></div>
+                            <div class="honour-subcount">{favourites_count} authors</div>
+                            <div class="honour-mobile-scroll">
+                                {author_rows(2)}
+                            </div>
                         </div>
 
-                        <div class="honour-column">
-                            <div class="honour-symbol">ღ</div>
-                            <div class="honour-subheading">Good authors</div>
-                            <div class="honour-subcount">{good_count} author{"s" if good_count != 1 else ""}</div>
-                            {author_rows(3)}
-                            <div class="honour-divider">✦ ❧ ✦</div>
+                        <div class="honour-mobile-panel">
+                            <div class="honour-inline-heading">ღ <span>Good authors</span></div>
+                            <div class="honour-subcount">{good_count} authors</div>
+                            <div class="honour-mobile-scroll">
+                                {author_rows(3)}
+                            </div>
                         </div>
+
                     </div>
                 </div>
-            </div>
         </div>
     </div>
     """
 
     mobile_html = f"""
-        <div class="honour-book-wrap honour-mobile">
-            <div class="honour-book" style="
-                background-image: url('data:image/png;base64,{book_background}');
-                background-size: 100% 100%;
-                background-position: center;
-                background-repeat: no-repeat;
-            ">
+    <div class="honour-book-wrap honour-mobile">
+        <div class="honour-book" style="
+            background-image: url('data:image/png;base64,{book_background}');
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+        ">
 
-                        <div class="honour-page honour-left-page">
-                    <div class="honour-page-inner">
+            <div class="honour-page honour-left-page">
+                <div class="honour-page-inner">
 
+                    <div class="honour-mobile-group">
                         <div class="honour-mobile-title-row">
                             <span class="honour-mobile-symbol">❦</span>
                             <span class="honour-mobile-heading">Exceptional</span>
                         </div>
 
-                        <div class="honour-count">{exceptional_count} authors</div>
-                        {author_rows(1)}
-
-                        <div class="honour-divider">✦ ❧ ✦</div>
-
-                        <div class="honour-mobile-favourites">
-
-                            <div class="honour-mobile-title-row">
-                                <span class="honour-mobile-symbol">♥</span>
-                                <span class="honour-mobile-heading">Favourites</span>
-                            </div>
-
-                            <div class="honour-subcount">
-                                {favourites_count} authors
-                            </div>
-
-                            {mobile_author_rows(mobile_favourites_left)}
-
+                        <div class="honour-count">
+                            {exceptional_count} authors
                         </div>
-                        
 
+                        <div class="honour-mobile-list">
+                            {author_rows(1)}
+                        </div>
                     </div>
-                </div>
 
-                <div class="honour-page honour-right-page">
-                    <div class="honour-page-inner">
-                        <div class="honour-mobile-continuation">
-                            {mobile_author_rows(mobile_favourites_right)}
+                </div>
+            </div>
+
+            <div class="honour-page honour-right-page">
+                <div class="honour-page-inner">
+
+                    <div class="honour-mobile-group">
+                        <div class="honour-mobile-title-row">
+                            <span class="honour-mobile-symbol">♥</span>
+                            <span class="honour-mobile-heading">Favourites</span>
                         </div>
 
-                        <div class="honour-divider">✦ ❧ ✦</div>
+                        <div class="honour-subcount">
+                            {favourites_count} authors
+                        </div>
 
-                        <div class="honour-mobile-good">
-                            <div class="honour-mobile-title-row">
-                                <span class="honour-mobile-symbol">ღ</span>
-                                <span class="honour-mobile-heading">Good authors</span>
-                            </div>
-                            <div class="honour-subcount">{good_count} authors</div>
+                        <div class="honour-mobile-list">
+                            {author_rows(2)}
+                        </div>
+                    </div>
+
+                    <div class="honour-mobile-group">
+                        <div class="honour-mobile-title-row">
+                            <span class="honour-mobile-symbol">ღ</span>
+                            <span class="honour-mobile-heading">Good authors</span>
+                        </div>
+
+                        <div class="honour-subcount">
+                            {good_count} authors
+                        </div>
+
+                        <div class="honour-mobile-list">
                             {author_rows(3)}
                         </div>
-
                     </div>
-                </div>
 
+                </div>
             </div>
+
         </div>
-"""
+    </div>
+    """
 
     st.html(dedent(html) + dedent(mobile_html))
