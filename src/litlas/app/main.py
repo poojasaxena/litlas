@@ -27,6 +27,35 @@ from litlas.app.visualizations.unexplored_lands import (
     add_unexplored_lands_control,
 )
 
+class MobileInitialZoom(MacroElement):
+    """Increase the initial zoom on narrow map displays."""
+
+    def __init__(self):
+        super().__init__()
+        self._name = "MobileInitialZoom"
+        self._template = Template("""
+        {% macro script(this, kwargs) %}
+            var litlasMap = {{ this._parent.get_name() }};
+
+            setTimeout(function () {
+                if (litlasMap.getContainer().clientWidth <= 640) {
+                    var previousZoom = litlasMap.getZoom();
+
+                    litlasMap.setZoom(previousZoom + 1, {
+                        animate: false
+                    });
+
+                    console.log(
+                        "Litlas mobile zoom:",
+                        previousZoom,
+                        "→",
+                        litlasMap.getZoom()
+                    );
+                }
+            }, 100);
+        {% endmacro %}
+        """)
+
 
 ## Configuration constants for the map and flag display
 config = load_config()
@@ -222,6 +251,16 @@ journey_html = f"""
 
 m.get_root().html.add_child(Element(journey_html))
 
+# Mobile-only initial zoom
+m.add_child(MobileInitialZoom())
+
+# Diagnostics — temporary
+html = m.get_root().render()
+
+print("MOBILE ZOOM SCRIPT PRESENT:", "whenReady" in html)
+print("LITLAS MAP NAME:", m.get_name())
+print("CUSTOM SCRIPT PRESENT:", "litlasMap" in html)
+print("HTML LENGTH:", len(html))
 
 st_folium(
     m,
@@ -230,24 +269,6 @@ st_folium(
     returned_objects=[],
     key="literarymap",
 )
-
-# -------------------------------------------------
-# Mobile-only initial map zoom
-# -------------------------------------------------
-
-mobile_zoom = MacroElement()
-
-mobile_zoom._template = Template("""
-{% macro script(this, kwargs) %}
-    if (window.innerWidth <= 640) {
-        {{ this._parent.get_name() }}.setZoom(
-            {{ this._parent.get_name() }}.getZoom() + 1
-        );
-    }
-{% endmacro %}
-""")
-
-m.add_child(mobile_zoom)
 
 if mapped.empty:
     st.info('No author birth countries assigned yet. Run `litlas-prepare` in your terminal, then refresh this page.')
