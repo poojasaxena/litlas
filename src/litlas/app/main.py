@@ -31,7 +31,7 @@ config = load_config()
 map_config = config.get("map", {})
 
 FLAG_SIZE = map_config.get("flag_size", 14)
-MAP_HEIGHT = map_config.get("height", 800)
+MAP_HEIGHT = 580
 
 
 st.set_page_config(page_title='Literary Atlas',page_icon='🌍',layout='wide',initial_sidebar_state='collapsed')
@@ -244,6 +244,46 @@ m.get_root().header.add_child(Element("""
 }
 </style>
 """))
+
+
+# Discreet About Litlas invitation — above the map
+st.html("""
+<style>
+.litlas-about-hint {
+    font-family: Georgia, serif;
+    font-size: 13px;
+    font-style: italic;
+    color: #896A50;
+    text-align: left;
+    white-space: nowrap;
+    margin: 0;
+    padding: 0;
+    line-height: 1.2;
+}
+
+.litlas-about-hint a {
+    color: #795740;
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 5px;
+}
+
+.litlas-about-hint a:hover {
+    text-decoration: underline;
+}
+
+@media screen and (max-width: 640px) {
+    .litlas-about-hint {
+        font-size: 10px;
+    }
+}
+</style>
+
+<div class="litlas-about-hint">
+    Curious about the story behind this atlas?
+    <a href="/About_Litlas">📖 About Litlas</a>
+</div>
+""")
 
 st_folium(
     m,
