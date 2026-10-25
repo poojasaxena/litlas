@@ -135,7 +135,7 @@ for feature in geojson["features"]:
         )
 
 
-m = create_litlas_map()
+m = create_litlas_map(mobile_focus=True)
 
 def style_country(feature):
     count = feature["properties"]["litlas_works"]
