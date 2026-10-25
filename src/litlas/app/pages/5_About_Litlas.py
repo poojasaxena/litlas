@@ -6,7 +6,8 @@ from html import escape
 import streamlit as st
 
 from litlas.app.ui import apply_page_style, render_page_header
-
+import base64
+from litlas.app.ui import load_logo_path
 
 # -------------------------------------------------
 # Page configuration
@@ -46,7 +47,7 @@ st.html("""
 <style>
 
 .litlas-about {
-    max-width: 850px;
+    max-width: 1100px;
     margin: 0 auto 12px;
     padding: 22px 42px 24px;
     background: #FAF7F1;
@@ -140,6 +141,13 @@ st.html("""
     text-underline-offset: 4px;
 }
 
+.litlas-about-personal-logo {
+    display: block;
+    width: 115px;
+    height: 115px;
+    object-fit: contain;
+    margin: 0 auto 6px;
+}
 /* -------------------------------------------------
    Mobile version
    ------------------------------------------------- */
@@ -194,7 +202,16 @@ st.html("""
         font-size: 13px;
     }
 }
+@media screen and (max-width: 640px) {
+    .litlas-about-card {
+        max-width: 100%;
+    }
 
+    .litlas-about-personal-logo {
+        width: 100px;
+        height: 100px;
+    }
+}
 </style>
 """)
 
@@ -231,6 +248,19 @@ name_html = (
     else "Created with a love of books"
 )
 
+## Personal logo
+logo_path = load_logo_path()
+
+logo_html = ""
+
+if logo_path:
+    mime = "image/svg+xml" if logo_path.suffix.lower() == ".svg" else "image/png"
+    logo_data = base64.b64encode(logo_path.read_bytes()).decode("ascii")
+
+    logo_html = (
+        f'<img src="data:{mime};base64,{logo_data}" '
+        f'alt="Personal logo" class="litlas-about-personal-logo">'
+    )
 
 # -------------------------------------------------
 # About Litlas — single integrated card
@@ -251,8 +281,7 @@ st.html(f"""
     <div class="litlas-about-rule"></div>
 
     <div class="litlas-about-opening">
-        Every book opens a world.<br>
-        This is a record of the worlds I've wandered through.
+        Every book opens a world, and this is a record of the worlds I've wandered through.
         <!-- A journey through the world, one book at a time. -->
     </div>
 
@@ -265,13 +294,13 @@ st.html(f"""
             literature from around the world. I love discovering
             unfamiliar writers, exploring different cultures,
             and occasionally finding a book that stays with me
-            long after I've turned its last page.
+            long after I've turned its last page...
         </p>
 
         <p>
             I created Litlas to bring my reading life together
-            in one place — part personal library, part literary
-            world map, and always a work in progress.
+            in one place: part personal library, part literary
+            world map, and always a book in progress.
         </p>
 
         <p>
@@ -284,7 +313,8 @@ st.html(f"""
     <div class="litlas-about-rule"></div>
 
     <div class="litlas-about-signature">
-        {name_html}
+        {logo_html}
+        <div>{name_html}</div>
     </div>
 
     <div class="litlas-about-links">
