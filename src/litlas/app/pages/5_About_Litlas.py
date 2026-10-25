@@ -33,7 +33,7 @@ render_page_header(
 # Replace the example URLs with your actual links
 # -------------------------------------------------
 
-PUBLIC_NAME = "Iris Stegen"
+PUBLIC_NAME = "Pooja Saxena"
 GOODREADS_URL = "https://www.goodreads.com/user/show/22058002-pooja"
 GITHUB_URL = "https://github.com/poojasaxena"
 
