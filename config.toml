@@ -25,6 +25,7 @@ reading_density = "data/assets/illustrations/reading_density.png"
 reading_statistics = "data/assets/illustrations/reading_statistics.png"
 lib_management = "data/assets/illustrations/library_management.png"
 book_author = "data/assets/illustrations/book_author.png"
+about_litlas = "data/assets/illustrations/about_litlas.png"
 add_book = "data/assets/illustrations/add_book.png"
 constellation_illustration = "data/assets/illustrations/constellation_background.png"
 

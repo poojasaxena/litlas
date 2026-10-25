@@ -24,8 +24,9 @@ apply_page_style()
 render_page_header(
     "About Litlas",
     "A personal journey through stories and the world...",
+    illustration="about_litlas",
+    illustration_size=220,
 )
-
 
 # -------------------------------------------------
 # Personal details
