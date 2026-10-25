@@ -4,6 +4,8 @@
 import folium
 from branca.element import Element
 from string import Template
+from branca.element import MacroElement
+from jinja2 import Template as JinjaTemplate
 
 # Shared vintage map palette
 OCEAN_COLOR = "#E6DDD0"
@@ -72,8 +74,45 @@ def apply_map_style(m: folium.Map) -> None:
     </style>
     """).substitute(ocean_color=OCEAN_COLOR)))
 
+class ResponsiveInitialView(MacroElement):
+    def __init__(self):
+        super().__init__()
+        self._name = "ResponsiveInitialView"
+        self._template = JinjaTemplate("""
+        {% macro script(this, kwargs) %}
+            var litlasMap = {{ this._parent.get_name() }};
 
-def create_litlas_map(
+            if (litlasMap.getContainer().clientWidth <= 640) {
+                litlasMap.setView([15, 0], 1, {animate: false});
+            } else {
+                litlasMap.fitBounds([[-55, -170], [75, 180]]);
+            }
+        {% endmacro %}
+        """)
+
+def create_litlas_map(mobile_focus=False) -> folium.Map:
+    """Create a Litlas map with shared settings and styling."""
+
+    m = folium.Map(
+        location=[15, 0],
+        zoom_start=2,
+        tiles=None,
+        control_scale=True,
+        prefer_canvas=False,
+        world_copy_jump=True,
+        zoom_control=True,
+    )
+
+    apply_map_style(m)
+
+    if mobile_focus:
+        m.add_child(ResponsiveInitialView())
+    else:
+        m.fit_bounds([[-55, -170], [75, 180]])
+
+    return m
+
+def create_litlas_map_obsolete(
     fit_world=True,
     initial_zoom=2,
 ) -> folium.Map:

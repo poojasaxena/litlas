@@ -63,7 +63,7 @@ books["My Rating"] = pd.to_numeric(books["My Rating"], errors="coerce").fillna(0
 
 mapped = books[books["ISO3"].astype(bool)].copy()
 
-m = create_litlas_map()
+m = create_litlas_map(mobile_focus=True)
 #     fit_world=False,
 #     initial_zoom=1,
 # )
