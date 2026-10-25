@@ -63,10 +63,10 @@ books["My Rating"] = pd.to_numeric(books["My Rating"], errors="coerce").fillna(0
 
 mapped = books[books["ISO3"].astype(bool)].copy()
 
-m = create_litlas_map(
-    fit_world=False,
-    initial_zoom=1,
-)
+m = create_litlas_map()
+#     fit_world=False,
+#     initial_zoom=1,
+# )
 
 ## Highlight countries that have been read
 read_countries = set(mapped["ISO3"].unique())

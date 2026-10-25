@@ -80,7 +80,7 @@ def create_litlas_map(
     """Create a Litlas map with shared settings and styling."""
 
     m = folium.Map(
-        location=[15, 0],
+        location=[15, 10],
         zoom_start=initial_zoom,
         tiles=None,
         control_scale=True,
