@@ -144,8 +144,8 @@ for iso, group in mapped.groupby("ISO3", sort=True):
             popup_content,
             max_width=400,
             auto_pan=True,
-            auto_pan_padding_top_left=(95, 85),
-            auto_pan_padding_bottom_right=(15, 15),
+            auto_pan_padding_top_left=(20, 20),
+            auto_pan_padding_bottom_right=(65, 20),
         ),
         tooltip=name,
     ).add_to(m)
