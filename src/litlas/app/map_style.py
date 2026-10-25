@@ -88,5 +88,9 @@ def create_litlas_map() -> folium.Map:
 
     apply_map_style(m)
     m.fit_bounds([[-55, -170], [75, 180]])
+    # m.fit_bounds(
+    #     [[-45, -125], [70, 145]],
+    #     max_zoom=3,
+    # )
 
     return m

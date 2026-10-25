@@ -51,7 +51,7 @@ COUNTRY_DISPLAY_NAMES = {
     "TWN": "Taiwan",
     "PSE": "Palestine",
     "XKX": "Kosovo",
-
+    "TUR": "Turkey",
 }
 
 
