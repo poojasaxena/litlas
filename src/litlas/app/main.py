@@ -3,8 +3,7 @@
 import pandas as pd
 import streamlit as st
 import folium
-from branca.element import Element, MacroElement
-from jinja2 import Template
+from branca.element import Element
 
 from streamlit_folium import st_folium
 from litlas.processing.paths import load_config
@@ -26,36 +25,6 @@ from litlas.processing.countries import (
 from litlas.app.visualizations.unexplored_lands import (
     add_unexplored_lands_control,
 )
-
-class MobileInitialZoom(MacroElement):
-    """Increase the initial zoom on narrow map displays."""
-
-    def __init__(self):
-        super().__init__()
-        self._name = "MobileInitialZoom"
-        self._template = Template("""
-        {% macro script(this, kwargs) %}
-            var litlasMap = {{ this._parent.get_name() }};
-
-            setTimeout(function () {
-                if (litlasMap.getContainer().clientWidth <= 640) {
-                    var previousZoom = litlasMap.getZoom();
-
-                    litlasMap.setZoom(previousZoom + 1, {
-                        animate: false
-                    });
-
-                    console.log(
-                        "Litlas mobile zoom:",
-                        previousZoom,
-                        "→",
-                        litlasMap.getZoom()
-                    );
-                }
-            }, 100);
-        {% endmacro %}
-        """)
-
 
 ## Configuration constants for the map and flag display
 config = load_config()
@@ -95,9 +64,6 @@ mapped = books[books["ISO3"].astype(bool)].copy()
 
 m = create_litlas_map()
 
-if st.context.url.startswith("https://"):
-    pass
-
 ## Highlight countries that have been read
 read_countries = set(mapped["ISO3"].unique())
 
@@ -112,7 +78,6 @@ for feature in geojson["features"]:
         feature["properties"]["litlas_country_name"] = country_name(iso)
     else:
         feature["properties"]["litlas_country_name"] = "Unknown"
-
 
 
 folium.GeoJson(
@@ -174,6 +139,9 @@ for iso, group in mapped.groupby("ISO3", sort=True):
         popup=folium.Popup(
             popup_content,
             max_width=400,
+            auto_pan=True,
+            auto_pan_padding_top_left=(95, 85),
+            auto_pan_padding_bottom_right=(15, 15),
         ),
         tooltip=name,
     ).add_to(m)
@@ -252,16 +220,6 @@ journey_html = f"""
 
 m.get_root().html.add_child(Element(journey_html))
 
-# Mobile-only initial zoom
-m.add_child(MobileInitialZoom())
-
-# Diagnostics — temporary
-html = m.get_root().render()
-
-print("MOBILE ZOOM SCRIPT PRESENT:", "whenReady" in html)
-print("LITLAS MAP NAME:", m.get_name())
-print("CUSTOM SCRIPT PRESENT:", "litlasMap" in html)
-print("HTML LENGTH:", len(html))
 
 st_folium(
     m,
