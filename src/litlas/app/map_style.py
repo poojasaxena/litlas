@@ -83,7 +83,7 @@ class ResponsiveInitialView(MacroElement):
             var litlasMap = {{ this._parent.get_name() }};
 
             if (litlasMap.getContainer().clientWidth <= 640) {
-                litlasMap.setView([15, 0], 1, {animate: false});
+                litlasMap.setView([40, 0], 1, {animate: false});
             } else {
                 litlasMap.fitBounds([[-55, -170], [75, 180]]);
             }
