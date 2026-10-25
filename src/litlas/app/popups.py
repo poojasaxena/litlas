@@ -104,6 +104,21 @@ def pop_html(group, name, code):
             white-space:nowrap;
             color:#b57b13;
         }}
+        .star-rating {{
+            display: inline-block;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            letter-spacing: 0;
+            white-space: nowrap;
+            background: linear-gradient(
+                to right,
+                #b57b13 var(--rating-fill),
+                #d8c7a8 var(--rating-fill)
+            );
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }}
         .book > span:first-child {{
             flex: 1;
             min-width: 0;
@@ -130,15 +145,19 @@ def pop_html(group, name, code):
     </style>
     """
 
-
 def format_rating(value):
-    rating = float(value)
+    rating = pd.to_numeric(value, errors="coerce")
 
-    if rating <= 0:
+    if pd.isna(rating) or rating <= 0:
         return "Not rated"
 
-    if rating.is_integer():
-        stars = int(rating)
-        return "★" * stars + "☆" * (5 - stars)
+    rating = max(0, min(5, float(rating)))
+    percentage = rating / 5 * 100
 
-    return f"{rating:g}★"
+    return (
+        f'<span class="star-rating" '
+        f'style="--rating-fill:{percentage}%;" '
+        f'aria-label="{rating:g} out of 5 stars">'
+        f'★★★★★'
+        f'</span>'
+    )
