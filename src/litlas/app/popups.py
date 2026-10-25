@@ -72,9 +72,9 @@ def pop_html(group, name, code):
     unique_works = group["Work ID"].nunique()
 
     return f"""
-    <div style="font-family:system-ui,sans-serif;
-                width:340px;max-height:370px;
-                overflow:auto;color:#222">
+    <div class="litlas-country-popup" style="
+        font-family:system-ui,sans-serif;
+        color:#222;">
         <h3>{flag(code)} {escape(name)}</h3>
         <div style="color:#777;font-size:12px">
             {group['Author'].nunique()} authors ·
@@ -104,7 +104,29 @@ def pop_html(group, name, code):
             white-space:nowrap;
             color:#b57b13;
         }}
-        
+        .book > span:first-child {{
+            flex: 1;
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }}
+
+        .book .rating {{
+            flex-shrink: 0;
+        }}
+
+        .litlas-country-popup {{
+            width: 340px;
+            max-height: 370px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }}
+
+        @media screen and (max-width: 640px) {{
+            .litlas-country-popup {{
+                width: 200px;
+                max-height: 260px;
+            }}
+        }}
     </style>
     """
 

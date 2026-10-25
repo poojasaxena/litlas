@@ -575,11 +575,15 @@ st.markdown(
     .st-key-litlas_add_book_details
     [data-testid="stHorizontalBlock"] {
         display: grid !important;
-        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 6px !important;
         align-items: start !important;
     }
 
+    .st-key-litlas_add_book_details [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]:nth-child(3) {
+    grid-column: 1 / -1 !important;
+    }
+    
     .st-key-litlas_add_book_details
     [data-testid="stHorizontalBlock"]
     > [data-testid="stColumn"] {

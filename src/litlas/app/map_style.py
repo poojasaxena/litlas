@@ -56,6 +56,19 @@ def apply_map_style(m: folium.Map) -> None:
         .leaflet-tooltip::after {
             display: none !important;
         }
+
+        @media screen and (max-width: 640px) {
+            .leaflet-control-scale-line {
+                font-size: 10px !important;
+                line-height: 1.1 !important;
+                padding: 2px 4px !important;
+            }
+        }
+
+        /* Remove Leaflet's rectangular focus outline */
+        .leaflet-interactive:focus {
+            outline: none !important;
+        }
     </style>
     """).substitute(ocean_color=OCEAN_COLOR)))
 

@@ -94,6 +94,7 @@ books["My Rating"] = pd.to_numeric(books["My Rating"], errors="coerce").fillna(0
 mapped = books[books["ISO3"].astype(bool)].copy()
 
 m = create_litlas_map()
+
 if st.context.url.startswith("https://"):
     pass
 

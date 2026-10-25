@@ -183,14 +183,15 @@ def render_add_book():
         st.markdown(
             f"""
             <div style="
-                position:relative;
-                margin-top:-45px;
-                margin-left:calc(50% + 115px);
-                margin-bottom:25px;
+                margin-top:8px;
+                margin-bottom:16px;
+                padding:0 8px;
                 color:#6E4B3A;
                 font-family:Georgia,serif;
                 font-size:14px;
-                white-space:nowrap;
+                line-height:1.5;
+                text-align:center;
+                overflow-wrap:anywhere;
             ">
                 ✓ Added: {escape(added_title)}
             </div>
