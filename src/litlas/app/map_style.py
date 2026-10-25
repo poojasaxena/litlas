@@ -73,12 +73,15 @@ def apply_map_style(m: folium.Map) -> None:
     """).substitute(ocean_color=OCEAN_COLOR)))
 
 
-def create_litlas_map() -> folium.Map:
+def create_litlas_map(
+    fit_world=True,
+    initial_zoom=2,
+) -> folium.Map:
     """Create a Litlas map with shared settings and styling."""
 
     m = folium.Map(
         location=[15, 0],
-        zoom_start=2,
+        zoom_start=initial_zoom,
         tiles=None,
         control_scale=True,
         prefer_canvas=False,
@@ -87,10 +90,8 @@ def create_litlas_map() -> folium.Map:
     )
 
     apply_map_style(m)
-    m.fit_bounds([[-55, -170], [75, 180]])
-    # m.fit_bounds(
-    #     [[-45, -125], [70, 145]],
-    #     max_zoom=3,
-    # )
+    if fit_world:
+        m.fit_bounds([[-55, -170], [75, 180]])    
+
 
     return m

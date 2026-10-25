@@ -8,9 +8,6 @@ from branca.element import Element
 from streamlit_folium import st_folium
 from litlas.processing.paths import load_config
 from litlas.app.popups import flag, pop_html
-from branca.element import MacroElement
-from jinja2 import Template
-
 from litlas.database.connection import database_path
 from litlas.db_backend import get_repository, is_postgres
 from litlas.app.ui import apply_page_style, render_page_header
@@ -36,20 +33,6 @@ map_config = config.get("map", {})
 FLAG_SIZE = map_config.get("flag_size", 14)
 MAP_HEIGHT = map_config.get("height", 800)
 
-
-class MobileInitialZoom(MacroElement):
-    def __init__(self):
-        super().__init__()
-        self._name = "MobileInitialZoom"
-        self._template = Template("""
-        {% macro script(this, kwargs) %}
-            var litlasMap = {{ this._parent.get_name() }};
-
-            if (litlasMap.getContainer().clientWidth <= 640) {
-                litlasMap.setZoom(1, {animate: false});
-            }
-        {% endmacro %}
-        """)
 
 st.set_page_config(page_title='Literary Atlas',page_icon='🌍',layout='wide',initial_sidebar_state='collapsed')
 apply_page_style()
@@ -80,7 +63,10 @@ books["My Rating"] = pd.to_numeric(books["My Rating"], errors="coerce").fillna(0
 
 mapped = books[books["ISO3"].astype(bool)].copy()
 
-m = create_litlas_map()
+m = create_litlas_map(
+    fit_world=False,
+    initial_zoom=1,
+)
 
 ## Highlight countries that have been read
 read_countries = set(mapped["ISO3"].unique())
@@ -238,7 +224,6 @@ journey_html = f"""
 
 m.get_root().html.add_child(Element(journey_html))
 
-m.add_child(MobileInitialZoom())
 st_folium(
     m,
     height=MAP_HEIGHT,
