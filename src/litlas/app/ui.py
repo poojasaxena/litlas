@@ -520,6 +520,7 @@ def render_chapter_navigation(active_page: str) -> None:
         ("Reading Statistics", "pages/2_Reading_Statistics.py", "Reading_Statistics"),
         ("Library Management", "pages/3_Library_Management.py", "Library_Management"),
         ("Ink & Verse", "pages/4_My_Books.py", "My_Books"),
+        ("About Litlas", "pages/5_About_Litlas.py", "About_Litlas"),
     ]
 
     active_route = next(
