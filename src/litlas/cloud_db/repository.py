@@ -23,6 +23,29 @@ def _lock_author_changes(db):
     """Serialize author mutations, replacing SQLite BEGIN IMMEDIATE."""
     db.execute("SELECT pg_advisory_xact_lock(7142183)")
 
+def update_work_title(work_id, new_title):
+    new_title = new_title.strip()
+    if not new_title:
+        raise ValueError("Book title cannot be empty.")
+
+    with connect() as db:
+        rows = db.execute(
+            "SELECT goodreads_id FROM books WHERE work_id = %s",
+            (work_id,),
+        ).fetchall()
+
+        if len(rows) != 1:
+            raise ValueError("This title belongs to a multi-book work.")
+
+        db.execute(
+            "UPDATE works SET title = %s WHERE id = %s",
+            (new_title, work_id),
+        )
+        db.execute(
+            "UPDATE books SET display_title = %s WHERE work_id = %s",
+            (new_title, work_id),
+        )
+        db.commit()
 
 def load_read_books():
     """Return read books with their authors and canonical works."""
@@ -371,6 +394,24 @@ def update_book_details(
 
         if cursor.rowcount != 1:
             raise ValueError("Book not found or excluded.")
+
+        db.execute(
+            """
+            UPDATE works
+            SET title = %s
+            WHERE id = (
+                SELECT work_id
+                FROM books
+                WHERE goodreads_id = %s
+            )
+            AND (
+                SELECT COUNT(*)
+                FROM books
+                WHERE work_id = works.id
+            ) = 1
+            """,
+            (display_title, goodreads_id),
+        )
 
 
 def get_top_authors(limit=10):

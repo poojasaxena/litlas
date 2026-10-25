@@ -69,7 +69,7 @@ def render_book_editor_contents(show_heading=True):
 
     if show_heading:
         st.subheader("Library Editor")
-        st.caption("Edit your personal reading records.")
+        st.caption("Edit book titles, personal ratings, and page counts.")
 
 
     # Search all books directly by title or author.
@@ -141,10 +141,20 @@ def render_book_editor_contents(show_heading=True):
         ):
         
         with st.container(key="compact_book_editor"):
-            form_col1, form_col2 = st.columns(2, gap="large")
-            
-
+            form_col1, form_col2, form_col3 = st.columns(
+                [2.2, 1, 1],
+                gap="medium",
+            )
             with form_col1:
+                edited_title = st.text_input(
+                    "Book title",
+                    value=str(row["display_title"]),
+                )
+                st.caption(
+                    f'Original Goodreads title: {row["original_title"]}'
+                )
+
+            with form_col2:
                 rating_label = st.selectbox(
                     "My rating",
                     rating_labels,
@@ -157,7 +167,7 @@ def render_book_editor_contents(show_heading=True):
                     else "Original Goodreads rating: Unrated"
                 )
 
-            with form_col2:
+            with form_col3:
                 pages = st.number_input(
                     "Number of pages",
                     min_value=1,
@@ -224,7 +234,7 @@ def render_book_editor_contents(show_heading=True):
         try:
             update_book_details(
                 goodreads_id=selected_id,
-                display_title=str(row["display_title"]),
+                display_title=edited_title,
                 rating_override=rating_override,
                 pages_override=pages_override,
             )
