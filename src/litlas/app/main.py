@@ -171,7 +171,7 @@ explored_count = len(read_countries)
 unexplored_count = max(0, TOTAL_COUNTRIES - explored_count)
 
 journey_html = f"""
-<div style="
+<div class="litlas-journey-card" style="
     position:fixed;
     bottom:4px;
     right:4px;
@@ -223,6 +223,27 @@ journey_html = f"""
 """
 
 m.get_root().html.add_child(Element(journey_html))
+m.get_root().header.add_child(Element("""
+<style>
+@media screen and (max-width: 640px) {
+    .litlas-journey-card {
+        bottom: 75px !important;
+        right: 8px !important;
+        width: 140px !important;
+        padding: 5px 6px !important;
+        box-sizing: border-box !important;
+    }
+
+    .litlas-journey-card > div:first-child {
+        font-size: 12px !important;
+    }
+
+    .litlas-journey-card > div:nth-child(2) > div > div:first-child {
+        font-size: 19px !important;
+    }
+}
+</style>
+"""))
 
 st_folium(
     m,

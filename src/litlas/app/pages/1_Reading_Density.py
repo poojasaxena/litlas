@@ -192,7 +192,7 @@ legend_labels = "".join(
 )
 
 legend_html = f"""
-<div style="
+<div class="litlas-density-legend" style="
     position:fixed;
     bottom:4px;
     right:4px;
@@ -225,6 +225,24 @@ legend_html = f"""
 
 m.get_root().html.add_child(Element(legend_html))
 
+# Mobile-only Reading Density legend positioning
+m.get_root().header.add_child(Element("""
+<style>
+@media screen and (max-width: 640px) {
+    .litlas-density-legend {
+        bottom: 75px !important;
+        right: 8px !important;
+        width: 175px !important;
+        padding: 5px 6px !important;
+        box-sizing: border-box !important;
+    }
+
+    .litlas-density-legend > div:first-child {
+        font-size: 12px !important;
+    }
+}
+</style>
+"""))
 
 st_folium(
     m,
