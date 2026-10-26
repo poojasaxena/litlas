@@ -127,7 +127,7 @@ def apply_page_style():
 
             /* Subtitle */
             .litlas-heading p {
-                margin: 12px 0 0;
+                margin: -1px 0 0;
                 padding-left: 10px;
                 font-family: Georgia, serif;
                 font-size: 0.95rem;
