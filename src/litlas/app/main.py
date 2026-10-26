@@ -78,10 +78,12 @@ geojson = load_simplified_country_boundaries()
 for feature in geojson["features"]:
     iso = feature["properties"].get("ISO3166-1-Alpha-3")
 
-    if iso:
+    if iso and iso != "-99":
         feature["properties"]["litlas_country_name"] = country_name(iso)
     else:
-        feature["properties"]["litlas_country_name"] = "Unknown"
+        feature["properties"]["litlas_country_name"] = (
+            feature["properties"].get("name") or "Unknown"
+        )
 
 
 folium.GeoJson(
