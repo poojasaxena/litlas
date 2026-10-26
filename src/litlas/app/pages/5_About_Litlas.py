@@ -91,7 +91,7 @@ st.html("""
     line-height: 1.5;
     color: #7B5B45;
     margin: 16px auto 20px;
-    max-width: 600px;
+    max-width: 100%;
 }
 
 .litlas-about-section {
@@ -101,7 +101,7 @@ st.html("""
 .litlas-about-section h3 {
     font-family: Georgia, serif;
     font-weight: 400;
-    font-size: 22px;
+    font-size: 20px;
     font-style: italic;
     color: #76563E;
     margin: 0 0 10px;
@@ -148,6 +148,20 @@ st.html("""
     object-fit: contain;
     margin: 0 auto 6px;
 }
+
+.litlas-about-opening strong {
+    font-weight: 600;
+    font-style: italic;
+}
+
+.litlas-opening-ornament {
+    color: #B29A7C;
+    font-style: normal;
+    font-size: 18px;
+    margin: 0 12px;
+}
+
+
 /* -------------------------------------------------
    Mobile version
    ------------------------------------------------- */
@@ -281,13 +295,14 @@ st.html(f"""
     <div class="litlas-about-rule"></div>
 
     <div class="litlas-about-opening">
-        Every book opens a world, and this is a record of the worlds I've wandered through.
-        <!-- A journey through the world, one book at a time. -->
+        <span class="litlas-opening-ornament">✧</span>
+        Every book opens a world; these are the worlds I've wandered through.
+        <span class="litlas-opening-ornament">✧</span>
     </div>
 
     <div class="litlas-about-section">
 
-        <h3>A Little About Me</h3>
+        <h3>A Note from the Creator</h3>
 
         <p>
             I'm an enthusiastic reader with a curiosity for
