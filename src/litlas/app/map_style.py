@@ -84,6 +84,16 @@ class ResponsiveInitialView(MacroElement):
 
             if (litlasMap.getContainer().clientWidth <= 640) {
                 litlasMap.setView([40, 0], 1, {animate: false});
+
+                // Let one-finger swipes scroll the Streamlit page.
+                litlasMap.dragging.disable();
+
+                // Preserve two-finger pinch zoom.
+                litlasMap.touchZoom.enable();
+
+                // Prevent wheel-based map zoom on mobile.
+                litlasMap.scrollWheelZoom.disable();
+
             } else {
                 litlasMap.fitBounds([[-55, -170], [75, 180]]);
             }

@@ -310,7 +310,7 @@ def apply_page_style():
        ----------------------------------------- */
 
     .st-key-litlas_sticky_header .litlas-heading h1 {
-        font-size: clamp(1.65rem, 7vw, 2.4rem) !important;
+        font-size: clamp(2rem, 9vw, 2.6rem) !important;
         line-height: 1.1 !important;
         white-space: normal !important;
         overflow-wrap: normal !important;

@@ -53,6 +53,25 @@ st.markdown(
     .st-key-compact_book_editor [data-testid="stCaptionContainer"] {
         margin-top: -12px !important;
     }
+    .litlas-book-save-message {
+    position: relative;
+    margin-top: -45px;
+    margin-left: calc(50% + 115px);
+    margin-bottom: 25px;
+    color: #6E4B3A;
+    font-family: Georgia, serif;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+@media screen and (max-width: 640px) {
+    .litlas-book-save-message {
+        margin: 8px 0 0;
+        text-align: center;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+}
     </style>
     """,
     unsafe_allow_html=True,
@@ -193,16 +212,7 @@ def render_book_editor_contents(show_heading=True):
     if saved and saved[0] == selected_id:
         st.markdown(
             f"""
-            <div style="
-                position:relative;
-                margin-top:-45px;
-                margin-left:calc(50% + 115px);
-                margin-bottom:25px;
-                color:#6E4B3A;
-                font-family:Georgia,serif;
-                font-size:14px;
-                white-space:nowrap;
-            ">
+            <div class="litlas-book-save-message">
                 ✓ Saved: {escape(str(row["display_title"]))}
             </div>
             """,
