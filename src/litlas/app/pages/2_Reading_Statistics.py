@@ -246,7 +246,7 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     list-style: none;
     cursor: pointer;
     color: #96785D;
-    font-family: Georgia, serif;
+    font-family: "Source Sans", sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
     line-height: 1.5;
@@ -268,7 +268,7 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     font-weight: 700;
     line-height: 1.2;
     color: #6E4B3A;
-    margin-top: 3px;
+    margin-top: 0;
 }
 
 /* Anchored literary list — same visual language as Reading Year. */
@@ -537,12 +537,13 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 
 [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
 .litlas-nobel-stat summary span {
-    font-family: Georgia, serif !important;
+    font-family: "Source Sans", sans-serif !important;
     font-size: 14px !important;
     font-weight: 400 !important;
     line-height: 1.5 !important;
     color: #96785D !important;
 }
+
 /* Hide country chart axis title on mobile */
 .st-key-litlas_country_density .ytitle {
     display: none !important;
