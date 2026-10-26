@@ -448,7 +448,7 @@ a[data-testid="stPageLink-NavLink"] p {
 /* Mobile decorative heading */
 .st-key-litlas_sticky_header .litlas-heading h1 {
     font-family: "Vivaldi", "Italianno", Georgia, serif !important;
-    font-size: 40px !important;
+    font-size: 38px !important;
 }
 
 }
