@@ -37,10 +37,12 @@ render_page_header(
     "Reading Density",
     "Where the pages I've turned meet the places they came from...",
     illustration="reading_density",
-    illustration_size=170,
+    illustration_size=160,
     illustration_top=-20,
     illustration_left=0,
     heading_gap=20,
+    title_height=95,
+    ornament_width=280,
 )
 
 @st.cache_data(ttl=60, show_spinner=False)

@@ -42,6 +42,8 @@ render_page_header(
     "A journey through literature and geography...",
     illustration="literary_atlas",
     illustration_size=220,
+    title_height=90,
+    ornament_width=170,
 )
 
 

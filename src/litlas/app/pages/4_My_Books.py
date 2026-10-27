@@ -26,6 +26,9 @@ render_page_header(
     "A little corner of my literary world, written in my own words...",
     illustration="book_author",
     illustration_size=200,
+        title_height=90,
+    ornament_width=290,
+
 )
 
 # For now, publication information stays with this small presentation page.

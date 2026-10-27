@@ -6,7 +6,6 @@ from pathlib import Path
 from html import escape
 import streamlit as st
 
-from litlas.processing.paths import load_config
 from litlas.processing.paths import load_config, HEADER_DIR, HEADER_FILES
 
 def load_logo_path() -> Path | None:
@@ -18,281 +17,252 @@ def load_logo_path() -> Path | None:
 
 def apply_page_style():
     """Apply consistent styling across all Litlas pages."""
-
     st.markdown(
         """
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=Italianno&display=swap');
-            [data-testid="stHeader"] {
-                background: transparent !important;
-                box-shadow: none !important;
-            }
+<style>
+/* ============================================================
+   LITLAS — SHARED THEME
+   One definition per component; desktop first, mobile last.
+   Requires HTML classes: litlas-home-heading, litlas-section-heading,
+   litlas-svg-title, litlas-eyebrow, litlas-home-tagline,
+   litlas-home-ornament.
+   ============================================================ */
 
-            .block-container {
-                padding-top: 0.7rem !important;
-                padding-bottom: 1rem !important;
-                max-width: 1550px;
-            }
+/* App background and Streamlit chrome */
+[data-testid="stHeader"] {
+    background: transparent !important;
+    box-shadow: none !important;
+}
 
-            /* Warm paper background for Litlas */
-            .stApp {
-                background-color: #FAF7F1 !important;
-            }
+.block-container {
+    padding-top: 0.7rem !important;
+    padding-bottom: 1rem !important;
+    max-width: 1550px;
+}
 
-            /* Vintage styling for Streamlit information messages */
-            div[data-testid="stAlert"] {
-                background-color: #F0E6D7 !important;
-                border: 1px solid #D4C1A7 !important;
-                border-radius: 8px !important;
-            }
+.stApp { background-color: #FAF7F1 !important; }
+#MainMenu, footer { visibility: hidden; }
+h1 { margin-top: 0 !important; padding-top: 0 !important; padding-bottom: 0.2rem !important; }
 
-            /* Remove Streamlit's inner blue background */
-            div[data-testid="stAlert"] > div,
-            div[data-testid="stAlert"] [data-baseweb="notification"] {
-                background-color: transparent !important;
-                border-color: transparent !important;
-            }
+/* Vintage alerts */
+div[data-testid="stAlert"] {
+    background-color: #F0E6D7 !important;
+    border: 1px solid #D4C1A7 !important;
+    border-radius: 8px !important;
+}
+div[data-testid="stAlert"] > div,
+div[data-testid="stAlert"] [data-baseweb="notification"] {
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+div[data-testid="stAlert"] p,
+div[data-testid="stAlert"] svg {
+    color: #58412F !important;
+    fill: #58412F !important;
+}
+div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
+    color: #A47B43 !important;
+    font-size: 25px !important;
+}
 
-            /* Alert text and icons */
-            div[data-testid="stAlert"] p,
-            div[data-testid="stAlert"] svg {
-                color: #58412F !important;
-                fill: #58412F !important;
-            }
+/* Header illustration and personal signature */
+.litlas-logo {
+    position: absolute;
+    top: -30px;
+    right: 0;
+    width: 178px;
+    height: 178px;
+    object-fit: contain;
+    pointer-events: none;
+    z-index: 2;
+}
+.litlas-page-illustration {
+    position: absolute;
+    top: -45px;
+    left: 0;
+    object-fit: contain;
+    pointer-events: none;
+    z-index: 2;
+}
 
-            /* Distinct information icon in antique bronze */
-            div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
-                color: #A47B43 !important;
-                font-size: 25px !important;
-            }
-            
-            h1 {
-                margin-top: 0 !important;
-                padding-top: 0 !important;
-                padding-bottom: 0.2rem !important;
-            }
+/* Shared SVG title: no browser Vivaldi font is needed */
+.litlas-heading { min-height: 110px; }
+.litlas-heading .litlas-svg-title {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 0 !important;
+}
+.litlas-heading .litlas-svg-title img {
+    display: block;
+    height: 85px;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+}
+/* Fallback h1 when an SVG is missing */
+.litlas-heading h1:not(.litlas-svg-title) {
+    font-family: Georgia, serif;
+    font-size: 3rem;
+    color: #58412F;
+    font-weight: 400;
+    margin: 0;
+}
 
-            #MainMenu, footer {
-                visibility: hidden;
-            }
+/* Ordinary section headers keep their long, beloved underline */
+.litlas-section-heading .litlas-svg-title::after,
+.litlas-section-heading h1:not(.litlas-svg-title)::after {
+    content: "";
+    display: block;
+    width: 570px;
+    max-width: 100%;
+    height: 2px;
+    margin: 5px 0 0 10px;
+    background: #B29A7C;
+}
+.litlas-section-heading p {
+    margin: 7px 0 0;
+    padding-left: 10px;
+    font-family: Georgia, serif;
+    font-size: 0.95rem;
+    font-style: italic;
+    color: #81776E;
+}
 
-            .litlas-logo {
-                position: absolute;
-                top: -30px;
-                right: 0;
-                width: 178px;
-                height: 178px;
-                object-fit: contain;
-                pointer-events: none;
-                z-index: 2;
-            }
+/* Home-page identity: eyebrow / wordmark / tagline / short line */
+.litlas-home-heading {
+    min-height: 155px;
+    width: min(650px, 58%);
+    margin: 0 auto;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 2px;
+    position: relative;
+    top: -25px;
+    margin-bottom: -20px;
+}
+.litlas-eyebrow {
+    font-family: Georgia, serif;
+    font-size: 11px;
+    letter-spacing: 0.7px;
+    color: #A47B63;
+}
+.litlas-home-heading .litlas-svg-title img {
+    height: var(--title-height, 90px);
+}
+.litlas-home-tagline {
+    font-family: Georgia, serif;
+    font-size: 16px;
+    font-style: italic;
+    color: #81776E;
+}
+.litlas-home-ornament {
+    width: min(100%, var(--ornament-width, 170px));
+    height: 1px;
+    background: #B29A7C;
+    margin-top: 2px;
+}
 
-            /* Vintage illustration */
-            .litlas-page-illustration {
-                position: absolute;
-                top: -45px;
-                left: 0;
-                object-fit: contain;
-                pointer-events: none;
-                z-index: 2;
-            }
+/* Sticky header shell */
+[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] {
+    position: relative;
+}
+[data-testid="stLayoutWrapper"]:has(> .st-key-litlas_sticky_header) {
+    position: sticky !important;
+    top: 30px !important;
+    z-index: 100 !important;
+    background: #FAF7F1 !important;
+}
+[data-testid="stLayoutWrapper"]:has(> .st-key-litlas_sticky_header)::before {
+    content: "";
+    position: absolute;
+    top: -45px;
+    left: 0;
+    right: 0;
+    height: 45px;
+    background: #FAF7F1;
+    pointer-events: none;
+}
+.st-key-litlas_sticky_header {
+    position: relative !important;
+    background: #FAF7F1 !important;
+    min-height: 100px;
+    padding-bottom: 15px !important;
+}
 
-            /* ==========================================
-            Litlas heading — SVG and subtitle
-            ========================================== */
+/* Chapter navigation */
+.st-key-litlas_sticky_header a[data-testid="stPageLink-NavLink"] {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    width: auto !important;
+    color: #96785D !important;
+}
+.st-key-litlas_sticky_header a[data-testid="stPageLink-NavLink"] p {
+    color: #96785D !important;
+    font-family: Georgia, serif !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+}
+.st-key-litlas_sticky_header a[data-testid="stPageLink-NavLink"]:hover,
+.st-key-litlas_sticky_header a[data-testid="stPageLink-NavLink"]:hover p {
+    color: #58412F !important;
+    background: transparent !important;
+}
+.st-key-litlas_sticky_header a[data-testid="stPageLink-NavLink"][aria-current="page"],
+.st-key-litlas_sticky_header a[data-testid="stPageLink-NavLink"][aria-current="page"] p,
+.st-key-litlas_sticky_header [data-testid="stPageLink"] a[aria-disabled="true"],
+.st-key-litlas_sticky_header [data-testid="stPageLink"] a[aria-disabled="true"] p {
+    color: #58412F !important;
+    font-weight: 700 !important;
+    text-decoration: underline !important;
+    text-underline-offset: 4px;
+    opacity: 1 !important;
+    background: transparent !important;
+}
+.st-key-litlas_sticky_header .litlas-chapter-separator {
+    color: #B29A7C !important;
+    font-family: Georgia, serif;
+    font-size: 15px;
+}
+.st-key-litlas_sticky_header [data-testid="stPageLink"] p,
+.st-key-litlas_sticky_header .litlas-chapter-separator {
+    margin: 0 !important;
+}
 
-            .litlas-heading {
-                min-height: 110px;
-            }
+/* Hide sidebar and mobile-only navigation on desktop */
+[data-testid="stSidebar"],
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="stSidebarCollapseButton"] { display: none !important; }
+.st-key-litlas_mobile_nav { display: none !important; }
 
-            /* Heading container */
-            .litlas-heading .litlas-svg-title {
-                margin: 0;
-                padding: 0;
-                line-height: 0;
-            }
-
-            /* Vivaldi SVG */
-            .litlas-heading .litlas-svg-title img {
-                display: block;
-                width: auto;
-                height: 85px;
-                max-width: 100%;
-                object-fit: contain;
-            }
-
-            /* Restore the ornamental divider */
-            .litlas-heading .litlas-svg-title::after {
-                content: "";
-                display: block;
-                width: 570px;
-                max-width: 100%;
-                height: 2px;
-                margin: 5px 0 0 10px;
-                background: #B29A7C;
-            }
-
-            /* Subtitle */
-            .litlas-heading p {
-                margin: 7px 0 0;
-                padding-left: 10px;
-                font-family: Georgia, serif;
-                font-size: 0.95rem;
-                font-style: italic;
-                color: #81776E;
-            }
-
-            /* Litlas header — fixed within Streamlit's scroll area */
-            [data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] {
-                position: relative;
-            }
-
-            /* Allow the header's Streamlit wrapper to remain sticky */
-            [data-testid="stLayoutWrapper"]:has(
-                > .st-key-litlas_sticky_header
-            ) {
-                position: sticky !important;
-                top: 30px !important;
-                z-index: 100 !important;
-                background: #FAF7F1 !important;
-            }
-
-            /* Cover the gap above the sticky header */
-            [data-testid="stLayoutWrapper"]:has(
-                > .st-key-litlas_sticky_header
-            )::before {
-                content: "";
-                position: absolute;
-                top: -45px;
-                left: 0;
-                right: 0;
-                height: 45px;
-                background: #FAF7F1;
-                pointer-events: none;
-            }
-            /* Header content and its positioned illustrations */
-            .st-key-litlas_sticky_header {
-                position: relative !important;
-                background: #FAF7F1 !important;
-                min-height: 100px;
-                padding-bottom: 15px !important;
-            }
-            /* Literary chapter navigation */
-
-            /* Navigation links */
-            .st-key-litlas_sticky_header
-            a[data-testid="stPageLink-NavLink"] {
-                background: transparent !important;
-                border: none !important;
-                border-radius: 0 !important;
-                padding: 0 !important;
-                color: #96785D !important;
-            }
-
-            /* Visible labels */
-            .st-key-litlas_sticky_header
-            a[data-testid="stPageLink-NavLink"] p {
-                color: #96785D !important;
-                font-family: Georgia, serif !important;
-                font-size: 13px !important;
-                font-weight: 400 !important;
-            }
-
-            /* Hover */
-            .st-key-litlas_sticky_header
-            a[data-testid="stPageLink-NavLink"]:hover,
-            .st-key-litlas_sticky_header
-            a[data-testid="stPageLink-NavLink"]:hover p {
-                color: #58412F !important;
-                background: transparent !important;
-            }
-
-            /* Active chapter */
-            .st-key-litlas_sticky_header
-            a[data-testid="stPageLink-NavLink"][aria-current="page"],
-            .st-key-litlas_sticky_header
-            a[data-testid="stPageLink-NavLink"][aria-current="page"] p {
-                color: #58412F !important;
-                background: transparent !important;
-                font-weight: 600 !important;
-                text-decoration: underline !important;
-                text-underline-offset: 4px;
-            }
-            /* Compact chapter links */
-            .st-key-litlas_sticky_header
-            a[data-testid="stPageLink-NavLink"] {
-                width: auto !important;
-                min-height: 0 !important;
-                padding: 0 !important;
-            }
-
-            /* Ornamental separators */
-            .st-key-litlas_sticky_header .litlas-chapter-separator {
-                color: #B29A7C !important;
-                font-family: Georgia, serif;
-                font-size: 15px;
-            }
-
-            /* Remove default paragraph margins inside chapter navigation */
-            .st-key-litlas_sticky_header
-            [data-testid="stPageLink"] p,
-            .st-key-litlas_sticky_header .litlas-chapter-separator {
-                margin: 0 !important;
-            }
-            /* Current chapter */
-            .st-key-litlas_sticky_header
-            [data-testid="stPageLink"] a[aria-disabled="true"],
-            .st-key-litlas_sticky_header
-            [data-testid="stPageLink"] a[aria-disabled="true"] p {
-                color: #58412F !important;
-                font-weight: 700 !important;
-                text-decoration: underline !important;
-                text-underline-offset: 4px;
-                opacity: 1 !important;
-                background: transparent !important;
-            }
-            /* Hide Streamlit's sidebar and its expand/collapse controls */
-            [data-testid="stSidebar"],
-            [data-testid="stSidebarCollapsedControl"],
-            [data-testid="stSidebarCollapseButton"] {
-                display: none !important;
-            }
-
-            /* Hide mobile navigation on desktop */
-            .st-key-litlas_mobile_nav {
-                display: none !important;
-            }   
-
-/* =====================================================
-   LITLAS MOBILE LAYOUT
-   Desktop styling remains completely unchanged
-   ===================================================== */
-
+/* ============================================================
+   MOBILE — <= 640px
+   ============================================================ */
 @media screen and (max-width: 640px) {
-
-    /* -----------------------------------------
-       Main page spacing
-       ----------------------------------------- */
-
     .stApp .block-container {
         padding-top: 0 !important;
         padding-left: 8px !important;
         padding-right: 8px !important;
     }
-
-
-    /* -----------------------------------------
-       Compact header: illustration beside title
-       ----------------------------------------- */
-
-    .st-key-litlas_sticky_header {
+    [data-testid="stLayoutWrapper"]:has(> .st-key-litlas_sticky_header) {
         position: relative !important;
+        top: 0 !important;
+    }
+    [data-testid="stLayoutWrapper"]:has(> .st-key-litlas_sticky_header)::before {
+        display: none !important;
+    }
+    .st-key-litlas_sticky_header {
         min-height: 0 !important;
         padding-top: 0 !important;
         padding-bottom: 10px !important;
         margin-top: 0 !important;
     }
-
     .st-key-litlas_sticky_header .litlas-page-illustration {
         width: 65px !important;
         height: 65px !important;
@@ -300,202 +270,103 @@ def apply_page_style():
         left: 0 !important;
         transform: none !important;
     }
-
+    .st-key-litlas_sticky_header .litlas-logo { display: none !important; }
     .st-key-litlas_sticky_header .litlas-heading {
+        min-height: 80px !important;
         padding-left: 80px !important;
         padding-top: 0 !important;
-        min-height: 80px !important;
         text-align: left !important;
     }
-
-    .st-key-litlas_sticky_header .litlas-logo {
-        display: none !important;
+    /* Home identity sits beside the smaller illustration */
+    .st-key-litlas_sticky_header .litlas-home-heading {
+        width: auto;
+        min-height: 100px !important;
+        margin: 0;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 2px;
+        transform: translateY(-12px);
     }
-
-
-    /* -----------------------------------------
-       Header typography
-       ----------------------------------------- */
-
-    .st-key-litlas_sticky_header .litlas-heading h1 {
-        font-size: clamp(2rem, 9vw, 2.6rem) !important;
-        line-height: 1.1 !important;
-        white-space: normal !important;
-        overflow-wrap: normal !important;
-        word-break: normal !important;
+    .st-key-litlas_sticky_header .litlas-home-heading .litlas-svg-title img {
+        width: min(100%, 190px);
+        height: auto;
     }
+    .st-key-litlas_sticky_header .litlas-eyebrow { font-size: 8px; }
+    .st-key-litlas_sticky_header .litlas-home-tagline { font-size: 12px; }
+    .st-key-litlas_sticky_header .litlas-home-ornament { width: 65px; }
 
-    /* Mobile SVG heading */
-    .st-key-litlas_sticky_header .litlas-svg-title img {
+    /* All other chapter headings */
+    .st-key-litlas_sticky_header .litlas-section-heading .litlas-svg-title img {
         width: min(100%, 260px);
         height: auto;
     }
-
-    .st-key-litlas_sticky_header .litlas-svg-title::after {
+    .st-key-litlas_sticky_header .litlas-section-heading .litlas-svg-title::after,
+    .st-key-litlas_sticky_header .litlas-section-heading h1:not(.litlas-svg-title)::after {
         width: 100%;
         margin: 6px 0 0;
     }
-
-    .st-key-litlas_sticky_header .litlas-heading p {
-        font-size: 0.75rem !important;
+    .st-key-litlas_sticky_header .litlas-section-heading p {
+        font-size: 0.65rem !important;
         line-height: 1.3 !important;
         padding-left: 0 !important;
         margin: 8px 0 0 !important;
         text-align: left !important;
     }
-
-
-    .litlas-heading .litlas-svg-title {
-        margin: 0;
-        padding: 0;
-        line-height: 0;
+    .st-key-litlas_sticky_header .litlas-heading h1:not(.litlas-svg-title) {
+        font-size: clamp(2rem, 9vw, 2.6rem) !important;
+        line-height: 1.1 !important;
+        white-space: normal !important;
     }
 
-    .litlas-heading .litlas-svg-title img {
-        display: block;
-        height: 105px;
-        width: auto;
-        max-width: 100%;
-        object-fit: contain;
-    }
-
-    .litlas-heading .litlas-svg-title::after {
-        display: none;
-    }
-
-    @media screen and (max-width: 640px) {
-        .litlas-heading .litlas-svg-title img {
-            width: min(100%, 260px);
-            height: auto;
-        }
-    }
-
-    /* -----------------------------------------
-       Disable desktop sticky positioning
-       ----------------------------------------- */
-
-    [data-testid="stLayoutWrapper"]:has(
-        > .st-key-litlas_sticky_header
-    ) {
-        position: relative !important;
-        top: 0 !important;
-    }
-
-    /* Desktop's decorative 45px cover is unnecessary on mobile */
-    [data-testid="stLayoutWrapper"]:has(
-        > .st-key-litlas_sticky_header
-    )::before {
-        display: none !important;
-    }
-
-
-    /* -----------------------------------------
-       Mobile typography
-       ----------------------------------------- */
-
-    .stApp h2 {
-        font-size: 1.55rem !important;
-        line-height: 1.2 !important;
-    }
-
-    .stApp h3 {
-        font-size: 1.4rem !important;
-        line-height: 1.2 !important;
-    }
-
-    .stApp p,
-    .stApp li {
-        font-size: 0.85rem;
-        line-height: 1.4;
-    }
-
+    /* Streamlit content typography */
+    .stApp h2 { font-size: 1.55rem !important; line-height: 1.2 !important; }
+    .stApp h3 { font-size: 1.4rem !important; line-height: 1.2 !important; }
+    .stApp p, .stApp li { font-size: 0.85rem; line-height: 1.4; }
     .stApp [data-testid="stHeading"] h3 {
         font-size: 1.5rem !important;
         line-height: 1.15 !important;
     }
+    .stApp [data-testid="stMetricValue"] { font-size: 1.8rem !important; }
+    .stApp [data-testid="stMetricLabel"] { font-size: 0.8rem !important; }
 
-
-    /* -----------------------------------------
-       Statistics metrics
-       ----------------------------------------- */
-
-    .stApp [data-testid="stMetricValue"] {
-        font-size: 1.8rem !important;
+    /* Replace desktop navigation with popover */
+    .st-key-litlas_desktop_nav { display: none !important; }
+    .st-key-litlas_mobile_nav { display: block !important; }
+    .st-key-litlas_mobile_nav button {
+        background-color: #F5EFE4 !important;
+        color: #58412F !important;
+        border: 1px solid #D4C1A7 !important;
+        font-family: Georgia, serif !important;
     }
-
-    .stApp [data-testid="stMetricLabel"] {
-        font-size: 0.8rem !important;
+    div[data-baseweb="popover"]:has(a[data-testid="stPageLink-NavLink"]) > div {
+        background-color: #FAF7F1 !important;
     }
-
+    [data-testid="stPopoverBody"]:has(a[data-testid="stPageLink-NavLink"]) {
+        background: #FAF7F1 !important;
+        border: 1px solid #D4C1A7 !important;
+        border-radius: 10px !important;
+        color: #58412F !important;
+        width: 200px !important;
+        min-width: 0 !important;
+        max-width: calc(100vw - 32px) !important;
+        box-sizing: border-box !important;
+    }
+    [data-testid="stPopoverBody"] a[data-testid="stPageLink-NavLink"],
+    [data-testid="stPopoverBody"] a[data-testid="stPageLink-NavLink"] p {
+        color: #58412F !important;
+    }
     
-    /* Mobile: replace chapter links with menu */
-    .st-key-litlas_desktop_nav {
-        display: none !important;
+}
+@media screen and (max-width: 640px) {
+    .st-key-litlas_sticky_header .litlas-home-heading {
+        margin-bottom: 0;
     }
-
-    .st-key-litlas_mobile_nav {
-        display: block !important;
-    }
-
-    /* Mobile menu button */
-.st-key-litlas_mobile_nav button {
-    background-color: #F5EFE4 !important;
-    color: #58412F !important;
-    border: 1px solid #D4C1A7 !important;
-    font-family: Georgia, serif !important;
 }
-
-/* Mobile menu popup panel */
-
-/* Popup's inner content */
-div[data-baseweb="popover"]:has(
-    a[data-testid="stPageLink-NavLink"]
-) > div {
-    background-color: #FAF7F1 !important;
-}
-
-/* Litlas mobile menu — popover background */
-[data-testid="stPopoverBody"]:has(
-    a[data-testid="stPageLink-NavLink"]
-) {
-    background: #FAF7F1 !important;
-    border: 1px solid #D4C1A7 !important;
-    border-radius: 10px !important;
-    color: #58412F !important;
-    width: 200px !important;
-    min-width: 0 !important;
-    max-width: calc(100vw - 32px) !important;
-    box-sizing: border-box !important;
-}
-
-/* Mobile menu link text */
-[data-testid="stPopoverBody"]
-a[data-testid="stPageLink-NavLink"],
-[data-testid="stPopoverBody"]
-a[data-testid="stPageLink-NavLink"] p {
-    color: #58412F !important;
-}
-
-.st-key-litlas_sticky_header .litlas-heading p {
-    font-size: 0.65rem !important;
-    line-height: 1.3 !important;
-    padding-left: 0 !important;
-    margin: 8px 0 0 !important;
-    text-align: left !important;
-}
-
-/* Mobile decorative heading */
-.st-key-litlas_sticky_header .litlas-heading h1 {
-    font-family: "Vivaldi", "Italianno", Georgia, serif !important;
-    font-size: 38px !important;
-}
-
-}
- 
-        </style>
-        """,
+</style>
+""",
         unsafe_allow_html=True,
     )
+
 
 def litlas_info(message: str) -> None:
     """Display a vintage-styled informational message."""
@@ -554,7 +425,7 @@ def render_chapter_navigation(active_page: str) -> None:
     """Render the centred literary chapter navigation."""
 
     pages = [
-        ("Literary Atlas", "main.py", "/"),
+        ("Litlas", "main.py", "/"),
         ("Reading Density", "pages/1_Reading_Density.py", "Reading_Density"),
         ("Reading Statistics", "pages/2_Reading_Statistics.py", "Reading_Statistics"),
         ("Library Management", "pages/3_Library_Management.py", "Library_Management"),
@@ -619,12 +490,12 @@ def render_header_title(title: str) -> str:
 
     svg_path = HEADER_DIR / filename
 
-    print(
-        f"HEADER DEBUG: title={title!r}, "
-        f"filename={filename!r}, "
-        f"path={svg_path}, "
-        f"exists={svg_path.is_file()}"
-    )
+    # print(
+    #     f"HEADER DEBUG: title={title!r}, "
+    #     f"filename={filename!r}, "
+    #     f"path={svg_path}, "
+    #     f"exists={svg_path.is_file()}"
+    # )
 
     if not svg_path.is_file():
         return f"<h1>{escape(title)}</h1>"
@@ -651,6 +522,8 @@ def render_page_header(
     illustration_top: int = -45,
     illustration_left: int = 0,
     heading_gap: int = 5,
+    title_height: int = 90,
+    ornament_width: int = 170,
 ) -> None:
     """Render the shared sticky vintage Litlas heading."""
 
@@ -697,23 +570,33 @@ def render_page_header(
                 + heading_gap
             )
 
-
     title_html = render_header_title(title)
 
+    tagline = subtitle
 
-    # Keep illustrations and heading in the same sticky container.
+    heading_html = (
+        '<div class="litlas-heading litlas-home-heading" '
+        f'style="--title-height:{title_height}px; '
+        f'--ornament-width:{ornament_width}px;">'
+        '<div class="litlas-eyebrow">'
+        '✦ A PERSONAL LITERARY ATLAS ✦'
+        '</div>'
+        f'{title_html}'
+        f'<div class="litlas-home-tagline">{escape(tagline)}</div>'
+        '<div class="litlas-home-ornament"></div>'
+        '</div>'
+    )
+
+    header_html = "\n".join([
+        logo_html,
+        image_html,
+        heading_html,
+    ])
+
     with st.container(key="litlas_sticky_header"):
         st.markdown(
-            f"""
-            {logo_html}
-            {image_html}
-
-            <div class="litlas-heading"
-                 style="padding-left:{left_padding}px;">
-                {title_html}
-                <p>{escape(subtitle)}</p>
-            </div>
-            """,
+            header_html,
             unsafe_allow_html=True,
         )
+
         render_chapter_navigation(active_page=title)

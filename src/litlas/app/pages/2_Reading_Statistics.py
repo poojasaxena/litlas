@@ -672,10 +672,11 @@ render_page_header(
     "Reading Statistics",
     "A life in books, told through numbers and patterns...",
     illustration="reading_statistics",
-    illustration_size=180,
-    illustration_top=-40,
+    illustration_size=220,
+    illustration_top=-50,
     illustration_left=0,
-    heading_gap=20,
+    title_height=90,
+    ornament_width=260,
 )
 
 ## Load reading statistics

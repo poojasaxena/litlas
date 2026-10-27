@@ -27,6 +27,9 @@ render_page_header(
     "A personal journey through stories and the world...",
     illustration="about_litlas",
     illustration_size=220,
+        title_height=90,
+    ornament_width=290,
+
 )
 
 # -------------------------------------------------
@@ -47,14 +50,15 @@ st.html("""
 <style>
 
 .litlas-about {
-    max-width: 1100px;
+    max-width: 1050px;
     margin: 0 auto 12px;
-    padding: 22px 42px 24px;
+    padding: 28px 42px 30px;
     background: #FAF7F1;
     border: 1px solid #D4C1A7;
     border-radius: 12px;
     color: #58412F;
     font-family: Georgia, serif;
+    text-align: center;
     box-shadow: 0 5px 22px rgba(88, 65, 47, 0.06);
     box-sizing: border-box;
 }
@@ -94,31 +98,36 @@ st.html("""
     max-width: 100%;
 }
 
+/* Personal narrative */
 .litlas-about-section {
-    margin-top: 16px;
+    max-width: 850px;
+    margin: 12px auto 0;
+    text-align: center;
 }
 
 .litlas-about-section h3 {
     font-family: Georgia, serif;
     font-weight: 400;
-    font-size: 20px;
+    font-size: 21px;
     font-style: italic;
     color: #76563E;
-    margin: 0 0 10px;
+    margin: 0 0 18px;
 }
 
 .litlas-about-section p {
     font-size: 15px;
-    line-height: 1.65;
-    margin: 0 0 12px;
+    line-height: 1.8;
+    margin: 0 0 16px;
+    text-align: center;
 }
+
 
 .litlas-about-signature {
     text-align: center;
     font-style: italic;
     font-size: 14px;
     color: #896A50;
-    margin-top: 12px;
+    margin-top: 8px;
 }
 
 .litlas-about-links {
@@ -143,10 +152,10 @@ st.html("""
 
 .litlas-about-personal-logo {
     display: block;
-    width: 115px;
-    height: 115px;
+    width: 105px;
+    height: 105px;
     object-fit: contain;
-    margin: 0 auto 6px;
+    margin: 0 auto 2px;
 }
 
 .litlas-about-opening strong {
@@ -217,15 +226,23 @@ st.html("""
     }
 }
 @media screen and (max-width: 640px) {
-    .litlas-about-card {
-        max-width: 100%;
-    }
 
     .litlas-about-personal-logo {
         width: 100px;
         height: 100px;
     }
+.litlas-about-section {
+    max-width: 100%;
+    margin-top: 18px;
 }
+
+.litlas-about-section p {
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+    }
+
 </style>
 """)
 
@@ -282,11 +299,6 @@ if logo_path:
 
 st.html(f"""
 <div class="litlas-about">
-
-    <div class="litlas-about-kicker">
-        A PERSONAL COLLECTION OF WORLD LITERATURE 
-        <!-- MY JOURNEY THROUGH WORLD LITERATURE -->
-    </div>
 
     <h2 class="litlas-about-title">
         The Story Behind Litlas
