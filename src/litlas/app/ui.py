@@ -434,10 +434,13 @@ def render_chapter_navigation(active_page: str) -> None:
     ]
 
     active_route = next(
-        (route for label, _, route in pages if label == active_page),
+        (
+            route for label, _, route in pages
+            if label == active_page
+            or (label == "Litlas" and active_page == "Literary Atlas")
+        ),
         None,
     )
-
     # Highlight the active page using its navigation URL.
     st.markdown(
         f"""
