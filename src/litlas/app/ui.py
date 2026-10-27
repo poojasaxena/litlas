@@ -7,6 +7,7 @@ from html import escape
 import streamlit as st
 
 from litlas.processing.paths import load_config
+from litlas.processing.paths import load_config, HEADER_DIR, HEADER_FILES
 
 def load_logo_path() -> Path | None:
     """Return the original Vault logo path, if available."""
@@ -96,38 +97,44 @@ def apply_page_style():
                 z-index: 2;
             }
 
-            /* Shared header */
+            /* ==========================================
+            Litlas heading — SVG and subtitle
+            ========================================== */
+
             .litlas-heading {
-                min-height: 140px;
+                min-height: 110px;
             }
 
-            /* Literary title */
-            .litlas-heading h1 {
-                font-family: "Vivaldi", Georgia, serif;
-                font-size: 5.5rem;
-                font-weight: 400;
-                letter-spacing: 0;
-                line-height: 0.75;
-                color: #58412F;
+            /* Heading container */
+            .litlas-heading .litlas-svg-title {
                 margin: 0;
                 padding: 0;
+                line-height: 0;
             }
 
-            /* Stronger, longer ornamental line */
-            .litlas-heading h1::after {
+            /* Vivaldi SVG */
+            .litlas-heading .litlas-svg-title img {
+                display: block;
+                width: auto;
+                height: 85px;
+                max-width: 100%;
+                object-fit: contain;
+            }
+
+            /* Restore the ornamental divider */
+            .litlas-heading .litlas-svg-title::after {
                 content: "";
                 display: block;
                 width: 570px;
-                margin-left: 10px;
                 max-width: 100%;
                 height: 2px;
-                margin-top: 10px;
+                margin: 5px 0 0 10px;
                 background: #B29A7C;
             }
 
             /* Subtitle */
             .litlas-heading p {
-                margin: -1px 0 0;
+                margin: 7px 0 0;
                 padding-left: 10px;
                 font-family: Georgia, serif;
                 font-size: 0.95rem;
@@ -167,7 +174,7 @@ def apply_page_style():
             .st-key-litlas_sticky_header {
                 position: relative !important;
                 background: #FAF7F1 !important;
-                min-height: 140px;
+                min-height: 100px;
                 padding-bottom: 15px !important;
             }
             /* Literary chapter navigation */
@@ -255,6 +262,7 @@ def apply_page_style():
             .st-key-litlas_mobile_nav {
                 display: none !important;
             }   
+
 /* =====================================================
    LITLAS MOBILE LAYOUT
    Desktop styling remains completely unchanged
@@ -317,9 +325,15 @@ def apply_page_style():
         word-break: normal !important;
     }
 
-    .st-key-litlas_sticky_header .litlas-heading h1::after {
-        width: 100% !important;
-        margin: 8px 0 0 !important;
+    /* Mobile SVG heading */
+    .st-key-litlas_sticky_header .litlas-svg-title img {
+        width: min(100%, 260px);
+        height: auto;
+    }
+
+    .st-key-litlas_sticky_header .litlas-svg-title::after {
+        width: 100%;
+        margin: 6px 0 0;
     }
 
     .st-key-litlas_sticky_header .litlas-heading p {
@@ -330,6 +344,31 @@ def apply_page_style():
         text-align: left !important;
     }
 
+
+    .litlas-heading .litlas-svg-title {
+        margin: 0;
+        padding: 0;
+        line-height: 0;
+    }
+
+    .litlas-heading .litlas-svg-title img {
+        display: block;
+        height: 105px;
+        width: auto;
+        max-width: 100%;
+        object-fit: contain;
+    }
+
+    .litlas-heading .litlas-svg-title::after {
+        display: none;
+    }
+
+    @media screen and (max-width: 640px) {
+        .litlas-heading .litlas-svg-title img {
+            width: min(100%, 260px);
+            height: auto;
+        }
+    }
 
     /* -----------------------------------------
        Disable desktop sticky positioning
@@ -570,6 +609,40 @@ def render_chapter_navigation(active_page: str) -> None:
                 st.page_link(path, label=label)
 
 
+def render_header_title(title: str) -> str:
+    """Return the Vivaldi SVG heading, falling back to text."""
+
+    filename = HEADER_FILES.get(title)
+
+    if not filename:
+        return f"<h1>{escape(title)}</h1>"
+
+    svg_path = HEADER_DIR / filename
+
+    print(
+        f"HEADER DEBUG: title={title!r}, "
+        f"filename={filename!r}, "
+        f"path={svg_path}, "
+        f"exists={svg_path.is_file()}"
+    )
+
+    if not svg_path.is_file():
+        return f"<h1>{escape(title)}</h1>"
+
+    svg_content = svg_path.read_text(encoding="utf-8")
+    svg_content = svg_content.replace("#000000", "#58412F")
+
+    encoded = base64.b64encode(
+        svg_content.encode("utf-8")
+    ).decode("ascii")
+
+    return (
+        '<h1 class="litlas-svg-title">'
+        f'<img src="data:image/svg+xml;base64,{encoded}" '
+        f'alt="{escape(title, quote=True)}">'
+        '</h1>'
+    )
+
 def render_page_header(
     title: str,
     subtitle: str,
@@ -582,8 +655,8 @@ def render_page_header(
     """Render the shared sticky vintage Litlas heading."""
 
     logo_html = ""
-    logo = load_logo_path()
-
+    logo = load_logo_path()    
+    
     if logo:
         encoded = base64.b64encode(
             logo.read_bytes()
@@ -624,6 +697,10 @@ def render_page_header(
                 + heading_gap
             )
 
+
+    title_html = render_header_title(title)
+
+
     # Keep illustrations and heading in the same sticky container.
     with st.container(key="litlas_sticky_header"):
         st.markdown(
@@ -633,7 +710,7 @@ def render_page_header(
 
             <div class="litlas-heading"
                  style="padding-left:{left_padding}px;">
-                <h1>{escape(title)}</h1>
+                {title_html}
                 <p>{escape(subtitle)}</p>
             </div>
             """,

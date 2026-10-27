@@ -33,6 +33,18 @@ GALLERY_DIR = ASSETS_DIR / "gallery"
 JINDAGI_COVER = GALLERY_DIR / "jindagi_sarakti_rahi_front_cover.png"
 LIFE_ENDLESS_EBB_COVER = GALLERY_DIR / "life_endless_ebb_front_cover.jpg"
 
+HEADER_DIR = ASSETS_DIR / "headers/Vivaldi"
+
+HEADER_FILES = {
+    "Literary Atlas": "Litlas.svg",
+    "Reading Density": "ReadingDensity.svg",
+    "Reading Statistics": "ReadingStatistics.svg",
+    "Library Management": "LibraryManagement.svg",
+    "Ink & Verse": "Ink&Verse.svg",
+    "About Litlas": "AboutLitlas.svg",
+}
+
+
 def load_config() -> dict:
     if not CONFIG_PATH.is_file():
         raise FileNotFoundError(
