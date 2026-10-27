@@ -425,7 +425,7 @@ def render_chapter_navigation(active_page: str) -> None:
     """Render the centred literary chapter navigation."""
 
     pages = [
-        ("Litlas", "main.py", "/"),
+        ("Litlas", "main.py", ""),
         ("Reading Density", "pages/1_Reading_Density.py", "Reading_Density"),
         ("Reading Statistics", "pages/2_Reading_Statistics.py", "Reading_Statistics"),
         ("Library Management", "pages/3_Library_Management.py", "Library_Management"),
