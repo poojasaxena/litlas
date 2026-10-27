@@ -235,6 +235,22 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
     margin: 0 !important;
 }
 
+/* Litlas welcome button */
+.st-key-litlas_enter_atlas button {
+    background: #F5EFE4 !important;
+    color: #58412F !important;
+    border: 1px solid #B29A7C !important;
+    border-radius: 6px !important;
+    font-family: Georgia, serif !important;
+    font-size: 15px !important;
+}
+
+.st-key-litlas_enter_atlas button:hover {
+    background: #EDE2D2 !important;
+    border-color: #96785D !important;
+    color: #58412F !important;
+}
+
 /* Hide sidebar and mobile-only navigation on desktop */
 [data-testid="stSidebar"],
 [data-testid="stSidebarCollapsedControl"],

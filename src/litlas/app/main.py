@@ -17,6 +17,7 @@ from litlas.app.map_style import (
     BORDER_COLOR,
     EXPLORED_COLOR,
 )
+from litlas.processing.paths import WELCOME_IMAGE
 from litlas.processing.countries import (
     country_name,
     country_coordinates,
@@ -47,6 +48,57 @@ render_page_header(
     ornament_width=170,
 )
 
+# -------------------------------------------------
+# Litlas welcome screen
+# -------------------------------------------------
+
+if not st.session_state.get("litlas_welcome_dismissed", False):
+
+    st.markdown(
+        """
+        <style>
+        .st-key-litlas_welcome_image {
+            max-width: 1000px;
+            margin: 0 auto;
+            opacity: 0.88;
+        }
+
+        .st-key-litlas_welcome_image img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .st-key-litlas_welcome_button {
+            max-width: 220px;
+            margin: -8px auto 0;
+        }
+
+        .st-key-litlas_welcome_button button {
+            background: #F5EFE4 !important;
+            color: #58412F !important;
+            border: 1px solid #B29A7C !important;
+            font-family: Georgia, serif !important;
+            border-radius: 6px !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    with st.container(key="litlas_welcome_image"):
+        st.image(str(WELCOME_IMAGE), width="stretch")
+
+    with st.container(key="litlas_welcome_button"):
+        if st.button(
+            "Enter Litlas ⟶",
+            key="litlas_enter_atlas",
+            use_container_width=True,
+        ):
+            st.session_state["litlas_welcome_dismissed"] = True
+            st.rerun()
+
+    st.stop()
 
 # SQLite requires a local database file; PostgreSQL does not.
 if not is_postgres():
