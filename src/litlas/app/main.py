@@ -37,6 +37,12 @@ MAP_HEIGHT = 580
 st.set_page_config(page_title='Literary Atlas',page_icon='🌍',layout='wide',initial_sidebar_state='collapsed')
 apply_page_style()
 
+import inspect
+import litlas.app.ui as ui
+
+st.write("Loaded UI module:", ui.__file__)
+st.write("Function signature:", inspect.signature(ui.render_page_header))
+
 render_page_header(
     "Literary Atlas",
     "A journey through literature and geography...",
