@@ -38,6 +38,33 @@ MAP_HEIGHT = 580
 st.set_page_config(page_title='Literary Atlas',page_icon='🌍',layout='wide',initial_sidebar_state='collapsed')
 apply_page_style()
 
+st.html("""
+<style>
+/* Welcome illustration */
+.st-key-litlas_welcome_image img {
+    opacity: 0.7;
+}
+
+/* Enter Litlas button */
+.st-key-litlas_enter_atlas button {
+    background-color: #F5EFE4 !important;
+    border: 1px solid #B29A7C !important;
+    border-radius: 6px !important;
+    color: #58412F !important;
+    font-family: Georgia, serif !important;
+}
+
+.st-key-litlas_enter_atlas button p {
+    color: #58412F !important;
+    font-family: Georgia, serif !important;
+}
+
+.st-key-litlas_enter_atlas button:hover {
+    background-color: #EDE2D2 !important;
+    border-color: #96785D !important;
+}
+</style>
+""")
 
 render_page_header(
     "Literary Atlas",
@@ -52,51 +79,54 @@ render_page_header(
 # Litlas welcome screen
 # -------------------------------------------------
 
+# if not st.session_state.get("litlas_welcome_dismissed", False):
+
+#     st.markdown(
+#         """
+#         <style>
+#         .st-key-litlas_welcome_image {
+#             max-width: 1000px;
+#             margin: 0 auto;
+#             opacity: 0.88;
+#         }
+
+#         .st-key-litlas_welcome_image img {
+#             display: block;
+#             width: 100%;
+#             height: auto;
+#         }
+
+#         .st-key-litlas_welcome_button button {
+#             background: #F5EFE4 !important;
+#             color: #58412F !important;
+#             border: 1px solid #B29A7C !important;
+#             font-family: Georgia, serif !important;
+#             border-radius: 6px !important;
+#         }
+#         </style>
+#         """,
+#         unsafe_allow_html=True,
+#     )
+
 if not st.session_state.get("litlas_welcome_dismissed", False):
 
-    st.markdown(
-        """
-        <style>
-        .st-key-litlas_welcome_image {
-            max-width: 1000px;
-            margin: 0 auto;
-            opacity: 0.88;
-        }
+    # Keep the illustration and button in one centred column.
+    left, centre, right = st.columns([1, 4, 1])
 
-        .st-key-litlas_welcome_image img {
-            display: block;
-            width: 100%;
-            height: auto;
-        }
+    with centre:
+        with st.container(key="litlas_welcome_image"):
+            st.image(str(WELCOME_IMAGE), width="stretch")
 
-        .st-key-litlas_welcome_button {
-            max-width: 220px;
-            margin: -8px auto 0;
-        }
+        button_left, button_centre, button_right = st.columns([2, 2, 2])
 
-        .st-key-litlas_welcome_button button {
-            background: #F5EFE4 !important;
-            color: #58412F !important;
-            border: 1px solid #B29A7C !important;
-            font-family: Georgia, serif !important;
-            border-radius: 6px !important;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    with st.container(key="litlas_welcome_image"):
-        st.image(str(WELCOME_IMAGE), width="stretch")
-
-    with st.container(key="litlas_welcome_button"):
-        if st.button(
-            "Enter Litlas ⟶",
-            key="litlas_enter_atlas",
-            use_container_width=True,
-        ):
-            st.session_state["litlas_welcome_dismissed"] = True
-            st.rerun()
+        with button_centre:
+            if st.button(
+                "Enter Litlas ⟶",
+                key="litlas_enter_atlas",
+                use_container_width=True,
+            ):
+                st.session_state["litlas_welcome_dismissed"] = True
+                st.rerun()
 
     st.stop()
 
