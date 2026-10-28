@@ -410,6 +410,15 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         margin-bottom: 0;
     }
 }
+
+/* Hide Streamlit Community Cloud controls on mobile */
+@media screen and (max-width: 640px) {
+    [data-testid="stToolbar"],
+    #GithubIcon {
+        display: none !important;
+    }
+}
+
 </style>
 """,
         unsafe_allow_html=True,
