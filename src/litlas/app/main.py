@@ -93,7 +93,7 @@ if not st.session_state.get("litlas_welcome_dismissed", False):
         font-style: italic;
         color: #795740;
         text-align: center;
-        margin: -8px auto 0;
+        margin: -35px auto 0;
     }
 
     /* Entry button */
@@ -134,7 +134,7 @@ if not st.session_state.get("litlas_welcome_dismissed", False):
 
     /* Bring the entry button closer to the instruction */
     .st-key-litlas_enter_atlas {
-        margin-top: -20px !important;
+        margin-top: -25px !important;
     }
     /* Compact, centred entry button on mobile */
     .st-key-litlas_enter_atlas {
