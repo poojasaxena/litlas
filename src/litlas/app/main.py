@@ -93,7 +93,7 @@ if not st.session_state.get("litlas_welcome_dismissed", False):
         font-style: italic;
         color: #795740;
         text-align: center;
-        margin: 2px auto 0;
+        margin: -8px auto 0;
     }
 
     /* Entry button */
