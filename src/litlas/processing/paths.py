@@ -34,6 +34,7 @@ JINDAGI_COVER = GALLERY_DIR / "jindagi_sarakti_rahi_front_cover.png"
 LIFE_ENDLESS_EBB_COVER = GALLERY_DIR / "life_endless_ebb_front_cover.jpg"
 
 WELCOME_IMAGE = ILLUSTRATIONS_DIR / "Litlas_Screensaver.png"
+MOBILE_WELCOME_IMAGE = ILLUSTRATIONS_DIR / "Litlas_Mobile_Welcome.png"
 
 HEADER_DIR = ASSETS_DIR / "headers/Vivaldi"
 

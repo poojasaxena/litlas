@@ -263,37 +263,77 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         padding-bottom: 10px !important;
         margin-top: 0 !important;
     }
+    /* Mobile header illustration */
     .st-key-litlas_sticky_header .litlas-page-illustration {
-        width: 65px !important;
-        height: 65px !important;
+        width: 90px !important;
+        height: 90px !important;
         top: 0 !important;
         left: 0 !important;
         transform: none !important;
     }
-    .st-key-litlas_sticky_header .litlas-logo { display: none !important; }
-    .st-key-litlas_sticky_header .litlas-heading {
-        min-height: 80px !important;
-        padding-left: 80px !important;
-        padding-top: 0 !important;
-        text-align: left !important;
+
+    /* Hide personal signature on mobile */
+    .st-key-litlas_sticky_header .litlas-logo {
+        display: none !important;
     }
-    /* Home identity sits beside the smaller illustration */
-    .st-key-litlas_sticky_header .litlas-home-heading {
-        width: auto;
+
+    /* Heading group occupies the space beside the illustration */
+    .st-key-litlas_sticky_header .litlas-heading.litlas-home-heading {
+        box-sizing: border-box;
+        width: calc(100% - 100px);
         min-height: 100px !important;
-        margin: 0;
-        align-items: flex-start;
+        margin: 0 0 0 100px !important;
+        padding: 0 !important;
+        top: 0 !important;
+        transform: none !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center !important;
         justify-content: center;
-        gap: 2px;
-        transform: translateY(-12px);
+        text-align: center !important;
+        gap: 3px;
     }
+
+    /* Eyebrow */
+    .st-key-litlas_sticky_header .litlas-eyebrow {
+        order: 0;
+        font-size: 8px;
+        text-align: center;
+        transform: translateX(-35px);
+    }
+
+    /* Vivaldi SVG heading */
+    .st-key-litlas_sticky_header .litlas-home-heading .litlas-svg-title {
+        order: 1;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
     .st-key-litlas_sticky_header .litlas-home-heading .litlas-svg-title img {
         width: min(100%, 190px);
         height: auto;
     }
-    .st-key-litlas_sticky_header .litlas-eyebrow { font-size: 8px; }
-    .st-key-litlas_sticky_header .litlas-home-tagline { font-size: 12px; }
-    .st-key-litlas_sticky_header .litlas-home-ornament { width: 65px; }
+
+    /* Line between title and subtitle */
+    .st-key-litlas_sticky_header .litlas-home-ornament {
+        order: 2;
+        width: 120px !important;
+        margin: 3px auto 5px !important;
+        transform: translateX(-60px);
+    }
+
+    /* Subtitle */
+    .st-key-litlas_sticky_header .litlas-home-tagline {
+        order: 3;
+        max-width: 280px;
+        font-size: 12px;
+        line-height: 1.3;
+        text-align: center !important;
+        transform: translateX(-35px);
+    }
+
 
     /* All other chapter headings */
     .st-key-litlas_sticky_header .litlas-section-heading .litlas-svg-title img {

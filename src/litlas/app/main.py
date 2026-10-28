@@ -17,7 +17,7 @@ from litlas.app.map_style import (
     BORDER_COLOR,
     EXPLORED_COLOR,
 )
-from litlas.processing.paths import WELCOME_IMAGE
+from litlas.processing.paths import WELCOME_IMAGE, MOBILE_WELCOME_IMAGE
 from litlas.processing.countries import (
     country_name,
     country_coordinates,
@@ -38,34 +38,6 @@ MAP_HEIGHT = 580
 st.set_page_config(page_title='Literary Atlas',page_icon='🌍',layout='wide',initial_sidebar_state='collapsed')
 apply_page_style()
 
-st.html("""
-<style>
-/* Welcome illustration */
-.st-key-litlas_welcome_image img {
-    opacity: 0.7;
-}
-
-/* Enter Litlas button */
-.st-key-litlas_enter_atlas button {
-    background-color: #F5EFE4 !important;
-    border: 1px solid #B29A7C !important;
-    border-radius: 6px !important;
-    color: #58412F !important;
-    font-family: Georgia, serif !important;
-}
-
-.st-key-litlas_enter_atlas button p {
-    color: #58412F !important;
-    font-family: Georgia, serif !important;
-}
-
-.st-key-litlas_enter_atlas button:hover {
-    background-color: #EDE2D2 !important;
-    border-color: #96785D !important;
-}
-</style>
-""")
-
 render_page_header(
     "Literary Atlas",
     "A journey through literature and geography...",
@@ -75,58 +47,139 @@ render_page_header(
     ornament_width=170,
 )
 
-# -------------------------------------------------
-# Litlas welcome screen
-# -------------------------------------------------
-
-# if not st.session_state.get("litlas_welcome_dismissed", False):
-
-#     st.markdown(
-#         """
-#         <style>
-#         .st-key-litlas_welcome_image {
-#             max-width: 1000px;
-#             margin: 0 auto;
-#             opacity: 0.88;
-#         }
-
-#         .st-key-litlas_welcome_image img {
-#             display: block;
-#             width: 100%;
-#             height: auto;
-#         }
-
-#         .st-key-litlas_welcome_button button {
-#             background: #F5EFE4 !important;
-#             color: #58412F !important;
-#             border: 1px solid #B29A7C !important;
-#             font-family: Georgia, serif !important;
-#             border-radius: 6px !important;
-#         }
-#         </style>
-#         """,
-#         unsafe_allow_html=True,
-#     )
 
 if not st.session_state.get("litlas_welcome_dismissed", False):
 
-    # Keep the illustration and button in one centred column.
-    left, centre, right = st.columns([1, 4, 1])
+    st.html("""
+    <style>
+    /* Desktop */
+    .st-key-litlas_mobile_welcome {
+        display: none;
+    }
 
-    with centre:
-        with st.container(key="litlas_welcome_image"):
-            st.image(str(WELCOME_IMAGE), width="stretch")
+    .st-key-litlas_welcome_image img {
+        opacity: 0.70;
+    }
 
-        button_left, button_centre, button_right = st.columns([2, 2, 2])
+    /* Mobile */
+    @media screen and (max-width: 640px) {
+        .st-key-litlas_desktop_welcome {
+            display: none !important;
+        }
 
-        with button_centre:
-            if st.button(
-                "Enter Litlas ⟶",
-                key="litlas_enter_atlas",
-                use_container_width=True,
-            ):
-                st.session_state["litlas_welcome_dismissed"] = True
-                st.rerun()
+        .st-key-litlas_mobile_welcome {
+            display: block !important;
+            text-align: center;
+        }
+
+        .litlas-mobile-intro {
+            max-width: 340px;
+            margin: 0 auto 16px;
+            font-family: Georgia, serif;
+            text-align: center;
+            color: #58412F;
+        }
+
+        .litlas-mobile-intro h2 {
+            font-size: 24px !important;
+            font-weight: 400;
+            font-style: italic;
+            margin: 0 0 10px;
+        }
+
+        .litlas-mobile-intro p {
+            font-size: 14px !important;
+            line-height: 1.55;
+            color: #795740;
+        }
+
+        .st-key-litlas_mobile_welcome img {
+            display: block;
+            width: 100%;
+            max-width: 280px;
+            height: auto;
+            margin: 0 auto;
+        }
+    }
+
+    /* Both entry buttons */
+    .st-key-litlas_enter_atlas button,
+    .st-key-litlas_enter_atlas_mobile button {
+        background: #F5EFE4 !important;
+        color: #58412F !important;
+        border: 1px solid #B29A7C !important;
+        border-radius: 6px !important;
+        font-family: Georgia, serif !important;
+    }
+
+    .st-key-litlas_enter_atlas button p,
+    .st-key-litlas_enter_atlas_mobile button p {
+        color: #58412F !important;
+        font-family: Georgia, serif !important;
+    }
+
+    .st-key-litlas_enter_atlas button:hover,
+    .st-key-litlas_enter_atlas_mobile button:hover {
+        background: #EDE2D2 !important;
+        color: #58412F !important;
+    }
+    </style>
+    """)
+
+    # Desktop welcome
+    with st.container(key="litlas_desktop_welcome"):
+        left, centre, right = st.columns([1, 4, 1])
+
+        with centre:
+            with st.container(key="litlas_welcome_image"):
+                st.image(str(WELCOME_IMAGE), width="stretch")
+
+            button_left, button_centre, button_right = st.columns([2, 2, 2])
+
+            with button_centre:
+                if st.button(
+                    "Enter Litlas ⟶",
+                    key="litlas_enter_atlas",
+                    use_container_width=True,
+                ):
+                    st.session_state["litlas_welcome_dismissed"] = True
+                    st.rerun()
+
+    # Mobile welcome
+    with st.container(key="litlas_mobile_welcome"):
+
+        st.html("""
+        <div class="litlas-mobile-intro">
+            <h2>Explore a World of Literature</h2>
+            <p>
+                Discover the books I've read, the authors I return to,
+                and the countries that shape my reading journey.
+            </p>
+        </div>
+        """)
+
+        st.image(str(MOBILE_WELCOME_IMAGE), width="stretch")
+
+        st.html("""
+        <p style="
+            text-align:center;
+            font-family:Georgia,serif;
+            font-size:14px;
+            font-style:italic;
+            color:#795740;
+            margin:4px auto 12px;
+        ">
+            Select a country's flag to explore its literary journey.
+        </p>
+        """)
+
+        if st.button(
+            "Enter Litlas ⟶",
+            key="litlas_enter_atlas_mobile",
+            use_container_width=True,
+        ):
+            st.session_state["litlas_welcome_dismissed"] = True
+            st.rerun()
 
     st.stop()
 
