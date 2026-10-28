@@ -307,7 +307,7 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         order: 0;
         font-size: 8px;
         text-align: center;
-        transform: translateX(-35px);
+        transform: translateX(-45px);
     }
 
     /* Vivaldi SVG heading */
@@ -329,7 +329,7 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         order: 2;
         width: 120px !important;
         margin: 3px auto 5px !important;
-        transform: translateX(-60px);
+        transform: translateX(-35px);
     }
 
     /* Subtitle */
