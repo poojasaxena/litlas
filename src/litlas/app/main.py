@@ -47,64 +47,57 @@ render_page_header(
     ornament_width=170,
 )
 
-
 if not st.session_state.get("litlas_welcome_dismissed", False):
 
     st.html("""
     <style>
-    /* Desktop */
-    .st-key-litlas_mobile_welcome {
+    /* Shared welcome layout */
+    .litlas-welcome-intro {
+        max-width: 560px;
+        margin: 0 auto 12px;
+        font-family: Georgia, serif;
+        text-align: center;
+        color: #58412F;
         display: none;
     }
 
-    .st-key-litlas_welcome_image img {
-        opacity: 0.70;
+    .litlas-welcome-intro h2 {
+        font-size: 28px !important;
+        font-weight: 400;
+        font-style: italic;
+        margin: 0 0 10px;
     }
 
-    /* Mobile */
-    @media screen and (max-width: 640px) {
-        .st-key-litlas_desktop_welcome {
-            display: none !important;
-        }
-
-        .st-key-litlas_mobile_welcome {
-            display: block !important;
-            text-align: center;
-        }
-
-        .litlas-mobile-intro {
-            max-width: 340px;
-            margin: 0 auto 16px;
-            font-family: Georgia, serif;
-            text-align: center;
-            color: #58412F;
-        }
-
-        .litlas-mobile-intro h2 {
-            font-size: 24px !important;
-            font-weight: 400;
-            font-style: italic;
-            margin: 0 0 10px;
-        }
-
-        .litlas-mobile-intro p {
-            font-size: 14px !important;
-            line-height: 1.55;
-            color: #795740;
-        }
-
-        .st-key-litlas_mobile_welcome img {
-            display: block;
-            width: 100%;
-            max-width: 280px;
-            height: auto;
-            margin: 0 auto;
-        }
+    .litlas-welcome-intro p {
+        font-size: 16px;
+        line-height: 1.5;
+        color: #795740;
+        margin: 0;
+        margin-bottom: 4px;
     }
 
-    /* Both entry buttons */
-    .st-key-litlas_enter_atlas button,
-    .st-key-litlas_enter_atlas_mobile button {
+    /* Desktop: landscape illustration */
+    .st-key-litlas_welcome_desktop_image {
+        max-width: 780px;
+        margin: 0 auto;
+    }
+
+    .st-key-litlas_welcome_mobile_image {
+        display: none;
+    }
+
+    /* Instruction */
+    .litlas-welcome-instruction {
+        font-family: Georgia, serif;
+        font-size: 14px;
+        font-style: italic;
+        color: #795740;
+        text-align: center;
+        margin: 2px auto 12px;
+    }
+
+    /* Entry button */
+    .st-key-litlas_enter_atlas button {
         background: #F5EFE4 !important;
         color: #58412F !important;
         border: 1px solid #B29A7C !important;
@@ -112,38 +105,75 @@ if not st.session_state.get("litlas_welcome_dismissed", False):
         font-family: Georgia, serif !important;
     }
 
-    .st-key-litlas_enter_atlas button p,
-    .st-key-litlas_enter_atlas_mobile button p {
+    .st-key-litlas_enter_atlas button p {
         color: #58412F !important;
         font-family: Georgia, serif !important;
     }
 
-    .st-key-litlas_enter_atlas button:hover,
-    .st-key-litlas_enter_atlas_mobile button:hover {
+    .st-key-litlas_enter_atlas button:hover {
         background: #EDE2D2 !important;
-        color: #58412F !important;
+        border-color: #96785D !important;
+    }
+
+    /* Mobile adjustments */
+    @media screen and (max-width: 640px) {
+        .litlas-welcome-intro {
+            max-width: 340px;
+        }
+
+    .st-key-litlas_welcome_desktop_image {
+        display: none !important;
+    }
+
+    .st-key-litlas_welcome_mobile_image {
+        display: block !important;
+        max-width: 320px;
+        margin: 0 auto;
+    }
     }
     </style>
     """)
 
-    # Desktop welcome
-    with st.container(key="litlas_desktop_welcome"):
-        left, centre, right = st.columns([1, 4, 1])
+    left, centre, right = st.columns([1, 4, 1])
 
-        with centre:
-            with st.container(key="litlas_welcome_image"):
-                st.image(str(WELCOME_IMAGE), width="stretch")
+    with centre:
 
-            button_left, button_centre, button_right = st.columns([2, 2, 2])
+        st.html("""
+        <div class="litlas-welcome-intro">
+            <h2>Explore a World of Literature</h2>
+            <p>
+                Discover the books I've read, the authors I return to,
+                and the countries that shape my reading journey.
+            </p>
+        </div>
+        """)
 
-            with button_centre:
-                if st.button(
-                    "Enter Litlas ⟶",
-                    key="litlas_enter_atlas",
-                    use_container_width=True,
-                ):
-                    st.session_state["litlas_welcome_dismissed"] = True
-                    st.rerun()
+        # Landscape illustration for desktop
+        with st.container(key="litlas_welcome_desktop_image"):
+            st.image(str(WELCOME_IMAGE), width="stretch")
+
+        # Portrait illustration for mobile
+        with st.container(key="litlas_welcome_mobile_image"):
+            st.image(str(MOBILE_WELCOME_IMAGE), width="stretch")
+
+        st.html("""
+        <p class="litlas-welcome-instruction">
+            Select a country's flag to explore its literary journey.
+        </p>
+        """)
+
+        button_left, button_centre, button_right = st.columns([2, 2, 2])
+
+        with button_centre:
+            if st.button(
+                "Enter Litlas ⟶",
+                key="litlas_enter_atlas",
+                use_container_width=True,
+            ):
+                st.session_state["litlas_welcome_dismissed"] = True
+                st.rerun()
+
+    st.stop()
 
     # Mobile welcome
     with st.container(key="litlas_mobile_welcome"):
