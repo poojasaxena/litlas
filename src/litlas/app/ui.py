@@ -257,11 +257,19 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
     [data-testid="stLayoutWrapper"]:has(> .st-key-litlas_sticky_header)::before {
         display: none !important;
     }
+
+
     .st-key-litlas_sticky_header {
         min-height: 0 !important;
         padding-top: 0 !important;
-        padding-bottom: 10px !important;
+        padding-bottom: 0 !important;
         margin-top: 0 !important;
+    }
+
+    /* Compact spacing between the header and page content */
+    .stApp [data-testid="stMainBlockContainer"]
+    > [data-testid="stVerticalBlock"] {
+        gap: 0.75rem !important;
     }
     /* Mobile header illustration */
     .st-key-litlas_sticky_header .litlas-page-illustration {
