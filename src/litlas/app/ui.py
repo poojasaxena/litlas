@@ -342,6 +342,15 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         transform: translateX(-35px);
     }
 
+    /* Reading Density: keep the longer subtitle beside the globe */
+    .st-key-litlas_sticky_header
+    .litlas-home-heading:has(.litlas-svg-title img[alt="Reading Density"])
+    .litlas-home-tagline {
+        transform: none !important;
+        max-width: 100% !important;
+        font-size: 11px !important;
+        line-height: 1.3 !important;
+    }
 
     /* All other chapter headings */
     .st-key-litlas_sticky_header .litlas-section-heading .litlas-svg-title img {
