@@ -134,7 +134,19 @@ if not st.session_state.get("litlas_welcome_dismissed", False):
 
     /* Bring the entry button closer to the instruction */
     .st-key-litlas_enter_atlas {
-        margin-top: -25px !important;
+        margin-top: -20px !important;
+    }
+    /* Compact, centred entry button on mobile */
+    .st-key-litlas_enter_atlas {
+        max-width: 190px !important;
+        width: 100%;
+        margin: -25px auto 0 !important;
+    }
+
+    .st-key-litlas_enter_atlas button {
+        width: 100% !important;
+        min-height: 40px !important;
+        padding: 6px 14px !important;
     }
 
     }
