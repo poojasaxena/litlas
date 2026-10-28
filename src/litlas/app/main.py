@@ -129,10 +129,7 @@ if not st.session_state.get("litlas_welcome_dismissed", False):
         display: block !important;
         max-width: 320px;
         margin: 0 auto;
-    }
-
-    .st-key-litlas_welcome_mobile_image {
-        margin-top: -30px !important;
+        margin-top: -60px !important;
     }
 
     }
