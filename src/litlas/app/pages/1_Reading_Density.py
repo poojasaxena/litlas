@@ -35,7 +35,7 @@ apply_page_style()
 
 render_page_header(
     "Reading Density",
-    "Where the pages I've turned meet the places they came from...",
+    "Where the pages I've turned meet the places they came from",
     illustration="reading_density",
     illustration_size=160,
     illustration_top=-20,

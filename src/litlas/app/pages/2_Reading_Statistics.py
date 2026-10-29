@@ -670,7 +670,7 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 
 render_page_header(
     "Reading Statistics",
-    "A life in books, told through numbers and patterns...",
+    "A life in books, told through numbers and patterns",
     illustration="reading_statistics",
     illustration_size=220,
     illustration_top=-50,

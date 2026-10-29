@@ -23,7 +23,7 @@ st.set_page_config(
 apply_page_style()
 render_page_header(
     "Ink & Verse",
-    "A little corner of my literary world, written in my own words...",
+    "A little corner of my literary world, written in my own words",
     illustration="book_author",
     illustration_size=200,
         title_height=90,

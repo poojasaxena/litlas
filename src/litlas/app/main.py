@@ -40,7 +40,7 @@ apply_page_style()
 
 render_page_header(
     "Literary Atlas",
-    "A journey through literature and geography...",
+    "A journey through literature and geography",
     illustration="literary_atlas",
     illustration_size=220,
     title_height=90,

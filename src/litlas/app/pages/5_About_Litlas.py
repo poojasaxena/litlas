@@ -24,7 +24,7 @@ apply_page_style()
 
 render_page_header(
     "About Litlas",
-    "A personal journey through stories and the world...",
+    "A personal journey through stories and the world",
     illustration="about_litlas",
     illustration_size=220,
         title_height=90,
@@ -300,28 +300,20 @@ if logo_path:
 st.html(f"""
 <div class="litlas-about">
 
-    <h2 class="litlas-about-title">
-        The Story Behind Litlas
-    </h2>
-
-    <div class="litlas-about-rule"></div>
-
     <div class="litlas-about-opening">
         <span class="litlas-opening-ornament">✧</span>
-        Every book opens a world; these are the worlds I've wandered through.
+        The Stories I Carry
         <span class="litlas-opening-ornament">✧</span>
     </div>
 
     <div class="litlas-about-section">
-
-        <h3>A Note from the Creator</h3>
 
         <p>
             I'm an enthusiastic reader with a curiosity for
             literature from around the world. I love discovering
             unfamiliar writers, exploring different cultures,
             and occasionally finding a book that stays with me
-            long after I've turned its last page...
+            long after I've turned its last page.
         </p>
 
         <p>

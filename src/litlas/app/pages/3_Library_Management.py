@@ -45,7 +45,7 @@ apply_page_style()
 
 render_page_header(
     "Library Management",
-    "A home for the books, authors, and stories behind the atlas...",
+    "A home for the books, authors, and stories behind the atlas",
     illustration="lib_management",
     illustration_size=185,
     illustration_top=-35,
