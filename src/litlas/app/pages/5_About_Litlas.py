@@ -152,8 +152,8 @@ st.html("""
 
 .litlas-about-personal-logo {
     display: block;
-    width: 105px;
-    height: 105px;
+    width: 115px;
+    height: 115px;
     object-fit: contain;
     margin: 0 auto 2px;
 }

@@ -55,6 +55,41 @@ render_page_header(
     ornament_width=290,
 )
 
+
+def render_owner_access_message(button_label, callback):
+    st.html("""
+        <div style="
+            margin: 35px auto 0;
+            text-align: center;
+            font-family: Georgia, serif;
+        ">
+            <div style="
+                font-size: 22px;
+                font-weight: 600;
+                color: #58412F;
+                margin-bottom: 8px;
+            ">
+                Owner's Library
+            </div>
+            <div style="
+                font-size: 16px;
+                font-style: italic;
+                color: #81776E;
+            ">
+                This page is reserved for its creator.
+            </div>
+        </div>
+    """)
+
+    with st.container(
+        key="litlas_owner_access_action",
+        horizontal=True,
+        horizontal_alignment="center",
+    ):
+        st.button(button_label, on_click=callback)
+        
+# Local SQLite: preserve existing Library Management access.
+# Cloud PostgreSQL: require authenticated owner access.
 # Local SQLite: preserve existing Library Management access.
 # Cloud PostgreSQL: require authenticated owner access.
 if is_postgres():
@@ -66,25 +101,14 @@ if is_postgres():
         st.stop()
 
     if not getattr(st.user, "is_logged_in", False):
-        st.markdown(
-            dedent("""
-            <div style="font-family: Georgia, serif; color: #58412F; margin-top: 20px;">
-                <div style="font-size: 26px; font-weight: bold; margin-bottom: 18px;">
-                    Owner's Library
-                </div>
-                <p style="font-size: 17px; line-height: 1.7; color: #8B634B;">
-                    This section is reserved for the owner of Litlas.
-                    Books, authors, ratings and literary collections are managed here.
-                </p>
-                <p style="font-size: 14px; color: #81776E; margin-top: 22px;">
-                    🔒 Owner authentication required.
-                </p>
-            </div>
-            """),
-            unsafe_allow_html=True,
-        )
+        render_owner_access_message("Log in with Google", st.login)
+        st.stop()
 
-        st.button("Log in with Google", on_click=st.login)
+    user_email = str(st.user.get("email", "")).strip().casefold()
+    email_verified = st.user.get("email_verified") is True
+
+    if not email_verified or user_email != admin_email:
+        render_owner_access_message("Log out", st.logout)
         st.stop()
 
     user_email = str(st.user.get("email", "")).strip().casefold()

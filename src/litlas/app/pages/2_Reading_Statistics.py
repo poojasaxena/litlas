@@ -121,7 +121,7 @@ st.set_page_config(
 apply_page_style()
 
 
-st.markdown("""
+st.html("""
 <style>
 .litlas-mini-card {
     background: #F5EFE4;
@@ -184,14 +184,7 @@ st.markdown("""
     font-weight: 700 !important;
     font-size: 2rem !important;
 }
-/* Reading Statistics — desktop header positioning only */
-@media screen and (min-width: 641px) {
-    [data-testid="stLayoutWrapper"]:has(
-        > .st-key-litlas_sticky_header
-    ) {
-        top: 45px !important;
-    }
-}
+
 /* Reading Statistics — section headings */
 [data-testid="stHeading"] h3 {
     font-family: "Cormorant Garamond", Georgia, serif !important;
@@ -666,7 +659,7 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 }
 
 </style>
-""", unsafe_allow_html=True)
+""")
 
 render_page_header(
     "Reading Statistics",

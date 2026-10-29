@@ -247,6 +247,7 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
 [data-testid="stSidebarCollapseButton"] { display: none !important; }
 .st-key-litlas_mobile_nav { display: none !important; }
 
+
 /* ============================================================
    MOBILE — <= 640px
    ============================================================ */
