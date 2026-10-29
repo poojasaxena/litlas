@@ -235,6 +235,12 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
     margin: 0 !important;
 }
 
+/* Hide Streamlit Community Cloud controls on mobile */
+[data-testid="stToolbar"],
+#GithubIcon {
+    display: none !important;
+}
+
 /* Hide sidebar and mobile-only navigation on desktop */
 [data-testid="stSidebar"],
 [data-testid="stSidebarCollapsedControl"],
@@ -420,12 +426,6 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
     }
 }
 
-/* Hide Streamlit Community Cloud controls on mobile */
-@media screen and (max-width: 640px) {
-    [data-testid="stToolbar"],
-    #GithubIcon {
-        display: none !important;
-    }
 }
 
 </style>
