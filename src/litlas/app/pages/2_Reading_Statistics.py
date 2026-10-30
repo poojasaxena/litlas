@@ -1269,7 +1269,7 @@ for iso3, group in read_books.groupby("ISO3"):
 
 
 with country_col:
-    st.subheader("Literary works by country")
+    st.subheader("Literary Geography")
 
     if density.empty:
         st.info("No country statistics available yet.")
@@ -1454,7 +1454,7 @@ books_by_year = {
 
 
 with history_col:
-    st.subheader("Books Read Through the Years")
+    st.subheader("Pages Through Time")
 
     if history.empty:
         st.info("No books have a recorded reading date yet.")
@@ -1480,7 +1480,7 @@ with history_col:
 # ---------------------------------------------------------
 
 with highlights_col:
-    st.subheader("Literary Highlights")
+    st.subheader("Highlights")
 
     highlights = stats["highlights"]
 
@@ -1553,7 +1553,7 @@ with highlights_col:
 
 with st.container(key="litlas_constellation_section"):
     st.divider()
-    st.subheader("My Literary Constellation")
+    st.subheader("Literary Constellation")
 
     try:
         constellation_df = load_constellation_books(
@@ -1581,7 +1581,7 @@ with st.container(key="litlas_constellation_section"):
 
 st.divider()
 
-st.subheader("My Literary Book of Honour")
+st.subheader("Book of Honour")
 
 favourite_authors = stats["favourite_authors"]
 
@@ -1606,7 +1606,7 @@ all_authors = stats["all_authors"]
 # ---------------------------------------------------------
 
 with most_read_col:
-    st.subheader("My Most-Read Authors")
+    st.subheader("Most-Read Authors")
 
     if all_authors.empty:
         st.info("No author statistics available yet.")
@@ -1688,7 +1688,7 @@ with most_read_col:
 # ---------------------------------------------------------
 
 with favourite_col:
-    st.subheader("My Favourite Authors")
+    st.subheader("Favourite Authors")
 
     # Only include authors with at least two rated books.
     favourites = all_authors[
