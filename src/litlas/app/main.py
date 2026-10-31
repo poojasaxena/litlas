@@ -21,7 +21,9 @@ from litlas.processing.paths import WELCOME_IMAGE, MOBILE_WELCOME_IMAGE
 from litlas.processing.countries import (
     country_name,
     country_coordinates,
-    load_simplified_country_boundaries,
+    sovereign_country_codes,
+    litlas_country_features,
+    load_simplified_country_boundaries
 )
 from litlas.app.visualizations.unexplored_lands import (
     add_unexplored_lands_control,
@@ -256,11 +258,18 @@ m = create_litlas_map(mobile_focus=True)
 # )
 
 ## Highlight countries that have been read
-read_countries = set(mapped["ISO3"].unique())
+read_countries = (
+    set(mapped["ISO3"].unique())
+    & sovereign_country_codes()
+)
 
 
 ## Load country boundaries for the map
-geojson = load_simplified_country_boundaries()
+geojson = {
+    "type": "FeatureCollection",
+    "features": litlas_country_features(),
+}
+
 
 for feature in geojson["features"]:
     iso = feature["properties"].get("ISO3166-1-Alpha-3")

@@ -9,6 +9,11 @@ import country_converter as coco
 from functools import lru_cache
 import pycountry
 import requests
+
+from copy import deepcopy
+from shapely.geometry import shape, mapping
+from shapely.ops import unary_union
+
 import streamlit as st
 from countryinfo import CountryInfo
 from litlas.processing.paths import (
@@ -21,6 +26,14 @@ COUNTRY_BOUNDARIES_URL = (
     "datasets/geo-countries/master/data/countries.geojson"
 )
 
+
+TERRITORY_MERGES = {
+    "MAR": {"ESH"},  # Western Sahara → Morocco
+    "SOM": {"Somaliland"},  # Somaliland → Somalia
+    "CYP": {"Northern Cyprus", "Cyprus No Mans Area"},
+    "KAZ": {"Baykonur Cosmodrome"},
+    "SRB": {"Kosovo"},  # Kosovo → Serbia
+}
 
 COUNTRY_DISPLAY_NAMES = {
     "VEN": "Venezuela",
@@ -59,26 +72,6 @@ SPECIAL_COORDINATES = {
     "XKX": [42.6, 21.0],    # Kosovo
     "TWN": [23.7, 121.0],  # Taiwan
     "PSE": [31.9, 35.2],   # Palestine
-}
-
-
-ALIASES = {
-    "England": "GBR",
-    "Scotland": "GBR",
-    "Wales": "GBR",
-    "Northern Ireland": "GBR",
-    "United Kingdom": "GBR",
-    "USA": "USA",
-    "United States": "USA",
-    "United States of America": "USA",
-    "Russia": "RUS",
-    "South Korea": "KOR",
-    "North Korea": "PRK",
-    "Taiwan": "TWN",
-    "Türkiye": "TUR",
-    "Czech Republic": "CZE",
-    "Kosovo": "XKX",
-    "Ivory Coast": "CIV",
 }
 
 
@@ -146,6 +139,14 @@ def sovereign_country_codes() -> frozenset[str]:
 
     return frozenset(sovereign)
 
+
+def is_litlas_country(iso: str) -> bool:
+    """Check whether an ISO3 code belongs to Litlas's 195 countries."""
+    return (
+        isinstance(iso, str)
+        and iso.strip().upper() in sovereign_country_codes()
+    )
+
 @lru_cache(maxsize=1)
 def _load_country_coordinates() -> dict:
     """Load precomputed country coordinates."""
@@ -205,3 +206,45 @@ def load_simplified_country_boundaries() -> dict:
     return json.loads(
         COUNTRY_BOUNDARIES_GEOJSON.read_text(encoding="utf-8")
     )
+
+
+@st.cache_data(show_spinner=False)
+def litlas_country_features() -> list[dict]:
+    """Return Litlas country geometries with configured territory merges."""
+    allowed = sovereign_country_codes()
+    features = deepcopy(load_simplified_country_boundaries()["features"])
+
+    for parent_iso, territories in TERRITORY_MERGES.items():
+        parent = next(
+            (
+                f for f in features
+                if f["properties"].get("ISO3166-1-Alpha-3") == parent_iso
+            ),
+            None,
+        )
+
+        if parent is None:
+            raise ValueError(f"Parent country not found: {parent_iso}")
+
+        matches = [
+            f for f in features
+            if (
+                f["properties"].get("ISO3166-1-Alpha-3") in territories
+                or f["properties"].get("name") in territories
+            )
+        ]
+
+        if not matches:
+            raise ValueError(f"Territory not found: {territories}")
+
+        parent["geometry"] = mapping(
+            unary_union([
+                shape(parent["geometry"]),
+                *(shape(f["geometry"]) for f in matches),
+            ])
+        )
+
+    return [
+        f for f in features
+        if f["properties"].get("ISO3166-1-Alpha-3") in allowed
+    ]
