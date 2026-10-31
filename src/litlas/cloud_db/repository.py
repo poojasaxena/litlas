@@ -413,6 +413,45 @@ def update_book_details(
             (display_title, goodreads_id),
         )
 
+def delete_book(goodreads_id: str) -> str:
+    """Delete a book and its work if no other books reference it."""
+
+    with connect() as db:
+        _lock_author_changes(db)
+
+        book = db.execute(
+            """
+            SELECT goodreads_id, display_title, work_id
+            FROM books
+            WHERE goodreads_id = %s
+            FOR UPDATE
+            """,
+            (goodreads_id,),
+        ).fetchone()
+
+        if book is None:
+            raise ValueError("Book not found.")
+
+        db.execute(
+            "DELETE FROM books WHERE goodreads_id = %s",
+            (goodreads_id,),
+        )
+
+        if book["work_id"] is not None:
+            db.execute(
+                """
+                DELETE FROM works
+                WHERE id = %s
+                  AND NOT EXISTS (
+                      SELECT 1 FROM books
+                      WHERE work_id = %s
+                  )
+                """,
+                (book["work_id"], book["work_id"]),
+            )
+
+        return book["display_title"]
+    
 
 def get_top_authors(limit=10):
     """Return most-read authors using effective Litlas ratings."""

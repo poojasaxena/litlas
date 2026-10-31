@@ -11,7 +11,7 @@ repository = get_repository()
 
 get_editable_books = repository.get_editable_books
 update_book_details = repository.update_book_details
-
+delete_book = repository.delete_book
 
 RATING_OPTIONS = {
     "Unrated": 0.0,
@@ -26,62 +26,92 @@ RATING_OPTIONS = {
     "5 ★": 5.0,
 }
 
-st.markdown(
-    """
-    <style>
-    /* Compact book editor */
-    .st-key-compact_book_editor [data-testid="stVerticalBlock"] {
-        gap: 0.45rem !important;
-    }
-
-    /* Reduce excessive whitespace around captions */
-    .st-key-compact_book_editor [data-testid="stCaptionContainer"] {
-        margin-top: -5px !important;
-    }
-
-    /* Keep the Save button close to the fields */
-    .st-key-compact_book_editor [data-testid="stFormSubmitButton"] {
-        margin-top: 0 !important;
-    }
-
-    /* Reduce spacing between search, reading date and form */
-    .st-key-compact_book_editor [data-testid="stVerticalBlock"] {
-        gap: 0.25rem !important;
-    }
-
-    /* Bring the small metadata captions closer to their fields */
-    .st-key-compact_book_editor [data-testid="stCaptionContainer"] {
-        margin-top: -12px !important;
-    }
-    .litlas-book-save-message {
-    position: relative;
-    margin-top: -45px;
-    margin-left: calc(50% + 115px);
-    margin-bottom: 25px;
-    color: #6E4B3A;
-    font-family: Georgia, serif;
-    font-size: 14px;
-    white-space: nowrap;
+st.html("""
+<style>
+.st-key-compact_book_editor [data-testid="stVerticalBlock"] {
+    gap: 0.3rem !important;
+}
+.st-key-compact_book_editor [data-testid="stCaptionContainer"] {
+    margin-top: -6px !important;
+}
+/* Save to Litlas — warm brown */
+div.st-key-book_save_area button[kind="secondary"] {
+    background-color: #906A52 !important;
+    border: 1px solid #906A52 !important;
+    color: #FFFFFF !important;
+    border-radius: 7px !important;
 }
 
-@media screen and (max-width: 640px) {
-    .litlas-book-save-message {
-        margin: 8px 0 0;
-        text-align: center;
-        white-space: normal;
-        overflow-wrap: anywhere;
-    }
+div.st-key-book_save_area button[kind="secondary"]:hover {
+    background-color: #79533D !important;
+    border-color: #79533D !important;
 }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+
+div.st-key-book_save_area button[kind="secondary"] p {
+    color: #FFFFFF !important;
+}
+
+/* Delete remains a separate, small, darker text action. */
+.st-key-book_delete_button button {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #512D29 !important;
+    min-height: 30px !important;
+    padding: 2px 9px !important;
+    font-size: 13px !important;
+}
+.st-key-book_delete_button button p {
+    color: #512D29 !important;
+    font-size: 13px !important;
+}
+.st-key-book_delete_button button:hover,
+.st-key-book_delete_button button:hover p {
+    color: #35201D !important;
+    text-decoration: underline !important;
+}
+
+/* Compact Delete action, aligned to the right */
+.st-key-book_delete_area {
+    margin-top: -65px !important;
+    margin-bottom: 0 !important;
+}
+
+.st-key-book_delete_area [data-testid="stButton"] {
+    display: flex !important;
+    justify-content: flex-end !important;
+}
+
+.st-key-book_delete_area button {
+    width: auto !important;
+    min-height: 28px !important;
+    padding: 2px 8px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #512D29 !important;
+    font-size: 13px !important;
+}
+
+.st-key-book_delete_area button:hover {
+    color: #35201D !important;
+    text-decoration: underline !important;
+}
+</style>
+""")
 
 def render_book_editor_contents(show_heading=True):
-    """Render the book editor in the current location."""
+    """Render the searchable book editor in the current location."""
+
+    if st.session_state.pop("reset_delete_confirmation", False):
+        st.session_state.pop("confirm_delete_book_checkbox", None)
+    if st.session_state.pop("reset_book_selection", False):
+        st.session_state.pop("editor_book", None)
+
+    if deleted := st.session_state.pop("book_deleted", None):
+        st.success(f"Deleted: {deleted}")
 
     books = get_editable_books()
-
     if books.empty:
         st.info("No books available for editing.")
         return
@@ -90,15 +120,10 @@ def render_book_editor_contents(show_heading=True):
         st.subheader("Library Editor")
         st.caption("Edit book titles, personal ratings, and page counts.")
 
-
-    # Search all books directly by title or author.
     book_options = {
-        str(row["goodreads_id"]): (
-            f'{row["display_title"]} — {row["author"]}'
-        )
+        str(row["goodreads_id"]): f'{row["display_title"]} — {row["author"]}'
         for _, row in books.iterrows()
     }
-
     selected_id = st.selectbox(
         "Find a book",
         options=list(book_options),
@@ -107,140 +132,112 @@ def render_book_editor_contents(show_heading=True):
         placeholder="Search by title or author...",
         key="editor_book",
     )
-
     if selected_id is None:
         return
+
+    # Switching books cancels any pending deletion of the previous book.
+    if st.session_state.get("book_editor_last_selected") != selected_id:
+        st.session_state["book_editor_last_selected"] = selected_id
+        st.session_state.pop("confirm_book_deletion", None)
+        st.session_state.pop("confirm_delete_book_checkbox", None)
 
     row = books.loc[
         books["goodreads_id"].astype(str) == selected_id
     ].iloc[0]
 
-    
-    # Reading date supplied by the database.
-    date_read = pd.to_datetime(
-        row.get("date_read"),
-        errors="coerce",
-    )
-
+    date_read = pd.to_datetime(row.get("date_read"), errors="coerce")
     if pd.notna(date_read):
-        st.caption(f"Read on: {date_read.strftime('%-d %B %Y')}")
+        st.caption(f"Read on: {date_read.strftime('%d %B %Y')}")
     else:
         st.caption("Reading date not recorded")
 
     stored_rating = row["rating_override"]
-
-    if pd.isna(stored_rating):
-        current_rating = float(row["rating"])
-    else:
-        current_rating = float(stored_rating)
-
+    current_rating = (
+        float(row["rating"]) if pd.isna(stored_rating)
+        else float(stored_rating)
+    )
     rating_labels = list(RATING_OPTIONS)
-
     current_label = next(
-        (
-            label
-            for label, value in RATING_OPTIONS.items()
-            if value == current_rating
-        ),
+        (label for label, value in RATING_OPTIONS.items()
+         if value == current_rating),
         "Unrated",
     )
 
-    current_pages = row["effective_pages"]
     original_rating = float(row["rating"])
     original_pages = row["pages"]
+    current_pages = row["effective_pages"]
 
-    # -------------------------------------------------
-    # Row 2: rating + pages + save
-    # -------------------------------------------------
-    with st.form(
-            "edit_book_form",
-            clear_on_submit=False,
-            border=False,
-            enter_to_submit=False,
-        ):
-        
-        with st.container(key="compact_book_editor"):
-            form_col1, form_col2, form_col3 = st.columns(
-                [2.2, 1, 1],
-                gap="medium",
+    # Individual input keys ensure values refresh when another book is selected.
+    with st.container(key="compact_book_editor"):
+        form_col1, form_col2, form_col3 = st.columns(
+            [2.2, 1, 1], gap="medium"
+        )
+        with form_col1:
+            edited_title = st.text_input(
+                "Book title",
+                value=str(row["display_title"]),
+                key=f"book_title_{selected_id}",
             )
-            with form_col1:
-                edited_title = st.text_input(
-                    "Book title",
-                    value=str(row["display_title"]),
-                )
-                st.caption(
-                    f'Original Goodreads title: {row["original_title"]}'
-                )
+            st.caption(f'Original title: {row["original_title"]}')
 
-            with form_col2:
-                rating_label = st.selectbox(
-                    "My rating",
-                    rating_labels,
-                    index=rating_labels.index(current_label),
-                )
-
-                st.caption(
-                    f"Original Goodreads rating: {original_rating:g} ★"
-                    if original_rating
-                    else "Original Goodreads rating: Unrated"
-                )
-
-            with form_col3:
-                pages = st.number_input(
-                    "Number of pages",
-                    min_value=1,
-                    step=1,
-                    value=int(current_pages) if pd.notna(current_pages) else 1,
-                )
-
-                if pd.notna(original_pages):
-                    st.caption(f"Imported page count: {int(original_pages)}")
-                else:
-                    st.caption("Imported page count: missing")
-
-            submitted = st.form_submit_button(
-                "Save to Litlas",
-                type="secondary",
-                width="stretch",
+        with form_col2:
+            rating_label = st.selectbox(
+                "My rating",
+                rating_labels,
+                index=rating_labels.index(current_label),
+                key=f"book_rating_{selected_id}",
+            )
+            st.caption(
+                f"Original rating: {original_rating:g} ★"
+                if original_rating else "Original rating: Unrated"
             )
 
+        with form_col3:
+            pages = st.number_input(
+                "Number of pages",
+                min_value=1,
+                step=1,
+                value=int(current_pages) if pd.notna(current_pages) else 1,
+                key=f"book_pages_{selected_id}",
+            )
+            if pd.notna(original_pages):
+                st.caption(f"Page count: {int(original_pages)}")
+            else:
+                st.caption("Page count: missing")
 
+        # A single prominent Save button, visually separated from deletion.
+        _, save_col, _ = st.columns([1, 1.25, 1], gap="small")
+        with save_col:
+            with st.form("book_save_form", border=False):
+                submitted = st.form_submit_button(
+                    "Save to Litlas",
+                    use_container_width=True,
+                )
 
-    saved = st.session_state.get("book_editor_saved")
-
-    if saved and saved[0] == selected_id:
-        st.markdown(
-            f"""
-            <div class="litlas-book-save-message">
-                ✓ Saved: {escape(str(row["display_title"]))}
-            </div>
-            """,
-            unsafe_allow_html=True,
+    # Keep destructive action less prominent and away from Save.
+    # Delete action — small and separate from Save
+    with st.container(key="book_delete_area"):
+        delete_clicked = st.button(
+            "Delete book",
+            key="book_delete_button",
+            type="tertiary",
         )
 
     if submitted:
         selected_rating = RATING_OPTIONS[rating_label]
-
         rating_override = (
             selected_rating
-            if (
-                selected_rating != float(row["rating"])
-                or pd.notna(row["rating_override"])
-            )
+            if (selected_rating != original_rating
+                or pd.notna(row["rating_override"]))
             else None
         )
-
         pages_override = (
             int(pages)
-            if (
-                pd.isna(original_pages)
+            if (pd.isna(original_pages)
                 or int(pages) != int(original_pages)
-                or pd.notna(row["pages_override"])
-            )
+                or pd.notna(row["pages_override"]))
             else None
         )
-
         try:
             update_book_details(
                 goodreads_id=selected_id,
@@ -252,14 +249,59 @@ def render_book_editor_contents(show_heading=True):
             st.error(str(exc))
         else:
             st.session_state["book_editor_saved"] = (
-                selected_id,
-                book_options[selected_id],
+                selected_id, edited_title
             )
             st.rerun()
 
+    saved = st.session_state.get("book_editor_saved")
+    if saved and saved[0] == selected_id:
+        st.success(f"Saved: {saved[1]}")
+        st.session_state.pop("book_editor_saved", None)
+
+    if delete_clicked:
+        st.session_state["confirm_book_deletion"] = selected_id
+
+    if st.session_state.get("confirm_book_deletion") == selected_id:
+        st.warning(
+            f'Permanently delete "{row["display_title"]}" '
+            f'by {row["author"]}?'
+        )
+        confirmed = st.checkbox(
+            "I understand this cannot be undone.",
+            key="confirm_delete_book_checkbox",
+        )
+        confirm_col, cancel_col = st.columns(2)
+        with confirm_col:
+            if st.button(
+                "Confirm Deletion",
+                disabled=not confirmed,
+                key="book_confirm_deletion",
+                type="primary",
+                use_container_width=True,
+            ):
+                try:
+                    deleted_title = delete_book(selected_id)
+                except ValueError as exc:
+                    st.error(str(exc))
+                else:
+                    st.session_state.pop("confirm_book_deletion", None)
+                    st.session_state["reset_delete_confirmation"] = True
+                    st.session_state.pop("book_editor_saved", None)
+                    st.session_state["book_deleted"] = deleted_title
+                    st.session_state["reset_book_selection"] = True
+                    st.rerun()
+        with cancel_col:
+            if st.button("Cancel", key="book_cancel_deletion",
+                         use_container_width=True):
+                st.session_state.pop("confirm_book_deletion", None)
+                st.session_state["reset_delete_confirmation"] = True
+                st.rerun()
 
 def render_book_editor_contents_sidebar(show_heading=True):
     """Render the Library Editor inside Streamlit's sidebar."""
+
+    if deleted := st.session_state.pop("book_deleted", None):
+        st.success(f"Deleted: {deleted}")
 
     if show_heading:
         st.subheader("Library Editor")
@@ -347,9 +389,9 @@ def render_book_editor_contents_sidebar(show_heading=True):
 
         original_rating = float(row["rating"])
         st.caption(
-            f"Original Goodreads rating: {original_rating:g} ★"
+            f"Original rating: {original_rating:g} ★"
             if original_rating
-            else "Original Goodreads rating: Unrated"
+            else "Original rating: Unrated"
         )
 
         current_pages = row["effective_pages"]
