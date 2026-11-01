@@ -231,9 +231,10 @@ def load_constellation_books(
         books["year"], errors="coerce"
     )
 
+    # Most recent reading first; unknown years go last.
     books = books.sort_values(
         "_reading_year",
-        ascending=True,
+        ascending=False,
         na_position="last",
         kind="stable",
     )
@@ -260,7 +261,7 @@ def load_constellation_books(
                 f"Book not found in Litlas: {row['title']}"
             )
 
-        # If multiple records share a title, use the earliest reading.
+        # If multiple records share a title, use the recent reading.
         book = candidates.iloc[0]
 
         matches.append({

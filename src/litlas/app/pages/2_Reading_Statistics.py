@@ -711,7 +711,11 @@ with col4:
             f'<span>{escape(author)}</span>'
             f'<span style="float:right;color:#A47B43;">{escape(str(year))}</span>'
             f'</div>'
-            for author, year in nobel_authors
+            for author, year in sorted(
+                nobel_authors,
+                key=lambda item: int(item[1]),
+                reverse=True,
+            )
         )
         content = (
             f'<div class="litlas-nobel-list">{rows}</div>'
