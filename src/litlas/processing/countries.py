@@ -112,11 +112,9 @@ def iso3(name):
 
 @lru_cache(maxsize=1)
 def sovereign_country_codes() -> frozenset[str]:
-    """UN members plus the two UN observer states."""
+    """Countries recognized by Litlas for literary geography."""
 
-    converter = coco.CountryConverter(
-        only_UNmember=True
-    )
+    converter = coco.CountryConverter(only_UNmember=True)
 
     members = {
         str(iso).strip().upper()
@@ -126,18 +124,17 @@ def sovereign_country_codes() -> frozenset[str]:
 
     if len(members) != 193:
         raise ValueError(
-            "Unexpected UN member-state count: "
-            f"{len(members)}. Check country_converter data."
+            f"Unexpected UN member-state count: {len(members)}"
         )
 
-    sovereign = members | {"VAT", "PSE"}
+    accepted = members | {"VAT", "PSE", "TWN"}
 
-    if len(sovereign) != 195:
+    if len(accepted) != 196:
         raise ValueError(
-            "Unexpected sovereign-state reference count."
+            f"Unexpected Litlas country count: {len(accepted)}"
         )
 
-    return frozenset(sovereign)
+    return frozenset(accepted)
 
 
 def is_litlas_country(iso: str) -> bool:
@@ -248,3 +245,27 @@ def litlas_country_features() -> list[dict]:
         f for f in features
         if f["properties"].get("ISO3166-1-Alpha-3") in allowed
     ]
+
+def explored_country_codes(codes) -> frozenset[str]:
+    """Return distinct, accepted countries represented by read books."""
+    accepted = sovereign_country_codes()
+
+    return frozenset(
+        code.strip().upper()
+        for code in codes
+        if isinstance(code, str)
+        and code.strip().upper() in accepted
+    )
+
+
+def unrecognized_country_codes(codes) -> set[str]:
+    """Find populated country codes not accepted by Litlas."""
+    accepted = sovereign_country_codes()
+
+    return {
+        code.strip().upper()
+        for code in codes
+        if isinstance(code, str)
+        and code.strip()
+        and code.strip().upper() not in accepted
+    }

@@ -23,11 +23,14 @@ from litlas.processing.countries import (
     country_coordinates,
     sovereign_country_codes,
     litlas_country_features,
-    load_simplified_country_boundaries
+    load_simplified_country_boundaries,
+    explored_country_codes,
+    unrecognized_country_codes,
 )
 from litlas.app.visualizations.unexplored_lands import (
     add_unexplored_lands_control,
 )
+
 
 ## Configuration constants for the map and flag display
 config = load_config()
@@ -248,6 +251,16 @@ except Exception as exc:
     st.error("Could not read the Litlas database.")
     st.stop()
 
+unknown = unrecognized_country_codes(books["ISO3"])
+
+if unknown:
+    st.warning(
+        "Litlas country validation warning: "
+        f"Unrecognized country codes: {', '.join(sorted(unknown))}. "
+        "These countries are not included in the map statistics. "
+        "Please review the country policy."
+    )
+
 books["My Rating"] = pd.to_numeric(books["My Rating"], errors="coerce").fillna(0)
 
 mapped = books[books["ISO3"].astype(bool)].copy()
@@ -258,10 +271,7 @@ m = create_litlas_map(mobile_focus=True)
 # )
 
 ## Highlight countries that have been read
-read_countries = (
-    set(mapped["ISO3"].unique())
-    & sovereign_country_codes()
-)
+read_countries = explored_country_codes(books["ISO3"])
 
 
 ## Load country boundaries for the map
@@ -363,7 +373,7 @@ add_unexplored_lands_control(
 # Literary Journey — compact map information panel
 # -------------------------------------------------
 
-TOTAL_COUNTRIES = 195
+TOTAL_COUNTRIES = len(sovereign_country_codes())
 
 explored_count = len(read_countries)
 unexplored_count = max(0, TOTAL_COUNTRIES - explored_count)

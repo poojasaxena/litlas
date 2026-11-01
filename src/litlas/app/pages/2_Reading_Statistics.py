@@ -15,7 +15,7 @@ from litlas.app.visualizations.book_spines import (
     build_rating_spines_figure,
     build_year_spines_figure,
 )
-from litlas.processing.countries import country_name
+from litlas.processing.countries import country_name, explored_country_codes, unrecognized_country_codes
 from litlas.app.visualizations.constellation import (
     load_constellation_books,
     build_constellation_figure,
@@ -684,6 +684,7 @@ summary = stats["summary"]
 # Automatically compare completed-book authors with Nobel laureates.
 
 read_books = repository.load_read_books()
+read_countries = explored_country_codes(read_books["ISO3"])
 
 cached_ratings, cached_years = load_popup_books(read_books)
 
@@ -701,7 +702,7 @@ with col2:
     st.metric("Authors discovered", summary["authors"])
 
 with col3:
-    st.metric("Countries explored", summary["countries"])
+    st.metric("Countries explored", len(read_countries))
 
 with col4:
     if nobel_data_available:
@@ -1238,6 +1239,9 @@ def add_horizontal_book_stacks(fig, counts):
 country_col, ratings_col = st.columns([2, 1], gap="small")
 
 density = stats["density"]
+density = density[
+    density["iso3"].isin(read_countries)
+].copy()
 
 # Group read books by author's country of birth.
 country_books = {}
