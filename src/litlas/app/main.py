@@ -40,7 +40,10 @@ FLAG_SIZE = map_config.get("flag_size", 14)
 MAP_HEIGHT = 580
 
 
-st.set_page_config(page_title='Literary Atlas',page_icon='🌍',layout='wide',initial_sidebar_state='collapsed')
+st.set_page_config(page_title='Literary Atlas',
+                   page_icon='🌍',
+                   layout='wide',
+                   initial_sidebar_state='collapsed')
 apply_page_style()
 
 render_page_header(

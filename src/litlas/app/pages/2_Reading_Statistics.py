@@ -113,7 +113,7 @@ def load_popup_books(read_books):
 
 st.set_page_config(
     page_title="Reading Statistics · Litlas",
-    page_icon="📊",
+    page_icon="📖",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
