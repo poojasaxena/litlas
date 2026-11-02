@@ -438,7 +438,7 @@ m.get_root().header.add_child(Element("""
     .litlas-journey-card {
         bottom: 2px !important;
         right: 2px !important;
-        width: 100px !important;
+        width: 120px !important;
         padding: 5px 6px !important;
         box-sizing: border-box !important;
     }
