@@ -171,7 +171,11 @@ st.markdown(
     font-size: 0.80rem !important;
     line-height: 1.2;
     margin: 5px 0 3px;
-}
+    }
+
+    .litlas-gallery-meta {
+    margin-bottom: 3px !important;
+    }
 }
 
     /* Slightly quieter titles */
