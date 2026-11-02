@@ -452,7 +452,7 @@ m.get_root().header.add_child(Element("""
     }
 
     .litlas-journey-card > div:nth-child(2) > div > div:last-child {
-    font-size: 8px !important;
+    font-size: 5px !important;
     }
 }
 </style>
