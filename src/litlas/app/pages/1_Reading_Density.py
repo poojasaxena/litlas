@@ -255,26 +255,43 @@ m.get_root().header.add_child(Element("""
 </style>
 """))
 
-m.get_root().html.add_child(Element(legend_html))
-
-# Mobile-only Reading Density legend positioning
 m.get_root().header.add_child(Element("""
 <style>
 @media screen and (max-width: 640px) {
     .litlas-density-legend {
-        bottom: 75px !important;
-        right: 8px !important;
-        width: 175px !important;
+        position: fixed !important;
+        bottom: 2px !important;
+        right: 2px !important;
+        width: 120px !important;
+        min-width: 0 !important;
+        max-width: 120px !important;
         padding: 5px 6px !important;
         box-sizing: border-box !important;
+        background: rgba(250,247,241,0.98) !important;
     }
 
     .litlas-density-legend > div:first-child {
-        font-size: 12px !important;
+        font-size: 11px !important;
+        margin-bottom: 5px !important;
+    }
+
+    .litlas-density-legend > div:nth-child(2) {
+        height: 9px !important;
+    }
+
+    .litlas-density-legend > div:last-child {
+        font-size: 9px !important;
+        margin-top: 3px !important;
     }
 }
 </style>
 """))
+print("Density CSS registered:", "litlas-density-legend" in m.get_root().render())
+html = m.get_root().render()
+
+print("Legend present:", 'class="litlas-density-legend"' in html)
+print("Mobile CSS present:", "max-width: 640px" in html)
+print("Mobile width present:", "width: 120px !important" in html)
 
 st_folium(
     m,
