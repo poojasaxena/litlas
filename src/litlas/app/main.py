@@ -496,13 +496,25 @@ st.html("""
 </div>
 """)
 
-st_folium(
-    m,
-    height=MAP_HEIGHT,
-    width="stretch",
-    returned_objects=[],
-    key="literarymap",
-)
+st.markdown("""
+<style>
+@media (max-width: 640px) {
+    .st-key-litlas_home_map iframe {
+        height: 350px !important;
+        min-height: 350px !important;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
+
+with st.container(key="litlas_home_map"):
+    st_folium(
+        m,
+        height=MAP_HEIGHT,
+        width="stretch",
+        returned_objects=[],
+        key="literarymap",
+    )
 
 if mapped.empty:
     st.info('No author birth countries assigned yet. Run `litlas-prepare` in your terminal, then refresh this page.')
