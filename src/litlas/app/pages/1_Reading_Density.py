@@ -223,6 +223,37 @@ legend_html = f"""
     </div>
 </div>
 """
+m.get_root().header.add_child(Element("""
+<style>
+@media screen and (max-width: 640px) {
+    .litlas-density-legend {
+        bottom: 2px !important;
+        right: 2px !important;
+        width: 120px !important;
+        padding: 5px 6px !important;
+        box-sizing: border-box !important;
+        background: rgba(250, 247, 241, 0.98) !important;
+    }
+
+    /* Reading Density title */
+    .litlas-density-legend > div:first-child {
+        font-size: 11px !important;
+        margin-bottom: 5px !important;
+    }
+
+    /* Colour bar */
+    .litlas-density-legend > div:nth-child(2) {
+        height: 9px !important;
+    }
+
+    /* Legend numbers */
+    .litlas-density-legend > div:last-child {
+        font-size: 9px !important;
+        margin-top: 3px !important;
+    }
+}
+</style>
+"""))
 
 m.get_root().html.add_child(Element(legend_html))
 
