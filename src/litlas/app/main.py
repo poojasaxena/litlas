@@ -436,15 +436,15 @@ m.get_root().header.add_child(Element("""
 <style>
 @media screen and (max-width: 640px) {
     .litlas-journey-card {
-        bottom: 75px !important;
-        right: 8px !important;
-        width: 140px !important;
+        bottom: 2px !important;
+        right: 2px !important;
+        width: 100px !important;
         padding: 5px 6px !important;
         box-sizing: border-box !important;
     }
 
     .litlas-journey-card > div:first-child {
-        font-size: 12px !important;
+        font-size: 10px !important;
     }
 
     .litlas-journey-card > div:nth-child(2) > div > div:first-child {
