@@ -450,6 +450,10 @@ m.get_root().header.add_child(Element("""
     .litlas-journey-card > div:nth-child(2) > div > div:first-child {
         font-size: 10px !important;
     }
+
+    .litlas-journey-card > div:nth-child(2) > div > div:last-child {
+    font-size: 8px !important;
+    }
 }
 </style>
 """))
