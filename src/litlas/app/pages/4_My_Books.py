@@ -126,7 +126,7 @@ st.markdown(
 @media screen and (max-width: 650px) {
     .litlas-gallery-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 16px;
+        gap: 12px;
         width: 100%;
         max-width: 390px;
         margin: 18px auto 0;
