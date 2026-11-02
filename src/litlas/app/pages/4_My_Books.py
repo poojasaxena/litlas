@@ -122,12 +122,57 @@ st.markdown(
             3px 4px 3px rgba(35, 30, 25, 0.22);
     }
 
-    @media (max-width: 650px) {
-        .litlas-gallery-grid {
-            grid-template-columns: 242px;
-            gap: 35px;
-        }
+/* Mobile: two poetry collections side by side */
+@media screen and (max-width: 650px) {
+    .litlas-gallery-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        width: 100%;
+        max-width: 390px;
+        margin: 18px auto 0;
     }
+
+    .litlas-gallery-book {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .litlas-gallery-image {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 242 / 385;
+        object-fit: cover;
+        box-shadow:
+            5px 6px 8px rgba(35, 30, 25, 0.24);
+    }
+
+    .litlas-gallery-title {
+        font-size: 1rem;
+        line-height: 1.2;
+        margin: 15px 0 5px;
+    }
+
+    .litlas-gallery-meta {
+        font-size: 0.75rem;
+        line-height: 1.3;
+    }
+
+    .litlas-gallery-link {
+        font-size: 0.75rem;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+
+    .litlas-books-intro {
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+    }
+    .litlas-gallery-title {
+    font-size: 0.80rem !important;
+    line-height: 1.2;
+    margin: 12px 0 5px;
+}
+}
 
     /* Slightly quieter titles */
     .litlas-gallery-title {
