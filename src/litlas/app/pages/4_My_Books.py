@@ -170,7 +170,7 @@ st.markdown(
     .litlas-gallery-title {
     font-size: 0.80rem !important;
     line-height: 1.2;
-    margin: 12px 0 5px;
+    margin: 5px 0 3px;
 }
 }
 
