@@ -448,7 +448,7 @@ m.get_root().header.add_child(Element("""
     }
 
     .litlas-journey-card > div:nth-child(2) > div > div:first-child {
-        font-size: 19px !important;
+        font-size: 10px !important;
     }
 }
 </style>
