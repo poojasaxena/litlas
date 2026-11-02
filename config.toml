@@ -11,7 +11,8 @@ backup_dir = "Backups"
 
 [map]
 flag_size = 14
-height = 600
+height = 580
+mobile_height = 380
 
 [cleaning]
 remove_subtitles = true

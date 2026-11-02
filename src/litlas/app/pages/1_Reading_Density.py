@@ -11,11 +11,11 @@ from streamlit_folium import st_folium
 import json
 from pathlib import Path
 
+from litlas.app.map_style import get_map_height
 from litlas.app.popups import pop_html
 from litlas.processing.paths import load_config
 from html import escape
 from litlas.db_backend import get_repository, backend_name
-from litlas.app.ui import apply_page_style, render_page_header
 from litlas.app.map_style import (
     create_litlas_map,
     LAND_COLOR,
@@ -23,6 +23,7 @@ from litlas.app.map_style import (
     DENSITY_COLORS,
 )
 from litlas.processing.countries import load_simplified_country_boundaries, country_name, load_country_boundaries
+from litlas.app.ui import apply_page_style, render_page_header
 
 st.set_page_config(
     page_title="Reading Density · Litlas",
@@ -69,8 +70,6 @@ colors = LinearColormap(
 )
 
 config = load_config()
-height = config.get("map", {}).get("height", 800)
-
 
 def country_popup(country_books, country_name, count):
     """Build a scrollable popup listing authors and their works."""
@@ -248,7 +247,7 @@ m.get_root().header.add_child(Element("""
 
 st_folium(
     m,
-    height=height,
+    height=get_map_height(),
     width="stretch",
     returned_objects=[],
     key="reading_density",

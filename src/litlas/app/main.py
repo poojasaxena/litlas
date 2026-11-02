@@ -10,9 +10,9 @@ from litlas.processing.paths import load_config
 from litlas.app.popups import flag, pop_html
 from litlas.database.connection import database_path
 from litlas.db_backend import get_repository, is_postgres
-from litlas.app.ui import apply_page_style, render_page_header
 from litlas.app.map_style import (
     create_litlas_map,
+    get_map_height,
     LAND_COLOR,
     BORDER_COLOR,
     EXPLORED_COLOR,
@@ -23,21 +23,19 @@ from litlas.processing.countries import (
     country_coordinates,
     sovereign_country_codes,
     litlas_country_features,
-    load_simplified_country_boundaries,
     explored_country_codes,
     unrecognized_country_codes,
 )
 from litlas.app.visualizations.unexplored_lands import (
     add_unexplored_lands_control,
 )
-
+from litlas.app.ui import apply_page_style, render_page_header
 
 ## Configuration constants for the map and flag display
 config = load_config()
 map_config = config.get("map", {})
 
 FLAG_SIZE = map_config.get("flag_size", 14)
-MAP_HEIGHT = 580
 
 
 st.set_page_config(page_title='Literary Atlas',
@@ -496,25 +494,13 @@ st.html("""
 </div>
 """)
 
-st.markdown("""
-<style>
-@media (max-width: 640px) {
-    .st-key-litlas_home_map iframe {
-        height: 350px !important;
-        min-height: 350px !important;
-    }
-}
-</style>
-""", unsafe_allow_html=True)
-
-with st.container(key="litlas_home_map"):
-    st_folium(
-        m,
-        height=MAP_HEIGHT,
-        width="stretch",
-        returned_objects=[],
-        key="literarymap",
-    )
+st_folium(
+    m,
+    height=get_map_height(),
+    width="stretch",
+    returned_objects=[],
+    key="literarymap",
+)
 
 if mapped.empty:
     st.info('No author birth countries assigned yet. Run `litlas-prepare` in your terminal, then refresh this page.')

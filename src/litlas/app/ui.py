@@ -573,6 +573,13 @@ def render_chapter_navigation(active_page: str) -> None:
                 st.page_link(path, label=label)
 
 
+def is_mobile_browser() -> bool:
+    user_agent = st.context.headers.get("user-agent", "").lower()
+    return any(
+        device in user_agent
+        for device in ("android", "iphone", "ipod", "mobile")
+    )
+
 def render_header_title(title: str) -> str:
     """Return the Vivaldi SVG heading, falling back to text."""
 

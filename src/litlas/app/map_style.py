@@ -6,6 +6,9 @@ from branca.element import Element
 from string import Template
 from branca.element import MacroElement
 from jinja2 import Template as JinjaTemplate
+import streamlit as st
+
+from litlas.processing.paths import load_config
 
 # Shared vintage map palette
 OCEAN_COLOR = "#E6DDD0"
@@ -21,6 +24,21 @@ DENSITY_COLORS = [
     "#855C45",
     "#603E33",
 ]
+
+
+
+def get_map_height() -> int:
+    config = load_config()["map"]
+
+    user_agent = st.context.headers.get("user-agent", "").lower()
+
+    is_mobile = any(
+        device in user_agent
+        for device in ("android", "iphone", "ipod", "mobile")
+    )
+
+    return config["mobile_height"] if is_mobile else config["height"]
+
 
 def apply_map_style(m: folium.Map) -> None:
     """Apply Litlas's vintage map and popup styling."""
