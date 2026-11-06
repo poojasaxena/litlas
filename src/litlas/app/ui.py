@@ -247,6 +247,10 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
 [data-testid="stSidebarCollapseButton"] { display: none !important; }
 .st-key-litlas_mobile_nav { display: none !important; }
 
+    /* Preserve existing desktop positioning */
+    .litlas-header-composition {
+        display: contents;
+    }
 
 /* ============================================================
    MOBILE — <= 640px
@@ -279,11 +283,6 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         gap: 0.75rem !important;
     }
 
-    /* Preserve existing desktop positioning */
-    .litlas-header-composition {
-        display: contents;
-    }
-
     /* =====================================================
         LITLAS — UNIFIED MOBILE HEADER
     ===================================================== */
@@ -294,7 +293,7 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
             var(--mobile-illustration-size, 90px)
             minmax(0, 1fr);
         align-items: center;
-        column-gap: 8px;
+        column-gap: var(--mobile-heading-gap, 8px);
         width: 100%;
     }
 
@@ -308,7 +307,10 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         width: var(--mobile-illustration-size, 90px) !important;
         height: var(--mobile-illustration-size, 90px) !important;
         object-fit: contain;
-        transform: none !important;
+        transform: translate(
+            var(--mobile-illustration-left, 0px),
+            var(--mobile-illustration-top, 0px)
+        ) !important;
     }
 
     /* Heading group */
@@ -327,7 +329,9 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         justify-content: center;
         gap: 3px;
         text-align: center !important;
-        transform: none !important;
+        transform: translateX(
+            var(--mobile-heading-offset-x, 0px)
+        ) !important;
     }
 
     /* Eyebrow */
@@ -335,7 +339,7 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         order: 0;
         font-size: 8px;
         text-align: center;
-        transform: none !important;
+        transform: translateX(var(--mobile-eyebrow-offset-x, 0px)) !important;
     }
 
     /* SVG title */
@@ -351,7 +355,7 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         width: min(100%, var(--mobile-title-width, 190px)) !important;
         height: auto !important;
         max-width: 100%;
-        transform: none !important;
+        transform: translateX(var(--mobile-title-offset-x, 0px)) !important;
     }
 
     /* Decorative line */
@@ -359,7 +363,7 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         order: 2;
         width: var(--mobile-ornament-width, 120px) !important;
         margin: 3px auto 5px !important;
-        transform: none !important;
+        transform: translateX(var(--mobile-ornament-offset-x, 0px)) !important;
     }
 
     /* Subtitle */
@@ -370,8 +374,33 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         font-size: 11px;
         line-height: 1.3;
         text-align: center !important;
-        transform: none !important;
+        transform: translateX(var(--mobile-subtitle-offset-x, 0px)) !important;
     }
+
+    /* Hide personal signature on mobile */
+.st-key-litlas_sticky_header .litlas-logo {
+    display: none !important;
+}
+
+/* Hide desktop navigation on mobile */
+.st-key-litlas_desktop_nav {
+    display: none !important;
+}
+
+/* Show compact mobile navigation */
+.st-key-litlas_mobile_nav {
+    display: block !important;
+}
+
+.st-key-litlas_mobile_nav button {
+    background-color: #F5EFE4 !important;
+    color: #58412F !important;
+    border: 1px solid #D4C1A7 !important;
+    font-family: Georgia, serif !important;
+}
+    
+
+} /* End mobile media query */
 
 </style>
 """,
@@ -569,8 +598,16 @@ def render_page_header(
     title_height: int = 90,
     ornament_width: int = 170,
     mobile_illustration_size: int = 90,
+    mobile_illustration_top: int = 0,
+    mobile_illustration_left: int = 0,
+    mobile_heading_gap: int = 8,
+    mobile_heading_offset_x: int = 0,
     mobile_title_width: int = 190,
+    mobile_title_offset_x: int = 0,
     mobile_ornament_width: int = 120,
+    mobile_ornament_offset_x: int = 0,
+    mobile_eyebrow_offset_x: int = 0,
+    mobile_subtitle_offset_x: int = 0,
 ) -> None:
     """Render the shared sticky vintage Litlas heading."""
 
@@ -636,11 +673,19 @@ def render_page_header(
 
     header_html = f"""
     <div class="litlas-header-composition"
-        style="
+         style="
             --mobile-illustration-size: {mobile_illustration_size}px;
+            --mobile-illustration-top: {mobile_illustration_top}px;
+            --mobile-illustration-left: {mobile_illustration_left}px;
+            --mobile-heading-gap: {mobile_heading_gap}px;
             --mobile-title-width: {mobile_title_width}px;
+            --mobile-title-offset-x: {mobile_title_offset_x}px;
             --mobile-ornament-width: {mobile_ornament_width}px;
-        ">
+            --mobile-ornament-offset-x: {mobile_ornament_offset_x}px;
+            --mobile-eyebrow-offset-x: {mobile_eyebrow_offset_x}px;
+            --mobile-subtitle-offset-x: {mobile_subtitle_offset_x}px;
+            --mobile-heading-offset-x: {mobile_heading_offset_x}px;
+         ">
         {image_html}
         {heading_html}
     </div>

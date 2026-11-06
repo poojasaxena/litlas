@@ -39,7 +39,7 @@ render_page_header(
     "Where literature meets geography",
     illustration="reading_density",
 
-    # Desktop — preserve existing appearance
+    # Desktop — unchanged
     illustration_size=160,
     illustration_top=-20,
     illustration_left=0,
@@ -49,8 +49,15 @@ render_page_header(
 
     # Mobile
     mobile_illustration_size=75,
-    mobile_title_width=200,
+    mobile_illustration_top=-4,
+
+    mobile_eyebrow_offset_x=-20,
+    mobile_heading_gap=8,
+    mobile_title_width=290,
+    mobile_title_offset_x=-10,
     mobile_ornament_width=120,
+    mobile_ornament_offset_x=-22,
+    mobile_subtitle_offset_x=-17,
 )
 
 @st.cache_data(ttl=60, show_spinner=False)
