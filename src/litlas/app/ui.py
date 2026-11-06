@@ -390,6 +390,7 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
 /* Show compact mobile navigation */
 .st-key-litlas_mobile_nav {
     display: block !important;
+    margin-top: var(--mobile-header-bottom-gap, -20px) !important;
 }
 
 .st-key-litlas_mobile_nav button {
@@ -404,10 +405,6 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
     gap: 0 !important;
 }
 
-/* Configurable distance below the header composition */
-.litlas-header-composition {
-    margin-bottom: var(--mobile-header-bottom-gap, 12px) !important;
-}
 
 } /* End mobile media query */
 
@@ -695,7 +692,6 @@ def render_page_header(
             --mobile-eyebrow-offset-x: {mobile_eyebrow_offset_x}px;
             --mobile-subtitle-offset-x: {mobile_subtitle_offset_x}px;
             --mobile-heading-offset-x: {mobile_heading_offset_x}px;
-            --mobile-header-bottom-gap: {mobile_header_bottom_gap}px;
          ">
         {image_html}
         {heading_html}
@@ -704,6 +700,17 @@ def render_page_header(
     """
 
     with st.container(key="litlas_sticky_header"):
+        st.html(
+            f"""
+            <style>
+            @media screen and (max-width: 640px) {{
+                .st-key-litlas_sticky_header {{
+                    --mobile-header-bottom-gap: {mobile_header_bottom_gap}px;
+                }}
+            }}
+            </style>
+            """
+        )
         st.markdown(
             header_html,
             unsafe_allow_html=True,

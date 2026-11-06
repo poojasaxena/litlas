@@ -47,7 +47,7 @@ render_page_header(
     mobile_ornament_offset_x=-15,
     mobile_subtitle_offset_x=-10,
 
-    mobile_header_bottom_gap=10,
+    mobile_header_bottom_gap=-10,
 )
 
 # For now, publication information stays with this small presentation page.

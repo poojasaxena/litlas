@@ -61,13 +61,13 @@ render_page_header(
 
     mobile_eyebrow_offset_x=-15,
     mobile_heading_gap=8,
-    mobile_title_width=280,
-    mobile_title_offset_x=-10,
+    mobile_title_width=350,
+    mobile_title_offset_x=-20,
     mobile_ornament_width=120,
     mobile_ornament_offset_x=-15,
     mobile_subtitle_offset_x=-10,
 
-    mobile_header_bottom_gap=10,
+    mobile_header_bottom_gap=-10,
 )
 
 
