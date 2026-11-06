@@ -58,7 +58,7 @@ render_page_header(
     mobile_heading_offset_x=-25,
     mobile_title_offset_x=35,
     mobile_ornament_offset_x=-12,
-    mobile_header_bottom_gap=10,
+    mobile_header_bottom_gap=6,
 )
 
 if not st.session_state.get("litlas_welcome_dismissed", False):
