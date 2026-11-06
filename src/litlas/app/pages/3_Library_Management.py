@@ -40,19 +40,34 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-
 apply_page_style()
 
 render_page_header(
     "Library Management",
-    "A home for the books, authors, and stories behind the atlas",
+    "A home for books and their stories",
     illustration="lib_management",
+
+    # Desktop — existing layout values
     illustration_size=185,
     illustration_top=-35,
     illustration_left=0,
     heading_gap=20,
     title_height=90,
     ornament_width=290,
+
+    # Mobile
+    mobile_illustration_size=100,
+    mobile_illustration_top=0,
+
+    mobile_eyebrow_offset_x=-15,
+    mobile_heading_gap=8,
+    mobile_title_width=280,
+    mobile_title_offset_x=-10,
+    mobile_ornament_width=120,
+    mobile_ornament_offset_x=-15,
+    mobile_subtitle_offset_x=-10,
+
+    mobile_header_bottom_gap=10,
 )
 
 

@@ -399,6 +399,15 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
     font-family: Georgia, serif !important;
 }
     
+/* Control spacing within the mobile header */
+.st-key-litlas_sticky_header [data-testid="stVerticalBlock"] {
+    gap: 0 !important;
+}
+
+/* Configurable distance below the header composition */
+.litlas-header-composition {
+    margin-bottom: var(--mobile-header-bottom-gap, 12px) !important;
+}
 
 } /* End mobile media query */
 
@@ -608,6 +617,7 @@ def render_page_header(
     mobile_ornament_offset_x: int = 0,
     mobile_eyebrow_offset_x: int = 0,
     mobile_subtitle_offset_x: int = 0,
+    mobile_header_bottom_gap: int = 12,
 ) -> None:
     """Render the shared sticky vintage Litlas heading."""
 
@@ -685,6 +695,7 @@ def render_page_header(
             --mobile-eyebrow-offset-x: {mobile_eyebrow_offset_x}px;
             --mobile-subtitle-offset-x: {mobile_subtitle_offset_x}px;
             --mobile-heading-offset-x: {mobile_heading_offset_x}px;
+            --mobile-header-bottom-gap: {mobile_header_bottom_gap}px;
          ">
         {image_html}
         {heading_html}

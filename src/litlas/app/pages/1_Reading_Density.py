@@ -58,6 +58,8 @@ render_page_header(
     mobile_ornament_width=120,
     mobile_ornament_offset_x=-22,
     mobile_subtitle_offset_x=-17,
+
+    mobile_header_bottom_gap=10,
 )
 
 @st.cache_data(ttl=60, show_spinner=False)

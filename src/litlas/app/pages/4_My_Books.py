@@ -21,14 +21,33 @@ st.set_page_config(
 )
 
 apply_page_style()
+
 render_page_header(
     "Ink & Verse",
-    "A little corner of my literary world, written in my own words",
+    "My literary world, in my own words",
     illustration="book_author",
+
+    # Desktop — unchanged
     illustration_size=200,
-        title_height=90,
+    illustration_top=-45,
+    illustration_left=0,
+    heading_gap=5,
+    title_height=90,
     ornament_width=290,
 
+    # Mobile
+    mobile_illustration_size=100,
+    mobile_illustration_top=0,
+
+    mobile_eyebrow_offset_x=-15,
+    mobile_heading_gap=8,
+    mobile_title_width=250,
+    mobile_title_offset_x=-5,
+    mobile_ornament_width=120,
+    mobile_ornament_offset_x=-15,
+    mobile_subtitle_offset_x=-10,
+
+    mobile_header_bottom_gap=10,
 )
 
 # For now, publication information stays with this small presentation page.

@@ -665,11 +665,28 @@ render_page_header(
     "Reading Statistics",
     "A life in books, told through numbers and patterns",
     illustration="reading_statistics",
+
+    # Desktop — unchanged
     illustration_size=220,
     illustration_top=-50,
     illustration_left=0,
+    heading_gap=5,
     title_height=90,
     ornament_width=260,
+
+    # Mobile
+    mobile_illustration_size=90,
+    mobile_illustration_top=0,
+
+    mobile_eyebrow_offset_x=-15,
+    mobile_heading_gap=8,
+    mobile_title_width=250,
+    mobile_title_offset_x=-5,
+    mobile_ornament_width=120,
+    mobile_ornament_offset_x=-25,
+    mobile_subtitle_offset_x=-10,
+
+    mobile_header_bottom_gap=10,
 )
 
 ## Load reading statistics
