@@ -280,8 +280,8 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
     }
     /* Mobile header illustration */
     .st-key-litlas_sticky_header .litlas-page-illustration {
-        width: 90px !important;
-        height: 90px !important;
+        width: 70px !important;
+        height: 70px !important;
         top: 0 !important;
         left: 0 !important;
         transform: none !important;
