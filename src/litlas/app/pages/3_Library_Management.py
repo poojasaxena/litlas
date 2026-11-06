@@ -48,7 +48,7 @@ render_page_header(
     illustration="lib_management",
 
     # Desktop — existing layout values
-    illustration_size=185,
+    illustration_size=195,
     illustration_top=-35,
     illustration_left=0,
     heading_gap=20,
