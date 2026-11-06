@@ -287,22 +287,6 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         transform: none !important;
     }
 
-    /* Reading Density — reserve space for the larger globe */
-    .st-key-litlas_sticky_header
-    .litlas-heading:has(.litlas-svg-title img[alt="Reading Density"]) {
-        width: calc(100% - 130px) !important;
-        margin-left: 130px !important;
-    }
-    
-    /* Reading Density — mobile globe only */
-    .st-key-litlas_sticky_header:has(
-        .litlas-svg-title img[alt="Reading Density"]
-    ) .litlas-page-illustration {
-        width: 120px !important;
-        height: 120px !important;
-        top: 0 !important;
-        left: 0 !important;
-    }
     /* Hide personal signature on mobile */
     .st-key-litlas_sticky_header .litlas-logo {
         display: none !important;
@@ -435,14 +419,82 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
     [data-testid="stPopoverBody"] a[data-testid="stPageLink-NavLink"] p {
         color: #58412F !important;
     }
+/* ==================================================
+   Reading Density — mobile-only header
+   ================================================== */
+
+.st-key-litlas_sticky_header:has(
+    .litlas-svg-title img[alt="Reading Density"]
+) .litlas-page-illustration {
+    width: 90px !important;
+    height: 90px !important;
+    top: 0 !important;
+    left: 0 !important;
+}
+
+/* Text region beside the globe */
+.st-key-litlas_sticky_header
+.litlas-home-heading:has(.litlas-svg-title img[alt="Reading Density"]) {
+    width: calc(100% - 100px) !important;
+    margin: 0 0 0 100px !important;
+    min-height: 100px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+}
+
+/* Center all elements along the same axis */
+.st-key-litlas_sticky_header
+.litlas-home-heading:has(.litlas-svg-title img[alt="Reading Density"])
+.litlas-eyebrow,
+
+.st-key-litlas_sticky_header
+.litlas-home-heading:has(.litlas-svg-title img[alt="Reading Density"])
+.litlas-home-ornament,
+
+.st-key-litlas_sticky_header
+.litlas-home-heading:has(.litlas-svg-title img[alt="Reading Density"])
+.litlas-home-tagline {
+    transform: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: center !important;
+}
+
+/* Center the SVG title */
+.st-key-litlas_sticky_header
+.litlas-home-heading:has(.litlas-svg-title img[alt="Reading Density"])
+.litlas-svg-title {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+}
+
+/* Reading Density — visually center SVG lettering */
+.st-key-litlas_sticky_header
+.litlas-home-heading:has(.litlas-svg-title img[alt="Reading Density"])
+.litlas-svg-title img {
+    width: min(100%, 170px) !important;
+    height: auto !important;
+    transform: translateX(50px) !important;
+}
+
+/* Single-line subtitle */
+.st-key-litlas_sticky_header
+.litlas-home-heading:has(.litlas-svg-title img[alt="Reading Density"])
+.litlas-home-tagline {
+    max-width: 100% !important;
+    font-size: 11px !important;
+    white-space: nowrap;
+}
     
 }
 @media screen and (max-width: 640px) {
     .st-key-litlas_sticky_header .litlas-home-heading {
         margin-bottom: 0;
     }
-}
-
 }
 
 </style>
