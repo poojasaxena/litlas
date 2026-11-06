@@ -165,7 +165,22 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
     background: #B29A7C;
     margin-top: 2px;
 }
+/* Shared header element order — desktop and mobile */
+.litlas-home-heading .litlas-eyebrow {
+    order: 0;
+}
 
+.litlas-home-heading .litlas-svg-title {
+    order: 1;
+}
+
+.litlas-home-heading .litlas-home-ornament {
+    order: 2;
+}
+
+.litlas-home-heading .litlas-home-tagline {
+    order: 3;
+}
 /* Sticky header shell */
 [data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] {
     position: relative;
