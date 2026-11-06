@@ -36,14 +36,21 @@ apply_page_style()
 
 render_page_header(
     "Reading Density",
-    "Where literature meets geography", #"Where the pages I've turned meet the places they came from",
+    "Where literature meets geography",
     illustration="reading_density",
+
+    # Desktop — preserve existing appearance
     illustration_size=160,
     illustration_top=-20,
     illustration_left=0,
     heading_gap=20,
     title_height=95,
     ornament_width=170,
+
+    # Mobile
+    mobile_illustration_size=75,
+    mobile_title_width=200,
+    mobile_ornament_width=120,
 )
 
 @st.cache_data(ttl=60, show_spinner=False)

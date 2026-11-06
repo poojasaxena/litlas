@@ -278,47 +278,68 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
     > [data-testid="stVerticalBlock"] {
         gap: 0.75rem !important;
     }
-    /* Mobile header illustration */
-    .st-key-litlas_sticky_header .litlas-page-illustration {
-        width: 70px !important;
-        height: 70px !important;
-        top: 0 !important;
-        left: 0 !important;
+
+    /* Preserve existing desktop positioning */
+    .litlas-header-composition {
+        display: contents;
+    }
+
+    /* =====================================================
+        LITLAS — UNIFIED MOBILE HEADER
+    ===================================================== */
+
+    .litlas-header-composition {
+        display: grid;
+        grid-template-columns:
+            var(--mobile-illustration-size, 90px)
+            minmax(0, 1fr);
+        align-items: center;
+        column-gap: 8px;
+        width: 100%;
+    }
+
+    .litlas-header-composition:not(:has(> .litlas-page-illustration)) {
+        grid-template-columns: 1fr;
+    }
+
+    /* Illustration */
+    .litlas-header-composition .litlas-page-illustration {
+        position: static !important;
+        width: var(--mobile-illustration-size, 90px) !important;
+        height: var(--mobile-illustration-size, 90px) !important;
+        object-fit: contain;
         transform: none !important;
     }
 
-    /* Hide personal signature on mobile */
-    .st-key-litlas_sticky_header .litlas-logo {
-        display: none !important;
-    }
-
-    /* Heading group occupies the space beside the illustration */
-    .st-key-litlas_sticky_header .litlas-heading.litlas-home-heading {
+    /* Heading group */
+    .litlas-header-composition .litlas-home-heading {
+        position: static !important;
         box-sizing: border-box;
-        width: calc(100% - 100px);
+        width: 100% !important;
+        min-width: 0;
         min-height: 100px !important;
-        margin: 0 0 0 100px !important;
+        margin: 0 !important;
         padding: 0 !important;
-        top: 0 !important;
-        transform: none !important;
+
         display: flex;
         flex-direction: column;
         align-items: center !important;
         justify-content: center;
-        text-align: center !important;
         gap: 3px;
+        text-align: center !important;
+        transform: none !important;
     }
 
     /* Eyebrow */
-    .st-key-litlas_sticky_header .litlas-eyebrow {
+    .litlas-header-composition .litlas-eyebrow {
         order: 0;
         font-size: 8px;
         text-align: center;
-        transform: translateX(-45px);
+        transform: none !important;
     }
 
-    /* Vivaldi SVG heading */
-    .st-key-litlas_sticky_header .litlas-home-heading .litlas-svg-title {
+    /* SVG title */
+    .litlas-header-composition .litlas-svg-title {
         order: 1;
         width: 100%;
         display: flex;
@@ -326,121 +347,31 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         align-items: center;
     }
 
-    .st-key-litlas_sticky_header .litlas-home-heading .litlas-svg-title img {
-        width: min(100%, 190px);
-        height: auto;
+    .litlas-header-composition .litlas-svg-title img {
+        width: min(100%, var(--mobile-title-width, 190px)) !important;
+        height: auto !important;
+        max-width: 100%;
+        transform: none !important;
     }
 
-    /* Line between title and subtitle */
-    .st-key-litlas_sticky_header .litlas-home-ornament {
+    /* Decorative line */
+    .litlas-header-composition .litlas-home-ornament {
         order: 2;
-        width: 120px !important;
+        width: var(--mobile-ornament-width, 120px) !important;
         margin: 3px auto 5px !important;
-        transform: translateX(-35px);
+        transform: none !important;
     }
-/* Reading Density — decorative line alignment */
-.st-key-litlas_sticky_header
-.litlas-home-heading:has(.litlas-svg-title img[alt="Reading Density"])
-.litlas-home-ornament {
-    transform: translateX(-48px) !important;
-}
-/* Reading Density — mobile title size */
-.st-key-litlas_sticky_header
-.litlas-home-heading:has(.litlas-svg-title img[alt="Reading Density"])
-.litlas-svg-title img {
-    width: 220px !important;
-    max-width: 100% !important;
-    transform: translateX(-35px) !important;
-    height: auto !important;
-}
+
     /* Subtitle */
-    .st-key-litlas_sticky_header .litlas-home-tagline {
+    .litlas-header-composition .litlas-home-tagline {
         order: 3;
-        max-width: 280px;
-        font-size: 12px;
+        max-width: 100%;
+        margin: 0;
+        font-size: 11px;
         line-height: 1.3;
         text-align: center !important;
-        transform: translateX(-35px);
+        transform: none !important;
     }
-
-    /* Reading Density — mobile-specific subtitle */
-        .st-key-litlas_sticky_header
-        .litlas-home-heading:has(.litlas-svg-title img[alt="Reading Density"])
-        .litlas-home-tagline {
-            max-width: 100% !important;
-            font-size: 11px !important;
-            white-space: nowrap;
-        }
-
-    /* All other chapter headings */
-    .st-key-litlas_sticky_header .litlas-section-heading .litlas-svg-title img {
-        width: min(100%, 260px);
-        height: auto;
-    }
-    .st-key-litlas_sticky_header .litlas-section-heading .litlas-svg-title::after,
-    .st-key-litlas_sticky_header .litlas-section-heading h1:not(.litlas-svg-title)::after {
-        width: 100%;
-        margin: 6px 0 0;
-    }
-    .st-key-litlas_sticky_header .litlas-section-heading p {
-        font-size: 0.65rem !important;
-        line-height: 1.3 !important;
-        padding-left: 0 !important;
-        margin: 8px 0 0 !important;
-        text-align: left !important;
-    }
-    .st-key-litlas_sticky_header .litlas-heading h1:not(.litlas-svg-title) {
-        font-size: clamp(2rem, 9vw, 2.6rem) !important;
-        line-height: 1.1 !important;
-        white-space: normal !important;
-    }
-
-    /* Streamlit content typography */
-    .stApp h2 { font-size: 1.55rem !important; line-height: 1.2 !important; }
-    .stApp h3 { font-size: 1.4rem !important; line-height: 1.2 !important; }
-    .stApp p, .stApp li { font-size: 0.85rem; line-height: 1.4; }
-    .stApp [data-testid="stHeading"] h3 {
-        font-size: 1.5rem !important;
-        line-height: 1.15 !important;
-    }
-    .stApp [data-testid="stMetricValue"] { font-size: 1.8rem !important; }
-    .stApp [data-testid="stMetricLabel"] { font-size: 0.8rem !important; }
-
-    /* Replace desktop navigation with popover */
-    .st-key-litlas_desktop_nav { display: none !important; }
-    .st-key-litlas_mobile_nav { display: block !important; }
-    .st-key-litlas_mobile_nav button {
-        background-color: #F5EFE4 !important;
-        color: #58412F !important;
-        border: 1px solid #D4C1A7 !important;
-        font-family: Georgia, serif !important;
-    }
-    div[data-baseweb="popover"]:has(a[data-testid="stPageLink-NavLink"]) > div {
-        background-color: #FAF7F1 !important;
-    }
-    [data-testid="stPopoverBody"]:has(a[data-testid="stPageLink-NavLink"]) {
-        background: #FAF7F1 !important;
-        border: 1px solid #D4C1A7 !important;
-        border-radius: 10px !important;
-        color: #58412F !important;
-        width: 200px !important;
-        min-width: 0 !important;
-        max-width: calc(100vw - 32px) !important;
-        box-sizing: border-box !important;
-    }
-    [data-testid="stPopoverBody"] a[data-testid="stPageLink-NavLink"],
-    [data-testid="stPopoverBody"] a[data-testid="stPageLink-NavLink"] p {
-        color: #58412F !important;
-    }
-
-    
-    
-}
-@media screen and (max-width: 640px) {
-    .st-key-litlas_sticky_header .litlas-home-heading {
-        margin-bottom: 0;
-    }
-}
 
 </style>
 """,
@@ -637,6 +568,9 @@ def render_page_header(
     heading_gap: int = 5,
     title_height: int = 90,
     ornament_width: int = 170,
+    mobile_illustration_size: int = 90,
+    mobile_title_width: int = 190,
+    mobile_ornament_width: int = 120,
 ) -> None:
     """Render the shared sticky vintage Litlas heading."""
 
@@ -700,11 +634,18 @@ def render_page_header(
         '</div>'
     )
 
-    header_html = "\n".join([
-        logo_html,
-        image_html,
-        heading_html,
-    ])
+    header_html = f"""
+    <div class="litlas-header-composition"
+        style="
+            --mobile-illustration-size: {mobile_illustration_size}px;
+            --mobile-title-width: {mobile_title_width}px;
+            --mobile-ornament-width: {mobile_ornament_width}px;
+        ">
+        {image_html}
+        {heading_html}
+    </div>
+    {logo_html}
+    """
 
     with st.container(key="litlas_sticky_header"):
         st.markdown(
