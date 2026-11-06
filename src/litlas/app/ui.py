@@ -287,6 +287,22 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         transform: none !important;
     }
 
+    /* Reading Density — reserve space for the larger globe */
+    .st-key-litlas_sticky_header
+    .litlas-heading:has(.litlas-svg-title img[alt="Reading Density"]) {
+        width: calc(100% - 130px) !important;
+        margin-left: 130px !important;
+    }
+    
+    /* Reading Density — mobile globe only */
+    .st-key-litlas_sticky_header:has(
+        .litlas-svg-title img[alt="Reading Density"]
+    ) .litlas-page-illustration {
+        width: 120px !important;
+        height: 120px !important;
+        top: 0 !important;
+        left: 0 !important;
+    }
     /* Hide personal signature on mobile */
     .st-key-litlas_sticky_header .litlas-logo {
         display: none !important;
