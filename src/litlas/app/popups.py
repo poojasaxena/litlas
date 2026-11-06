@@ -58,7 +58,7 @@ def pop_html(group, name, code):
                 elif len(ratings) > 1:
                     rating_text = "Multiple ratings"
                 else:
-                    rating_text = "Not rated"
+                    rating_text = format_rating(None)
 
                 lines.append(
                     f'<div class="book">'
@@ -113,7 +113,7 @@ def pop_html(group, name, code):
             background: linear-gradient(
                 to right,
                 #b57b13 var(--rating-fill),
-                #d8c7a8 var(--rating-fill)
+                #DDD5C9 var(--rating-fill)
             );
             -webkit-background-clip: text;
             background-clip: text;
@@ -149,7 +149,13 @@ def format_rating(value):
     rating = pd.to_numeric(value, errors="coerce")
 
     if pd.isna(rating) or rating <= 0:
-        return "Not rated"
+        return (
+            '<span class="star-rating" '
+            'style="--rating-fill:0%;" '
+            'aria-label="Not rated">'
+            '★★★★★'
+            '</span>'
+        )
 
     rating = max(0, min(5, float(rating)))
     percentage = rating / 5 * 100
