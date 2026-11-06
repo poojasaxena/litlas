@@ -1823,6 +1823,19 @@ with wanderlust_col:
         st.info("Not enough reading history available yet.")
     else:
         fig_wanderlust = build_wanderlust_figure(wanderlust)
+        # Literary Wanderlust — parchment hover tooltip
+        fig_wanderlust.update_layout(
+            hoverlabel=dict(
+                bgcolor="#FAF7F1",
+                bordercolor="#D4C1A7",
+                font=dict(
+                    family="Georgia, serif",
+                    size=13,
+                    color="#58412F",
+                ),
+                align="left",
+            )
+        )
 
         st.plotly_chart(
             fig_wanderlust,
