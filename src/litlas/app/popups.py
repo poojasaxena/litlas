@@ -219,7 +219,7 @@ def format_rating(value, book_id=None):
                 (selected / 5 * 100) + '%'
             );
 
-            window.top.postMessage({
+            window.parent.postMessage({
                 type: 'litlas-rating-test',
                 book_id: this.dataset.bookId,
                 rating: selected
@@ -248,7 +248,7 @@ def format_rating(value, book_id=None):
                 (selected / 5 * 100) + '%'
             );
 
-            window.top.postMessage({
+            window.parent.postMessage({
                 type: 'litlas-rating-test',
                 book_id: this.dataset.bookId,
                 rating: selected
