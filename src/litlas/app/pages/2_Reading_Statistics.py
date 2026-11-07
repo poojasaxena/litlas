@@ -676,7 +676,7 @@ render_page_header(
 
     # Mobile
     mobile_illustration_size=90,
-    mobile_illustration_top=0,
+    mobile_illustration_top=-10,
 
     mobile_eyebrow_offset_x=-15,
     mobile_heading_gap=8,
