@@ -4,6 +4,7 @@ import pandas as pd
 import streamlit as st
 import folium
 from branca.element import Element
+import math
 
 from streamlit_folium import st_folium
 from litlas.processing.paths import load_config
@@ -446,6 +447,60 @@ journey_html = f"""
 </div>
 """
 
+# -------------------------------------------------
+# Interactive popup stars — event experiment
+# -------------------------------------------------
+
+m.get_root().script.add_child(Element("""
+window.litlasRatingFromPointer = function(event, element) {
+    const rect = element.getBoundingClientRect();
+
+    const position = Math.max(
+        0,
+        Math.min(1, (event.clientX - rect.left) / rect.width)
+    );
+
+    return Math.max(
+        0.5,
+        Math.min(5, Math.ceil(position * 10) / 2)
+    );
+};
+
+window.litlasPreviewRating = function(event, element) {
+    const rating = litlasRatingFromPointer(event, element);
+
+    element.style.setProperty(
+        "--rating-fill",
+        (rating / 5 * 100) + "%"
+    );
+
+    element.title = rating + " out of 5 stars";
+};
+
+window.litlasRestoreRating = function(element) {
+    element.style.setProperty(
+        "--rating-fill",
+        element.dataset.originalFill
+    );
+};
+
+window.litlasSendRating = function(event, element) {
+    const rating = litlasRatingFromPointer(event, element);
+
+    // Temporary: send event only, do not save.
+    window.top.postMessage({
+        type: "litlas-rating-test",
+        book_id: element.dataset.bookId,
+        rating: rating
+    }, "*");
+
+    element.style.setProperty(
+        "--rating-fill",
+        (rating / 5 * 100) + "%"
+    );
+};
+"""))
+
 m.get_root().html.add_child(Element(journey_html))
 m.get_root().header.add_child(Element("""
 <style>
@@ -517,6 +572,46 @@ st.html("""
 </div>
 """)
 
+# -------------------------------------------------
+# Experiment: receive rating clicks from Folium
+# -------------------------------------------------
+
+rating_bridge = st.components.v2.component(
+    "litlas_rating_bridge",
+    js="""
+    export default function(component) {
+        const { setTriggerValue } = component;
+
+        function receiveRating(event) {
+            const message = event.data;
+
+            if (
+                !message ||
+                message.type !== "litlas-rating-test"
+            ) {
+                return;
+            }
+
+            setTriggerValue("rating", {
+                book_id: String(message.book_id),
+                rating: Number(message.rating)
+            });
+        }
+
+        window.addEventListener("message", receiveRating);
+
+        return () => {
+            window.removeEventListener("message", receiveRating);
+        };
+    }
+    """,
+)
+
+rating_event = rating_bridge(
+    key="litlas_rating_bridge",
+    on_rating_change=lambda: None,
+)
+
 st_folium(
     m,
     height=get_map_height(),
@@ -525,6 +620,148 @@ st_folium(
     key="literarymap",
 )
 
+# -------------------------------------------------
+# EXPERIMENT: Save ratings for the Morocco test book
+# -------------------------------------------------
+
+if rating_event.rating is not None:
+    event = rating_event.rating
+
+    try:
+        book_id = str(event["book_id"])
+        new_rating = float(event["rating"])
+
+        # Only accept valid half-star increments.
+        if (
+            not math.isfinite(new_rating)
+            or not 0.5 <= new_rating <= 5.0
+            or new_rating * 2 != int(new_rating * 2)
+        ):
+            raise ValueError("Invalid rating.")
+
+        # PostgreSQL: only the authenticated owner may edit.
+        if is_postgres():
+            owner_email = str(
+                st.secrets.get("admin_email", "")
+            ).strip().casefold()
+
+            is_owner = (
+                bool(owner_email)
+                and bool(getattr(st.user, "is_logged_in", False))
+                and st.user.get("email_verified") is True
+                and str(st.user.get("email", "")).strip().casefold()
+                == owner_email
+            )
+
+            if not is_owner:
+                raise PermissionError(
+                    "Please log in as the Litlas owner to rate books."
+                )
+
+        repository = get_repository()
+        books_for_editing = repository.get_editable_books()
+
+        matches = books_for_editing.loc[
+            books_for_editing["goodreads_id"].astype(str) == book_id
+        ]
+
+        if len(matches) != 1:
+            raise ValueError("Book record not found or ambiguous.")
+
+        book = matches.iloc[0]
+
+        # Server-side restriction: only our test record.
+        if not (
+            str(book["display_title"]).strip().casefold() == "litlas-book"
+            and str(book["author"]).strip().casefold() == "litlas-author"
+        ):
+            raise PermissionError(
+                "Direct rating is currently restricted to the test book."
+            )
+
+        original_rating = float(book["rating"])
+
+        # Preserve Goodreads rating when no override is needed.
+        rating_override = (
+            None
+            if new_rating == original_rating
+            else new_rating
+        )
+
+        # Preserve existing page-count overrides.
+        pages_override = (
+            None
+            if pd.isna(book["pages_override"])
+            else int(book["pages_override"])
+        )
+
+        repository.update_book_details(
+            goodreads_id=book_id,
+            display_title=str(book["display_title"]),
+            rating_override=rating_override,
+            pages_override=pages_override,
+        )
+
+    except (ValueError, TypeError, KeyError, PermissionError) as exc:
+        st.error(str(exc))
+
+    else:
+        st.session_state["litlas_rating_saved"] = new_rating
+        st.rerun()
+
+
+saved_rating = st.session_state.pop(
+    "litlas_rating_saved", None
+)
+
+if saved_rating is not None:
+    st.html("""
+        <style>
+        @keyframes litlas-rating-fade {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, 8px);
+            }
+            12% {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+            80% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .litlas-rating-confirmation {
+            position: fixed;
+            bottom: 38px;
+            left: 50%;
+            z-index: 99999;
+
+            background: #F7F0E4;
+            border: 1px solid #D4C1A7;
+            border-radius: 7px;
+            padding: 9px 20px;
+
+            color: #58412F;
+            font-family: Georgia, serif;
+            font-size: 14px;
+            white-space: nowrap;
+
+            box-shadow: 0 3px 12px rgba(88, 65, 47, 0.12);
+            animation: litlas-rating-fade 3s ease forwards;
+            pointer-events: none;
+        }
+        </style>
+    """)
+
+    st.html(
+        f'<div class="litlas-rating-confirmation">'
+        f'★ Rating saved · {saved_rating:g}/5'
+        f'</div>'
+    )
 if mapped.empty:
     st.info('No author birth countries assigned yet. Run `litlas-prepare` in your terminal, then refresh this page.')
 elif placed==0:

@@ -1631,7 +1631,7 @@ all_authors = stats["all_authors"]
 # ---------------------------------------------------------
 
 with most_read_col:
-    st.subheader("Most-Read Writers")
+    st.subheader("Most-Read Authors")
 
     if all_authors.empty:
         st.info("No author statistics available yet.")

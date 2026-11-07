@@ -2,7 +2,6 @@ from html import escape
 
 import pandas as pd
 import pycountry
-from urllib.parse import urlencode
 
 def flag(code):
     try:
@@ -25,16 +24,6 @@ def pop_html(group, name, code):
         for work_id, records in items.groupby("Work ID", sort=False):
             book = records.iloc[0]
             title = escape(str(book["Work Title"]))
-            book_id = str(book["Book Id"])
-            edit_url = "/Library_Management?" + urlencode(
-                {"edit_book": book_id}
-            )
-
-            rate_link = (
-                f'<a href="{escape(edit_url, quote=True)}" '
-                f'target="_blank" rel="noopener noreferrer" '
-                f'class="litlas-rate-link">Rate</a>'
-            )
 
             volumes = records.loc[records["Volume"].ne("")].copy()
 
@@ -53,17 +42,36 @@ def pop_html(group, name, code):
 
                     lines.append(
                         f'<div class="book">'
-                        f'<span>{escape(volume["Volume"])}</span>'
+                        f'<span>{escape(str(volume["Volume"]))}</span>'
                         f'<span class="rating">{stars}</span>'
                         f"</div>"
                     )
-
             else:
                 ratings = sorted(
                     set(float(r) for r in records["My Rating"] if float(r) > 0)
                 )
 
-                if len(ratings) == 1:
+                if len(records) == 1:
+                    record = records.iloc[0]
+
+                    # Experiment: only the Morocco test book.
+                    is_test_book = (
+                        code == "MAR"
+                        and str(record["Work Title"]).strip().casefold()
+                        == "litlas-book"
+                        and str(record["Author"]).strip().casefold()
+                        == "litlas-author"
+                    )
+
+                    rating_text = format_rating(
+                        record["My Rating"],
+                        book_id=(
+                            str(record["Book Id"])
+                            if is_test_book else None
+                        ),
+                    )
+
+                elif len(ratings) == 1:
                     rating_text = format_rating(ratings[0])
                 elif len(ratings) > 1:
                     rating_text = "Multiple ratings"
@@ -74,7 +82,6 @@ def pop_html(group, name, code):
                     f'<div class="book">'
                     f"<span>{title}</span>"
                     f'<span class="rating">{rating_text}</span>'
-                    f"{rate_link}"
                     f"</div>"
                 )
 
@@ -147,44 +154,84 @@ def pop_html(group, name, code):
             overflow-x: hidden;
         }}
 
-        .litlas-rate-link {{
-            color: #906A52;
-            text-decoration: underline;
-            font-size: 11px;
-            white-space: nowrap;
-        }}
-
-        .litlas-rate-link:hover {{
-            color: #58412F;
-        }}
         @media screen and (max-width: 640px) {{
             .litlas-country-popup {{
                 width: 200px;
                 max-height: 260px;
             }}
         }}
+        .litlas-interactive-stars {{
+            cursor: pointer;
+            touch-action: manipulation;
+        }}
+
+        .litlas-interactive-stars:hover {{
+            filter: brightness(1.1);
+        }}
     </style>
     """
-
-def format_rating(value):
+def format_rating(value, book_id=None):
     rating = pd.to_numeric(value, errors="coerce")
 
     if pd.isna(rating) or rating <= 0:
-        return (
-            '<span class="star-rating" '
-            'style="--rating-fill:0%;" '
-            'aria-label="Not rated">'
-            '★★★★★'
-            '</span>'
+        rating = 0.0
+    else:
+        rating = max(0.0, min(5.0, float(rating)))
+
+    percentage = rating / 5 * 100
+    attributes = 'class="star-rating" '
+
+    if book_id is not None:
+        # Calculate the nearest half-star from pointer position.
+        calculate = """
+            const box = this.getBoundingClientRect();
+            const fraction = Math.max(
+                0, Math.min(1, (event.clientX - box.left) / box.width)
+            );
+            const selected = Math.max(
+                0.5, Math.min(5, Math.ceil(fraction * 10) / 2)
+            );
+        """
+
+        preview_js = calculate + """
+            this.style.setProperty(
+                '--rating-fill', (selected / 5 * 100) + '%'
+            );
+        """
+
+        restore_js = """
+            this.style.setProperty(
+                '--rating-fill', this.dataset.originalFill
+            );
+        """
+
+        click_js = calculate + """
+            event.stopPropagation();
+            window.top.postMessage({
+                type: 'litlas-rating-test',
+                book_id: this.dataset.bookId,
+                rating: selected
+            }, '*');
+        """
+
+        attributes = (
+            'class="star-rating litlas-interactive-stars" '
+            f'data-book-id="{escape(str(book_id), quote=True)}" '
+            f'data-original-fill="{percentage}%" '
+            f'onpointermove="{escape(preview_js, quote=True)}" '
+            f'onpointerleave="{escape(restore_js, quote=True)}" '
+            f'onclick="{escape(click_js, quote=True)}" '
         )
 
-    rating = max(0, min(5, float(rating)))
-    percentage = rating / 5 * 100
+    label = (
+        f"{rating:g} out of 5 stars"
+        if rating else "Not rated"
+    )
 
     return (
-        f'<span class="star-rating" '
+        f'<span {attributes}'
         f'style="--rating-fill:{percentage}%;" '
-        f'aria-label="{rating:g} out of 5 stars">'
-        f'★★★★★'
-        f'</span>'
+        f'aria-label="{label}">'
+        '★★★★★'
+        '</span>'
     )
