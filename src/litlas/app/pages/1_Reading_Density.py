@@ -58,7 +58,7 @@ render_page_header(
     mobile_title_offset_x=-10,
     mobile_ornament_width=180,
     mobile_ornament_offset_x=-10,
-    mobile_subtitle_offset_x=-15,
+    mobile_subtitle_offset_x=-10,
 
     mobile_header_bottom_gap=-10,
 )
