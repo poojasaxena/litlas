@@ -70,6 +70,13 @@ render_page_header(
     mobile_header_bottom_gap=-10,
 )
 
+# Handle a book-editing request from the map only once.
+requested_book_id = st.query_params.get("edit_book")
+
+if requested_book_id:
+    st.session_state["pending_edit_book_id"] = requested_book_id
+    st.session_state.library_tool = "Edit a Book"
+    del st.query_params["edit_book"]
 
 def render_owner_access_message(button_label, callback):
     st.html("""
@@ -846,19 +853,21 @@ if selected_tool:
         unsafe_allow_html=True,
     )
 
-
     if selected_tool == "Edit a Book":
-        st.subheader("Edit a Book")
-        st.caption("Revise your personal book ratings and page counts.")
+        with st.container(gap="xxsmall"):
+            st.subheader("Edit a Book")
+            st.caption(
+                "Revise your personal book ratings and page counts."
+            )
 
-        editor_col, _ = st.columns([2, 1], gap="large")
+            editor_col, _ = st.columns([2, 1], gap="large")
 
-        with editor_col:
-            with st.container(
-                border=True,
-                key="litlas_editor_card",
-            ):
-                render_book_editor_contents(show_heading=False)
+            with editor_col:
+                with st.container(
+                    border=True,
+                    key="litlas_editor_card",
+                ):
+                    render_book_editor_contents(show_heading=False)
 
     elif selected_tool == "Add a Book":
         st.subheader("Add a Book")

@@ -2,7 +2,7 @@ from html import escape
 
 import pandas as pd
 import pycountry
-
+from urllib.parse import urlencode
 
 def flag(code):
     try:
@@ -25,6 +25,16 @@ def pop_html(group, name, code):
         for work_id, records in items.groupby("Work ID", sort=False):
             book = records.iloc[0]
             title = escape(str(book["Work Title"]))
+            book_id = str(book["Book Id"])
+            edit_url = "/Library_Management?" + urlencode(
+                {"edit_book": book_id}
+            )
+
+            rate_link = (
+                f'<a href="{escape(edit_url, quote=True)}" '
+                f'target="_blank" rel="noopener noreferrer" '
+                f'class="litlas-rate-link">Rate</a>'
+            )
 
             volumes = records.loc[records["Volume"].ne("")].copy()
 
@@ -64,6 +74,7 @@ def pop_html(group, name, code):
                     f'<div class="book">'
                     f"<span>{title}</span>"
                     f'<span class="rating">{rating_text}</span>'
+                    f"{rate_link}"
                     f"</div>"
                 )
 
@@ -136,6 +147,16 @@ def pop_html(group, name, code):
             overflow-x: hidden;
         }}
 
+        .litlas-rate-link {{
+            color: #906A52;
+            text-decoration: underline;
+            font-size: 11px;
+            white-space: nowrap;
+        }}
+
+        .litlas-rate-link:hover {{
+            color: #58412F;
+        }}
         @media screen and (max-width: 640px) {{
             .litlas-country-popup {{
                 width: 200px;

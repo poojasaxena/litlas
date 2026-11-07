@@ -29,10 +29,13 @@ RATING_OPTIONS = {
 st.html("""
 <style>
 .st-key-compact_book_editor [data-testid="stVerticalBlock"] {
-    gap: 0.3rem !important;
+    gap: 0.1rem !important;
 }
-.st-key-compact_book_editor [data-testid="stCaptionContainer"] {
-    margin-top: -6px !important;
+/* Bring helper captions closer to their input fields */
+.st-key-litlas_editor_card
+[data-testid="stElementContainer"]:has([data-testid="stCaptionContainer"]) {
+    margin-top: -12px !important;
+    margin-bottom: 0 !important;
 }
 /* Save to Litlas — warm brown */
 div.st-key-book_save_area button[kind="secondary"] {
@@ -73,13 +76,8 @@ div.st-key-book_save_area button[kind="secondary"] p {
 
 /* Compact Delete action, aligned to the right */
 .st-key-book_delete_area {
-    margin-top: -65px !important;
+    margin-top: 0 !important;
     margin-bottom: 0 !important;
-}
-
-.st-key-book_delete_area [data-testid="stButton"] {
-    display: flex !important;
-    justify-content: flex-end !important;
 }
 
 .st-key-book_delete_area button {
@@ -124,32 +122,51 @@ def render_book_editor_contents(show_heading=True):
         str(row["goodreads_id"]): f'{row["display_title"]} — {row["author"]}'
         for _, row in books.iterrows()
     }
-    selected_id = st.selectbox(
-        "Find a book",
-        options=list(book_options),
-        format_func=lambda book_id: book_options[book_id],
-        index=None,
-        placeholder="Search by title or author...",
-        key="editor_book",
+
+    # Preselect a specific reading record from a map link.
+    book_options = {
+        str(row["goodreads_id"]): f'{row["display_title"]} — {row["author"]}'
+        for _, row in books.iterrows()
+    }
+
+    # Preselect a book when arriving from the map.
+    requested_id = st.session_state.pop("pending_edit_book_id", None)
+    book_ids = list(book_options)
+
+    if requested_id in book_options:
+        st.session_state["editor_book"] = requested_id
+
+    selected_index = (
+        book_ids.index(requested_id)
+        if requested_id in book_options
+        else None
     )
-    if selected_id is None:
-        return
 
-    # Switching books cancels any pending deletion of the previous book.
-    if st.session_state.get("book_editor_last_selected") != selected_id:
-        st.session_state["book_editor_last_selected"] = selected_id
-        st.session_state.pop("confirm_book_deletion", None)
-        st.session_state.pop("confirm_delete_book_checkbox", None)
+    with st.container(gap="xxsmall"):
+        selected_id = st.selectbox(
+            "Find a book",
+            options=book_ids,
+            format_func=lambda book_id: book_options[book_id],
+            index=selected_index,
+            placeholder="Search by title or author...",
+            key="editor_book",
+        )
 
-    row = books.loc[
-        books["goodreads_id"].astype(str) == selected_id
-    ].iloc[0]
+        if selected_id is None:
+            return
 
-    date_read = pd.to_datetime(row.get("date_read"), errors="coerce")
-    if pd.notna(date_read):
-        st.caption(f"Read on: {date_read.strftime('%d %B %Y')}")
-    else:
-        st.caption("Reading date not recorded")
+        row = books.loc[
+            books["goodreads_id"].astype(str) == selected_id
+        ].iloc[0]
+
+        date_read = pd.to_datetime(
+            row.get("date_read"), errors="coerce"
+        )
+
+        if pd.notna(date_read):
+            st.caption(f"Read on: {date_read.strftime('%d %B %Y')}")
+        else:
+            st.caption("Reading date not recorded")
 
     stored_rating = row["rating_override"]
     current_rating = (
@@ -173,40 +190,56 @@ def render_book_editor_contents(show_heading=True):
             [2.2, 1, 1], gap="medium"
         )
         with form_col1:
-            edited_title = st.text_input(
-                "Book title",
-                value=str(row["display_title"]),
-                key=f"book_title_{selected_id}",
-            )
-            st.caption(f'Original title: {row["original_title"]}')
+            with st.container(gap="xxsmall"):
+                edited_title = st.text_input(
+                    "Book title",
+                    value=str(row["display_title"]),
+                    key=f"book_title_{selected_id}",
+                )
+                st.caption(f'Original title: {row["original_title"]}')
 
         with form_col2:
-            rating_label = st.selectbox(
-                "My rating",
-                rating_labels,
-                index=rating_labels.index(current_label),
-                key=f"book_rating_{selected_id}",
-            )
-            st.caption(
-                f"Original rating: {original_rating:g} ★"
-                if original_rating else "Original rating: Unrated"
-            )
+            with st.container(gap="xxsmall"):
+                rating_label = st.selectbox(
+                    "My rating",
+                    rating_labels,
+                    index=rating_labels.index(current_label),
+                    key=f"book_rating_{selected_id}",
+                )
+                st.caption(
+                    f"Original rating: {original_rating:g} ★"
+                    if original_rating else "Original rating: Unrated"
+                )
 
         with form_col3:
-            pages = st.number_input(
-                "Number of pages",
-                min_value=1,
-                step=1,
-                value=int(current_pages) if pd.notna(current_pages) else 1,
-                key=f"book_pages_{selected_id}",
-            )
-            if pd.notna(original_pages):
-                st.caption(f"Page count: {int(original_pages)}")
-            else:
-                st.caption("Page count: missing")
+            with st.container(gap="xxsmall"):
+                pages = st.number_input(
+                    "Number of pages",
+                    min_value=1,
+                    step=1,
+                    value=int(current_pages) if pd.notna(current_pages) else 1,
+                    key=f"book_pages_{selected_id}",
+                )
+                if pd.notna(original_pages):
+                    st.caption(f"Page count: {int(original_pages)}")
+                else:
+                    st.caption("Page count: missing")
 
-        # A single prominent Save button, visually separated from deletion.
-        _, save_col, _ = st.columns([1, 1.25, 1], gap="small")
+        # Compact action row: Delete | Save | Confirmation
+        delete_col, save_col, message_col = st.columns(
+            [1, 1.25, 1.4],
+            gap="small",
+            vertical_alignment="center",
+        )
+
+        with delete_col:
+            with st.container(key="book_delete_area"):
+                delete_clicked = st.button(
+                    "Delete book",
+                    key="book_delete_button",
+                    type="tertiary",
+                )
+
         with save_col:
             with st.form("book_save_form", border=False):
                 submitted = st.form_submit_button(
@@ -214,14 +247,20 @@ def render_book_editor_contents(show_heading=True):
                     use_container_width=True,
                 )
 
-    # Keep destructive action less prominent and away from Save.
-    # Delete action — small and separate from Save
-    with st.container(key="book_delete_area"):
-        delete_clicked = st.button(
-            "Delete book",
-            key="book_delete_button",
-            type="tertiary",
-        )
+        with message_col:
+            saved = st.session_state.get("book_editor_saved")
+
+            if saved and saved[0] == selected_id:
+                st.markdown(
+                    f'<div style="'
+                    f'color:#8B634B;'
+                    f'font-family:Georgia,serif;'
+                    f'font-size:14px;'
+                    f'white-space:nowrap;'
+                    f'">✓ Saved: {escape(str(saved[1]))}</div>',
+                    unsafe_allow_html=True,
+                )
+                st.session_state.pop("book_editor_saved", None)
 
     if submitted:
         selected_rating = RATING_OPTIONS[rating_label]
@@ -253,23 +292,31 @@ def render_book_editor_contents(show_heading=True):
             )
             st.rerun()
 
-    saved = st.session_state.get("book_editor_saved")
-    if saved and saved[0] == selected_id:
-        st.success(f"Saved: {saved[1]}")
-        st.session_state.pop("book_editor_saved", None)
-
     if delete_clicked:
         st.session_state["confirm_book_deletion"] = selected_id
 
     if st.session_state.get("confirm_book_deletion") == selected_id:
-        st.warning(
-            f'Permanently delete "{row["display_title"]}" '
-            f'by {row["author"]}?'
-        )
-        confirmed = st.checkbox(
-            "I understand this cannot be undone.",
-            key="confirm_delete_book_checkbox",
-        )
+        with st.container(gap="xxsmall"):
+            warning_col, checkbox_col = st.columns(
+                [1.2, 1],
+                gap="small",
+                vertical_alignment="center",
+            )
+
+            with warning_col:
+                st.markdown(
+                    f'<span style="font-family:Georgia,serif;'
+                    f'font-size:13px;color:#653B35;">'
+                    f'Delete "{escape(str(row["display_title"]))}" permanently?'
+                    f'</span>',
+                    unsafe_allow_html=True,
+                )
+
+            with checkbox_col:
+                confirmed = st.checkbox(
+                    "I understand this cannot be undone.",
+                    key="confirm_delete_book_checkbox",
+                )
         confirm_col, cancel_col = st.columns(2)
         with confirm_col:
             if st.button(
