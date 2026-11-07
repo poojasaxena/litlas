@@ -260,7 +260,7 @@ def format_rating(value, book_id=None):
             f'data-book-id="{escape(str(book_id), quote=True)}" '
             f'data-original-fill="{percentage}%" '
             f'onpointermove="{escape(preview_js, quote=True)}" '
-            f'onpointerleave="{escape(restore_js, quote=True)}" '
+            f'onpointerleave="if (event.pointerType === \'mouse\') {{ {escape(restore_js, quote=True)} }}" '
             f'ontouchstart="{escape(touch_js, quote=True)}" '
             f'onclick="{escape(submit_js, quote=True)}" '
         )
