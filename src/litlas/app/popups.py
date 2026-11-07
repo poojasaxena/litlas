@@ -232,8 +232,7 @@ def format_rating(value, book_id=None):
             f'data-original-fill="{percentage}%" '
             f'onpointermove="{escape(preview_js, quote=True)}" '
             f'onpointerleave="{escape(restore_js, quote=True)}" '
-            'onpointerdown="event.stopPropagation()" '
-            f'onpointerup="{escape(submit_js, quote=True)}" '
+            f'onpointerdown="{escape(submit_js, quote=True)}" '
         )
 
     label = (
