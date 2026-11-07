@@ -161,8 +161,12 @@ def pop_html(group, name, code):
             }}
         }}
         .litlas-interactive-stars {{
+            display: inline-block;
             cursor: pointer;
             touch-action: manipulation;
+            padding: 7px 0;
+            user-select: none;
+            -webkit-user-select: none;
         }}
 
         .litlas-interactive-stars:hover {{
