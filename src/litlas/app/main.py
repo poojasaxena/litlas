@@ -55,7 +55,7 @@ render_page_header(
     # Mobile
     mobile_illustration_size=105,
     mobile_heading_gap=0,
-    mobile_heading_offset_x=-25,
+    mobile_heading_offset_x=-45,
     mobile_title_offset_x=35,
     mobile_ornament_offset_x=-12,
     mobile_header_bottom_gap=-10,
