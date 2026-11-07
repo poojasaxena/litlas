@@ -675,7 +675,7 @@ render_page_header(
     ornament_width=260,
 
     # Mobile
-    mobile_illustration_size=90,
+    mobile_illustration_size=80,
     mobile_illustration_top=-10,
 
     mobile_eyebrow_offset_x=-15,
