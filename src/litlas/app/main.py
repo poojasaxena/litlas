@@ -293,7 +293,8 @@ rating_event = rating_bridge(
     key="litlas_rating_bridge",
     on_rating_change=lambda: None,
 )
-
+# Temporary mobile diagnostic
+st.write("Rating event received by Streamlit:", rating_event.rating)
 
 # -------------------------------------------------
 # EXPERIMENT: Save ratings for the Morocco test book
