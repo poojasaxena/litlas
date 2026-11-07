@@ -95,8 +95,42 @@ div.st-key-book_save_area button[kind="secondary"] p {
     color: #35201D !important;
     text-decoration: underline !important;
 }
+
 </style>
 """)
+
+
+@st.dialog("Delete book?")
+def confirm_book_delete(book_id: str, title: str, author: str):
+    st.write(f'Permanently delete "{title}" by {author}?')
+
+    confirmed = st.checkbox(
+        "I understand this cannot be undone.",
+        key="confirm_delete_book_checkbox",
+    )
+
+    confirm_col, cancel_col = st.columns(2)
+
+    with confirm_col:
+        if st.button(
+            "Confirm Deletion",
+            disabled=not confirmed,
+            type="primary",
+            use_container_width=True,
+        ):
+            try:
+                deleted_title = delete_book(book_id)
+            except ValueError as exc:
+                st.error(str(exc))
+            else:
+                st.session_state["book_deleted"] = deleted_title
+                st.session_state["reset_book_selection"] = True
+                st.session_state["reset_delete_confirmation"] = True
+                st.rerun()
+
+    with cancel_col:
+        if st.button("Cancel", use_container_width=True):
+            st.rerun()
 
 def render_book_editor_contents(show_heading=True):
     """Render the searchable book editor in the current location."""
@@ -293,56 +327,13 @@ def render_book_editor_contents(show_heading=True):
             st.rerun()
 
     if delete_clicked:
-        st.session_state["confirm_book_deletion"] = selected_id
-
-    if st.session_state.get("confirm_book_deletion") == selected_id:
-        with st.container(gap="xxsmall"):
-            warning_col, checkbox_col = st.columns(
-                [1.2, 1],
-                gap="small",
-                vertical_alignment="center",
-            )
-
-            with warning_col:
-                st.markdown(
-                    f'<span style="font-family:Georgia,serif;'
-                    f'font-size:13px;color:#653B35;">'
-                    f'Delete "{escape(str(row["display_title"]))}" permanently?'
-                    f'</span>',
-                    unsafe_allow_html=True,
-                )
-
-            with checkbox_col:
-                confirmed = st.checkbox(
-                    "I understand this cannot be undone.",
-                    key="confirm_delete_book_checkbox",
-                )
-        confirm_col, cancel_col = st.columns(2)
-        with confirm_col:
-            if st.button(
-                "Confirm Deletion",
-                disabled=not confirmed,
-                key="book_confirm_deletion",
-                type="primary",
-                use_container_width=True,
-            ):
-                try:
-                    deleted_title = delete_book(selected_id)
-                except ValueError as exc:
-                    st.error(str(exc))
-                else:
-                    st.session_state.pop("confirm_book_deletion", None)
-                    st.session_state["reset_delete_confirmation"] = True
-                    st.session_state.pop("book_editor_saved", None)
-                    st.session_state["book_deleted"] = deleted_title
-                    st.session_state["reset_book_selection"] = True
-                    st.rerun()
-        with cancel_col:
-            if st.button("Cancel", key="book_cancel_deletion",
-                         use_container_width=True):
-                st.session_state.pop("confirm_book_deletion", None)
-                st.session_state["reset_delete_confirmation"] = True
-                st.rerun()
+        st.session_state["book_delete_request"] = {
+            "id": selected_id,
+            "title": str(row["display_title"]),
+            "author": str(row["author"]),
+        }
+        st.rerun()
+        
 
 def render_book_editor_contents_sidebar(show_heading=True):
     """Render the Library Editor inside Streamlit's sidebar."""

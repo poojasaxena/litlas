@@ -25,6 +25,7 @@ from litlas.database.importer import (
     preview_goodreads_import,
     resolve_goodreads_date_conflict,
 )
+from litlas.db_backend import get_repository
 from litlas.processing.paths import illustration_path
 
 ADD_BOOK_ICON = str(illustration_path("add_book"))
@@ -860,14 +861,73 @@ if selected_tool:
                 "Revise your personal book ratings and page counts."
             )
 
-            editor_col, _ = st.columns([2, 1], gap="large")
+            editor_col, confirm_col = st.columns(
+                [2, 1],
+                gap="large",
+            )
 
+            # Left: existing book editor
             with editor_col:
                 with st.container(
                     border=True,
                     key="litlas_editor_card",
                 ):
                     render_book_editor_contents(show_heading=False)
+
+            # Right: deletion confirmation
+            with confirm_col:
+                request = st.session_state.get("book_delete_request")
+
+                if request:
+                    with st.container(border=True):
+                        st.markdown("#### Delete book?")
+
+                        st.write(
+                            f'Permanently delete "{request["title"]}" '
+                            f'by {request["author"]}?'
+                        )
+
+                        confirmed = st.checkbox(
+                            "I understand this cannot be undone.",
+                            key="confirm_delete_book_checkbox",
+                        )
+
+                        if st.button(
+                            "Confirm Deletion",
+                            disabled=not confirmed,
+                            type="primary",
+                            use_container_width=True,
+                            key="confirm_book_delete",
+                        ):
+                            try:
+                                deleted_title = (
+                                    get_repository().delete_book(
+                                        request["id"]
+                                    )
+                                )
+                            except ValueError as exc:
+                                st.error(str(exc))
+                            else:
+                                st.session_state.pop(
+                                    "book_delete_request", None
+                                )
+                                st.session_state["book_deleted"] = deleted_title
+                                st.session_state["reset_book_selection"] = True
+                                st.session_state["reset_delete_confirmation"] = True
+                                st.rerun()
+
+                        if st.button(
+                            "Cancel",
+                            use_container_width=True,
+                            key="cancel_book_delete",
+                        ):
+                            st.session_state.pop(
+                                "book_delete_request", None
+                            )
+                            st.session_state.pop(
+                                "confirm_delete_book_checkbox", None
+                            )
+                            st.rerun()
 
     elif selected_tool == "Add a Book":
         st.subheader("Add a Book")
