@@ -163,7 +163,7 @@ def pop_html(group, name, code):
         .litlas-interactive-stars {{
             display: inline-block;
             cursor: pointer;
-            touch-action: none;
+            touch-action: manipulation;
             padding: 10px 0;
             user-select: none;
             -webkit-user-select: none;
@@ -232,7 +232,12 @@ def format_rating(value, book_id=None):
             f'data-original-fill="{percentage}%" '
             f'onpointermove="{escape(preview_js, quote=True)}" '
             f'onpointerleave="{escape(restore_js, quote=True)}" '
-            f'onpointerdown="{escape(submit_js, quote=True)}" '
+            f'onclick="{escape(submit_js, quote=True)}" '
+            'ontouchstart="'
+            'this.style.outline = \'2px solid red\';'
+            'this.style.outlineOffset = \'3px\';'
+            'event.stopPropagation();'
+            '" '
         )
 
     label = (
