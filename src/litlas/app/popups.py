@@ -233,11 +233,7 @@ def format_rating(value, book_id=None):
             f'onpointermove="{escape(preview_js, quote=True)}" '
             f'onpointerleave="{escape(restore_js, quote=True)}" '
             f'onclick="{escape(submit_js, quote=True)}" '
-            'ontouchstart="'
-            'this.style.outline = \'2px solid red\';'
-            'this.style.outlineOffset = \'3px\';'
-            'event.stopPropagation();'
-            '" '
+            'ontouchstart="event.stopPropagation();" '
         )
 
     label = (
