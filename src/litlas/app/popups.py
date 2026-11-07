@@ -210,35 +210,13 @@ def format_rating(value, book_id=None):
             );
         """
 
-        click_js = calculate + """
-            event.stopPropagation();
-            window.top.postMessage({
-                type: 'litlas-rating-test',
-                book_id: this.dataset.bookId,
-                rating: selected
-            }, '*');
-        """
-        touch_js = """
+        submit_js = calculate + """
             event.preventDefault();
             event.stopPropagation();
 
-            const touch = event.changedTouches[0];
-            if (!touch) return;
-
-            const box = this.getBoundingClientRect();
-
-            const fraction = Math.max(
-                0,
-                Math.min(1, (touch.clientX - box.left) / box.width)
-            );
-
-            const selected = Math.max(
-                0.5,
-                Math.min(5, Math.ceil(fraction * 10) / 2)
-            );
-
             this.style.setProperty(
-                '--rating-fill', (selected / 5 * 100) + '%'
+                '--rating-fill',
+                (selected / 5 * 100) + '%'
             );
 
             window.top.postMessage({
@@ -254,9 +232,8 @@ def format_rating(value, book_id=None):
             f'data-original-fill="{percentage}%" '
             f'onpointermove="{escape(preview_js, quote=True)}" '
             f'onpointerleave="{escape(restore_js, quote=True)}" '
-            'ontouchstart="event.stopPropagation()" '
-            f'ontouchend="{escape(touch_js, quote=True)}" '
-            f'onclick="{escape(click_js, quote=True)}" '
+            'onpointerdown="event.stopPropagation()" '
+            f'onpointerup="{escape(submit_js, quote=True)}" '
         )
 
     label = (
