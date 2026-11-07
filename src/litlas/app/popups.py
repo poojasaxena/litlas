@@ -163,7 +163,7 @@ def pop_html(group, name, code):
         .litlas-interactive-stars {{
             display: inline-block;
             cursor: pointer;
-            touch-action: manipulation;
+            touch-action: none;
             padding: 10px 0;
             user-select: none;
             -webkit-user-select: none;
@@ -229,11 +229,10 @@ def format_rating(value, book_id=None):
             event.preventDefault();
             event.stopPropagation();
 
-            const touch = event.changedTouches[0];
+            const touch = event.touches[0];
             if (!touch) return;
 
             const box = this.getBoundingClientRect();
-
             const fraction = Math.max(
                 0,
                 Math.min(1, (touch.clientX - box.left) / box.width)
@@ -262,9 +261,7 @@ def format_rating(value, book_id=None):
             f'data-original-fill="{percentage}%" '
             f'onpointermove="{escape(preview_js, quote=True)}" '
             f'onpointerleave="{escape(restore_js, quote=True)}" '
-            'ontouchstart="event.stopPropagation();" '
-            'ontouchmove="event.stopPropagation();" '
-            f'ontouchend="{escape(touch_js, quote=True)}" '
+            f'ontouchstart="{escape(touch_js, quote=True)}" '
             f'onclick="{escape(submit_js, quote=True)}" '
         )
 
