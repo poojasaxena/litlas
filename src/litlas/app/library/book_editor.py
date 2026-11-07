@@ -31,12 +31,7 @@ st.html("""
 .st-key-compact_book_editor [data-testid="stVerticalBlock"] {
     gap: 0.1rem !important;
 }
-/* Bring helper captions closer to their input fields */
-.st-key-litlas_editor_card
-[data-testid="stElementContainer"]:has([data-testid="stCaptionContainer"]) {
-    margin-top: -12px !important;
-    margin-bottom: 0 !important;
-}
+
 /* Save to Litlas — warm brown */
 div.st-key-book_save_area button[kind="secondary"] {
     background-color: #906A52 !important;
@@ -170,18 +165,12 @@ def render_book_editor_contents(show_heading=True):
     if requested_id in book_options:
         st.session_state["editor_book"] = requested_id
 
-    selected_index = (
-        book_ids.index(requested_id)
-        if requested_id in book_options
-        else None
-    )
-
     with st.container(gap="xxsmall"):
         selected_id = st.selectbox(
             "Find a book",
             options=book_ids,
             format_func=lambda book_id: book_options[book_id],
-            index=selected_index,
+            index=None,
             placeholder="Search by title or author...",
             key="editor_book",
         )
@@ -289,8 +278,10 @@ def render_book_editor_contents(show_heading=True):
                     f'<div style="'
                     f'color:#8B634B;'
                     f'font-family:Georgia,serif;'
-                    f'font-size:14px;'
-                    f'white-space:nowrap;'
+                    f'font-size:13px;'
+                    f'line-height:1.3;'
+                    f'white-space:normal;'
+                    f'overflow-wrap:anywhere;'
                     f'">✓ Saved: {escape(str(saved[1]))}</div>',
                     unsafe_allow_html=True,
                 )
@@ -333,7 +324,7 @@ def render_book_editor_contents(show_heading=True):
             "author": str(row["author"]),
         }
         st.rerun()
-        
+
 
 def render_book_editor_contents_sidebar(show_heading=True):
     """Render the Library Editor inside Streamlit's sidebar."""
