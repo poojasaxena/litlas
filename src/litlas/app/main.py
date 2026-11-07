@@ -716,7 +716,7 @@ m.get_root().header.add_child(Element("""
 </style>
 """))
 
-
+st.warning("MOBILE RATING TEST — VERSION 2")
 # Discreet About Litlas invitation — above the map
 st.html("""
 <style>
