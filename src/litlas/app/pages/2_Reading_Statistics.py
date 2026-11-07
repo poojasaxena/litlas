@@ -1479,7 +1479,7 @@ books_by_year = {
 
 
 with history_col:
-    st.subheader("Pages Through Time")
+    st.subheader("Timeless Pages")
 
     if history.empty:
         st.info("No books have a recorded reading date yet.")
