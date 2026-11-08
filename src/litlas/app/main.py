@@ -350,15 +350,6 @@ if rating_event.rating is not None:
 
         book = matches.iloc[0]
 
-        # Server-side restriction: only our test record.
-        if not (
-            str(book["display_title"]).strip().casefold() == "litlas-book"
-            and str(book["author"]).strip().casefold() == "litlas-author"
-        ):
-            raise PermissionError(
-                "Direct rating is currently restricted to the test book."
-            )
-
         original_rating = float(book["rating"])
 
         # Preserve Goodreads rating when no override is needed.

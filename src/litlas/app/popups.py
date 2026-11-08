@@ -38,7 +38,10 @@ def pop_html(group, name, code):
                 volumes = volumes.sort_values("Volume Number")
 
                 for _, volume in volumes.iterrows():
-                    stars = format_rating(volume["My Rating"])
+                    stars = format_rating(
+                        volume["My Rating"],
+                        book_id=str(volume["Book Id"]),
+                    )
 
                     lines.append(
                         f'<div class="book">'
@@ -47,43 +50,42 @@ def pop_html(group, name, code):
                         f"</div>"
                     )
             else:
-                ratings = sorted(
-                    set(float(r) for r in records["My Rating"] if float(r) > 0)
-                )
-
                 if len(records) == 1:
                     record = records.iloc[0]
 
-                    # Experiment: only the Morocco test book.
-                    is_test_book = (
-                        code == "MAR"
-                        and str(record["Work Title"]).strip().casefold()
-                        == "litlas-book"
-                        and str(record["Author"]).strip().casefold()
-                        == "litlas-author"
-                    )
-
                     rating_text = format_rating(
                         record["My Rating"],
-                        book_id=(
-                            str(record["Book Id"])
-                            if is_test_book else None
-                        ),
+                        book_id=str(record["Book Id"]),
                     )
 
-                elif len(ratings) == 1:
-                    rating_text = format_rating(ratings[0])
-                elif len(ratings) > 1:
-                    rating_text = "Multiple ratings"
-                else:
-                    rating_text = format_rating(None)
+                    lines.append(
+                        f'<div class="book">'
+                        f"<span>{title}</span>"
+                        f'<span class="rating">{rating_text}</span>'
+                        f"</div>"
+                    )
 
-                lines.append(
-                    f'<div class="book">'
-                    f"<span>{title}</span>"
-                    f'<span class="rating">{rating_text}</span>'
-                    f"</div>"
-                )
+                else:
+                    # Multiple reading records for one work.
+                    # Each record must have its own rating control.
+                    lines.append(
+                        f'<div class="work-title">{title}</div>'
+                    )
+
+                    for reading_number, (_, record) in enumerate(
+                        records.iterrows(), start=1
+                    ):
+                        rating_text = format_rating(
+                            record["My Rating"],
+                            book_id=str(record["Book Id"]),
+                        )
+
+                        lines.append(
+                            f'<div class="book">'
+                            f"<span>Reading {reading_number}</span>"
+                            f'<span class="rating">{rating_text}</span>'
+                            f"</div>"
+                        )
 
         grouped.append(f"<h4>{escape(author)}</h4>" + "".join(lines))
 
