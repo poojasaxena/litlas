@@ -227,7 +227,7 @@ def format_rating(value, book_id=None):
                 rating: selected
             }, '*');
         """
-        touch_js = """
+        touch_preview_js = """
             event.preventDefault();
             event.stopPropagation();
 
@@ -245,9 +245,29 @@ def format_rating(value, book_id=None):
                 Math.min(5, Math.ceil(fraction * 10) / 2)
             );
 
+            this.dataset.pendingRating = selected;
             this.style.setProperty(
                 '--rating-fill',
                 (selected / 5 * 100) + '%'
+            );
+        """
+
+        touch_save_js = """
+            event.preventDefault();
+            event.stopPropagation();
+
+            const touch = event.changedTouches[0];
+            if (!touch) return;
+
+            const box = this.getBoundingClientRect();
+            const fraction = Math.max(
+                0,
+                Math.min(1, (touch.clientX - box.left) / box.width)
+            );
+
+            const selected = Math.max(
+                0.5,
+                Math.min(5, Math.ceil(fraction * 10) / 2)
             );
 
             window.parent.postMessage({
@@ -262,8 +282,10 @@ def format_rating(value, book_id=None):
             f'data-book-id="{escape(str(book_id), quote=True)}" '
             f'data-original-fill="{percentage}%" '
             f'onpointermove="{escape(preview_js, quote=True)}" '
-            f'onpointerleave="if (event.pointerType === \'mouse\') {{ {escape(restore_js, quote=True)} }}" '
-            f'ontouchstart="{escape(touch_js, quote=True)}" '
+            f'onpointerleave="{escape(restore_js, quote=True)}" '
+            f'ontouchstart="{escape(touch_preview_js, quote=True)}" '
+            f'ontouchmove="{escape(touch_preview_js, quote=True)}" '
+            f'ontouchend="{escape(touch_save_js, quote=True)}" '
             f'onclick="{escape(submit_js, quote=True)}" '
         )
 
