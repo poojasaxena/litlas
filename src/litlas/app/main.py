@@ -282,8 +282,27 @@ rating_bridge = st.components.v2.component(
 
         window.addEventListener("message", receiveRating);
 
+        // Temporary diagnostic: test the bridge without Folium.
+        const testButton = document.createElement("button");
+        testButton.textContent = "Test mobile bridge";
+        testButton.style.cssText = `
+            padding: 8px 14px;
+            background: #F7F0E4;
+            border: 1px solid #D4C1A7;
+            border-radius: 6px;
+            color: #58412F;
+            cursor: pointer;
+        `;
+
+        testButton.addEventListener("click", () => {
+            setTriggerValue("probe", "mobile-bridge-works");
+        });
+
+        component.parentElement.appendChild(testButton);
+
         return () => {
             window.removeEventListener("message", receiveRating);
+            testButton.remove();
         };
     }
     """,
@@ -292,7 +311,12 @@ rating_bridge = st.components.v2.component(
 rating_event = rating_bridge(
     key="litlas_rating_bridge",
     on_rating_change=lambda: None,
+    on_probe_change=lambda: None,
 )
+
+if rating_event.probe is not None:
+    st.success("Mobile bridge works!")
+    
 # Temporary mobile diagnostic
 st.write("Rating event received by Streamlit:", rating_event.rating)
 
