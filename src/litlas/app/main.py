@@ -452,6 +452,26 @@ if not is_postgres():
 
 try:
     books = get_repository().load_read_books()
+    st.write("Available book columns:", books.columns.tolist())
+    # Diagnose the La tortuga Tilly title discrepancy
+    matches = books[
+        books["Work Title"]
+        .astype(str)
+        .str.contains("tortuga|tilly", case=False, na=False)
+    ]
+
+    st.dataframe(
+        matches[
+            [
+                "Book Id",
+                "Work ID",
+                "Work Title",
+                "Author",
+                "ISO3",
+            ]
+        ],
+        hide_index=True,
+    )
 except Exception as exc:
     st.error("Could not read the Litlas database.")
     st.stop()

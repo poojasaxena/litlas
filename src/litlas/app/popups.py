@@ -23,7 +23,12 @@ def pop_html(group, name, code):
 
         for work_id, records in items.groupby("Work ID", sort=False):
             book = records.iloc[0]
-            title = escape(str(book["Work Title"]))
+
+            # Respect personal title edits for individual reading records.
+            if len(records) == 1:
+                title = escape(str(book["Display Title"]))
+            else:
+                title = escape(str(book["Work Title"]))
 
             volumes = records.loc[records["Volume"].ne("")].copy()
 
