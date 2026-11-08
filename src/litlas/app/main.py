@@ -5,7 +5,7 @@ import streamlit as st
 import folium
 from branca.element import Element
 import math
-
+from html import escape
 from streamlit_folium import st_folium
 from litlas.processing.paths import load_config
 from litlas.app.popups import flag, pop_html
@@ -377,7 +377,10 @@ if rating_event.rating is not None:
         st.error(str(exc))
 
     else:
-        st.session_state["litlas_rating_saved"] = new_rating
+        st.session_state["litlas_rating_saved"] = {
+            "rating": new_rating,
+            "title": str(book["display_title"]),
+        }
 
 
 saved_rating = st.session_state.pop(
@@ -428,9 +431,15 @@ if saved_rating is not None:
     """)
 
     st.html(
-        f'<div class="litlas-rating-confirmation">'
-        f'★ Rating saved · {saved_rating:g}/5'
-        f'</div>'
+        '<div class="litlas-rating-confirmation" '
+        'style="text-align:center;white-space:normal;'
+        'max-width:min(340px,85vw);">'
+        f'★ Rating saved · {saved_rating["rating"]:g}/5'
+        f'<div style="font-size:12px;margin-top:3px;'
+        f'color:#81776E;overflow-wrap:anywhere;">'
+        f'{escape(saved_rating["title"])}'
+        '</div>'
+        '</div>'
     )
 
 # SQLite requires a local database file; PostgreSQL does not.
