@@ -320,15 +320,6 @@ rating_event = rating_bridge(
     on_popup_probe_change=lambda: None,
 )
 
-if rating_event.probe is not None:
-    st.success("Mobile bridge works!")
-
-if rating_event.popup_probe is not None:
-    st.success(f"Popup bridge received via: {rating_event.popup_probe}")
-
-# Temporary mobile diagnostic
-st.write("Rating event received by Streamlit:", rating_event.rating)
-
 # -------------------------------------------------
 # EXPERIMENT: Save ratings for the Morocco test book
 # -------------------------------------------------
