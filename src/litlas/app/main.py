@@ -267,6 +267,11 @@ rating_bridge = st.components.v2.component(
         function receiveRating(event) {
             const message = event.data;
 
+            if (message?.type === "litlas-popup-probe") {
+                setTriggerValue("popup_probe", message.route);
+                return;
+            }
+            
             if (
                 !message ||
                 message.type !== "litlas-rating-test"
@@ -312,11 +317,15 @@ rating_event = rating_bridge(
     key="litlas_rating_bridge",
     on_rating_change=lambda: None,
     on_probe_change=lambda: None,
+    on_popup_probe_change=lambda: None,
 )
 
 if rating_event.probe is not None:
     st.success("Mobile bridge works!")
-    
+
+if rating_event.popup_probe is not None:
+    st.success(f"Popup bridge received via: {rating_event.popup_probe}")
+
 # Temporary mobile diagnostic
 st.write("Rating event received by Streamlit:", rating_event.rating)
 

@@ -89,6 +89,20 @@ def pop_html(group, name, code):
 
     unique_works = group["Work ID"].nunique()
 
+    probe_html = ""
+    if code == "MAR":
+        probe_html = """
+        <div style="margin-top:10px;display:flex;gap:8px;">
+            <button onclick="window.parent.postMessage(
+                {type:'litlas-popup-probe',route:'parent'}, '*'
+            )">Test parent</button>
+
+            <button onclick="window.top.postMessage(
+                {type:'litlas-popup-probe',route:'top'}, '*'
+            )">Test top</button>
+        </div>
+        """
+
     return f"""
     <div class="litlas-country-popup" style="
         font-family:system-ui,sans-serif;
@@ -99,6 +113,7 @@ def pop_html(group, name, code):
             {unique_works} works
         </div>
         {''.join(grouped)}
+        {probe_html}
     </div>
     <style>
         h4 {{
