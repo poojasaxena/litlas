@@ -171,7 +171,7 @@ def pop_html(group, name, code):
             display: inline-block;
             cursor: pointer;
             touch-action: none;
-            padding: 10px 0;
+            padding: 1px 0;
             user-select: none;
             -webkit-user-select: none;
             -webkit-tap-highlight-color: transparent;
