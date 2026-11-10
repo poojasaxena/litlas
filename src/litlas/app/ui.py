@@ -656,13 +656,43 @@ def render_page_header(
         image_path = load_illustration_path(illustration)
 
         if image_path:
-            encoded = base64.b64encode(
-                image_path.read_bytes()
-            ).decode("ascii")
+            if image_path.suffix.lower() == ".svg":
+                svg_content = image_path.read_text(encoding="utf-8")
+
+                # Vintage Litlas palette
+                svg_content = svg_content.replace("#1F355E", "#58412F")
+                svg_content = svg_content.replace("#243B65", "#58412F")
+                svg_content = svg_content.replace("#000000", "#58412F")
+
+                encoded = base64.b64encode(
+                    svg_content.encode("utf-8")
+                ).decode("ascii")
+
+                mime_type = "image/svg+xml"
+
+            else:
+                encoded = base64.b64encode(
+                    image_path.read_bytes()
+                ).decode("ascii")
+
+                mime_type = "image/png"
+
+            mime_types = {
+                ".png": "image/png",
+                ".svg": "image/svg+xml",
+                ".jpg": "image/jpeg",
+                ".jpeg": "image/jpeg",
+                ".webp": "image/webp",
+            }
+
+            mime_type = mime_types.get(image_path.suffix.lower())
+
+            if mime_type is None:
+                raise ValueError(f"Unsupported illustration format: {image_path.suffix}")
 
             image_html = (
                 f'<img class="litlas-page-illustration" '
-                f'src="data:image/png;base64,{encoded}" '
+                f'src="data:{mime_type};base64,{encoded}" '
                 f'style="width:{illustration_size}px;'
                 f'height:{illustration_size}px;'
                 f'top:{illustration_top}px;'

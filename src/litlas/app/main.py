@@ -49,8 +49,8 @@ render_page_header(
     "Literary Atlas",
     "Where stories meet the world",
     illustration="literary_atlas",
-    illustration_size=300,
-    illustration_top=-100,
+    illustration_size=260,
+    illustration_top=-50,
     title_height=90,
     ornament_width=170,
 
