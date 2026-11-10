@@ -10,6 +10,7 @@ import streamlit as st
 from pathlib import Path
 from litlas.app.ui import apply_page_style, render_page_header
 
+from litlas.app.popups import format_rating
 from litlas.processing.paths import default_constellation_csv
 from litlas.app.visualizations.book_spines import (
     build_rating_spines_figure,
@@ -75,14 +76,10 @@ def load_popup_books(read_books):
             else 0
         )
 
-        stars = "★" * int(rating)
-        if rating % 1 >= 0.5:
-            stars += "½"
-
         entry = {
             "title": title,
             "author": author,
-            "stars": stars or "—",
+            "stars_html": format_rating(rating),
         }
 
         # Rating popup
@@ -1280,14 +1277,10 @@ for iso3, group in read_books.groupby("ISO3"):
             else 0
         )
 
-        stars = "★" * int(rating)
-        if rating % 1 >= 0.5:
-            stars += "½"
-
         entries.append({
             "title": str(book["Display Title"]),
             "author": str(book["Author"]),
-            "stars": stars or "—",
+            "stars_html": format_rating(rating),
         })
 
     country_books[str(iso3)] = entries
@@ -1520,11 +1513,7 @@ with highlights_col:
             author = escape(str(book["author"]))
 
             rating = float(book["rating"])
-            whole_stars = int(rating)
-            stars = "★" * whole_stars
-
-            if rating - whole_stars >= 0.5:
-                stars += "½"
+            stars = format_rating(rating)
 
             rows.append(
                 f"""
