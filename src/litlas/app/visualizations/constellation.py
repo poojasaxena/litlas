@@ -472,6 +472,9 @@ def build_constellation_figure(
             cy + (0.23 if name == "Ideas & Society" else (0.15 if n > 1 else 0.13)),
         )
 
+        if name == "Human Nature":
+            title_y += 0.055
+
         # Group title
         fig.add_annotation(
             x=cx,

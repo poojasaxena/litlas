@@ -1693,7 +1693,7 @@ with most_read_col:
         )
 
         st.caption(
-            "Ranked by books read. Average rating excludes unrated books."
+            "Ranked by books read."
         )
 
 
