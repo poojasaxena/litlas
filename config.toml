@@ -13,6 +13,7 @@ backup_dir = "Backups"
 flag_size = 14
 height = 580
 mobile_height = 380
+top_offset= -25
 
 [cleaning]
 remove_subtitles = true
@@ -21,7 +22,7 @@ remove_subtitles = true
 logo = "data/assets/branding/nostalgic.svg"
 
 [illustrations]
-literary_atlas = "data/assets/illustrations/literary_atlas.png"
+literary_atlas = "data/assets/illustrations/litlas_logo.png"
 reading_density = "data/assets/illustrations/reading_density.png"
 reading_statistics = "data/assets/illustrations/reading_statistics.png"
 lib_management = "data/assets/illustrations/library_management.png"

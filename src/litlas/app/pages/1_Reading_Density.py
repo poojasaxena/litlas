@@ -212,8 +212,8 @@ legend_labels = "".join(
 legend_html = f"""
 <div class="litlas-density-legend" style="
     position:fixed;
-    bottom:4px;
-    right:4px;
+    bottom:2px;
+    right:2px;
     width:180px;
     padding:6px 8px;
     background:rgba(250,247,241,0.93);

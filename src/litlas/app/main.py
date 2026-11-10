@@ -37,7 +37,7 @@ config = load_config()
 map_config = config.get("map", {})
 
 FLAG_SIZE = map_config.get("flag_size", 14)
-
+MAP_TOP_OFFSET = int(map_config.get("top_offset", -25))
 
 st.set_page_config(page_title='Literary Atlas',
                    page_icon='🌍',
@@ -49,7 +49,8 @@ render_page_header(
     "Literary Atlas",
     "Where stories meet the world",
     illustration="literary_atlas",
-    illustration_size=220,
+    illustration_size=300,
+    illustration_top=-100,
     title_height=90,
     ornament_width=170,
 
@@ -761,13 +762,31 @@ st.html("""
 """)
 
 
-st_folium(
-    m,
-    height=get_map_height(),
-    width="stretch",
-    returned_objects=[],
-    key="literarymap",
-)
+with st.container(key="litlas_main_map"):
+    st_folium(
+        m,
+        height=get_map_height(),
+        width="stretch",
+        returned_objects=[],
+        key="literarymap",
+    )
+st.html(f"""
+<style>
+@media screen and (min-width: 641px) {{
+
+    /* Move the About Litlas invitation upward */
+    .litlas-about-hint {{
+        transform: translateY({MAP_TOP_OFFSET}px);
+    }}
+
+    /* Move the map upward */
+    .st-key-litlas_main_map {{
+        margin-top: {MAP_TOP_OFFSET}px !important;
+    }}
+
+}}
+</style>
+""")
 
 if mapped.empty:
     st.info('No author birth countries assigned yet. Run `litlas-prepare` in your terminal, then refresh this page.')
