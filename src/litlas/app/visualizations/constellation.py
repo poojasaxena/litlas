@@ -394,72 +394,111 @@ def build_constellation_figure(
         cx, cy = centres[name]
         n = len(group)
 
-        if n == 1:
-            offsets = [(0.0, 0.0)]
+        # Position stars within each literary constellation.
+        if name == "Ideas & Society" and n == 4:
+            compactness = 0.78
 
-        elif n == 2:
-            offsets = [
-                (-0.055, 0.050),
-                (0.055, -0.050),
-            ]
-        elif n == 3:
-            offsets = [
-                (-0.030,  0.120),
-                ( 0.025,  0.000),
-                (-0.030, -0.120),
-            ]
-        else:
-            offsets = [
+            base_offsets = {
+                "Atlas Shrugged": (-0.155, 0.008),
+                "Middlemarch": (-0.055, 0.145),
+                "Thinking, Fast and Slow": (0.025, 0.015),
+                "The Fountainhead": (-0.055, -0.145),
+            }
+
+            custom_offsets = {
+                title: (dx * compactness, dy * compactness)
+                for title, (dx, dy) in base_offsets.items()
+            }
+            positions = [
                 (
-                    0.085
-                    * sqrt((i + 0.45) / n)
-                    * cos(i * pi * (3 - sqrt(5))),
-                    0.095
-                    * sqrt((i + 0.45) / n)
-                    * sin(i * pi * (3 - sqrt(5))),
+                    cx + custom_offsets[str(book["title"]).strip()][0],
+                    cy + custom_offsets[str(book["title"]).strip()][1],
                 )
-                for i in range(n)
+                for _, book in group.iterrows()
             ]
 
-        positions = [
-            (cx + dx, cy + dy)
-            for dx, dy in offsets
-        ]
-
-        if n > 1:
-            for (x0, y0), (x1, y1) in zip(positions[:-1], positions[1:]):
-                # midpoint of the segment
-                mx = (x0 + x1) / 2
-                my = (y0 + y1) / 2
-
-                # direction and perpendicular unit vector
-                dx = x1 - x0
-                dy = y1 - y0
-                seg_len = max((dx**2 + dy**2) ** 0.5, 1e-6)
-
-                px = -dy / seg_len
-                py = dx / seg_len
-
-                # tiny bend amount: just enough to soften the line
-                bend = 0.012
-
-                # control point for a gentle curve
-                cx_curve = mx + px * bend
-                cy_curve = my + py * bend
-
-                fig.add_shape(
-                    type="path",
-                    path=f"M {x0},{y0} Q {cx_curve},{cy_curve} {x1},{y1}",
-                    xref="x",
-                    yref="y",
-                    line=dict(
-                        color="rgba(255, 211, 130, 0.82)",
-                        width=1.25,
-                        dash="dot",
-                    ),
-                    layer="above",
+            point_lookup = {
+                str(book["title"]).strip(): position
+                for (_, book), position in zip(
+                    group.iterrows(), positions
                 )
+            }
 
+            edges = [
+                ("Middlemarch", "The Fountainhead"),
+                ("Atlas Shrugged", "Thinking, Fast and Slow"),
+            ]
+
+            line_pairs = [
+                (point_lookup[a], point_lookup[b])
+                for a, b in edges
+            ]
+
+        else:
+            if n == 1:
+                offsets = [(0.0, 0.0)]
+            elif n == 2:
+                offsets = [
+                    (-0.055, 0.050),
+                    (0.055, -0.050),
+                ]
+            elif n == 3:
+                offsets = [
+                    (-0.030, 0.120),
+                    (0.025, 0.000),
+                    (-0.030, -0.120),
+                ]
+            else:
+                offsets = [
+                    (
+                        0.085 * sqrt((i + 0.45) / n)
+                        * cos(i * pi * (3 - sqrt(5))),
+                        0.095 * sqrt((i + 0.45) / n)
+                        * sin(i * pi * (3 - sqrt(5))),
+                    )
+                    for i in range(n)
+                ]
+
+            positions = [
+                (cx + dx, cy + dy)
+                for dx, dy in offsets
+            ]
+
+            line_pairs = list(
+                zip(positions[:-1], positions[1:])
+            )
+
+        # Draw each connection exactly once.
+        for (x0, y0), (x1, y1) in line_pairs:
+            mx = (x0 + x1) / 2
+            my = (y0 + y1) / 2
+
+            dx = x1 - x0
+            dy = y1 - y0
+            seg_len = max(sqrt(dx**2 + dy**2), 1e-6)
+
+            px = -dy / seg_len
+            py = dx / seg_len
+
+            bend = 0.012
+            cx_curve = mx + px * bend
+            cy_curve = my + py * bend
+
+            fig.add_shape(
+                type="path",
+                path=(
+                    f"M {x0},{y0} "
+                    f"Q {cx_curve},{cy_curve} {x1},{y1}"
+                ),
+                xref="x",
+                yref="y",
+                line=dict(
+                    color="rgba(255, 211, 130, 0.82)",
+                    width=1.25,
+                    dash="dot",
+                ),
+                layer="above",
+            )
 
 
 
@@ -469,7 +508,7 @@ def build_constellation_figure(
 
         title_y = min(
             0.93,
-            cy + (0.23 if name == "Ideas & Society" else (0.15 if n > 1 else 0.13)),
+            cy + (0.26 if name == "Ideas & Society" else (0.15 if n > 1 else 0.13)),
         )
 
         if name == "Human Nature":
@@ -477,7 +516,7 @@ def build_constellation_figure(
 
         # Group title
         fig.add_annotation(
-            x=cx,
+            x=cx - 0.02 if name == "Ideas & Society" else cx,
             y=title_y,
             text=f"<i>{escape(name)}</i>",
             showarrow=False,
