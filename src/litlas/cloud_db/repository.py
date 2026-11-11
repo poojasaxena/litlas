@@ -285,6 +285,19 @@ def get_page_statistics():
               AND excluded_from_display = 0
         """).fetchone()
 
+        long_books = db.execute("""
+            SELECT
+                b.display_title AS title,
+                a.name AS author,
+                COALESCE(b.pages_override, b.pages) AS pages
+            FROM books b
+            JOIN authors a ON a.id = b.author_id
+            WHERE b.shelf = 'read'
+              AND b.excluded_from_display = 0
+              AND COALESCE(b.pages_override, b.pages) > 600
+            ORDER BY pages DESC, title
+        """).fetchall()
+
         longest = db.execute("""
             SELECT
                 b.display_title AS title,
@@ -326,10 +339,6 @@ def get_page_statistics():
             ORDER BY pages ASC, title
         """).fetchall()
 
-        print("BOOKS WITH FEWER THAN 50 PAGES:")
-        for book in missing_pages:
-            print(dict(book))
-
     return {
         "total_books": summary["total_books"],
         "books_with_pages": summary["books_with_pages"],
@@ -337,6 +346,7 @@ def get_page_statistics():
         "longest": dict(longest) if longest else None,
         "shortest": dict(shortest) if shortest else None,
         "missing_pages": [dict(row) for row in missing_pages],
+        "long_books": [dict(row) for row in long_books],
     }
 
 

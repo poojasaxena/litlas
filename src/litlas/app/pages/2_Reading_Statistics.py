@@ -655,6 +655,74 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 
 }
 
+
+/* Literary Marathons — fifth summary statistic */
+
+.litlas-marathon-stat {
+    position: relative;
+    font-family: Georgia, serif;
+    color: #58412F;
+}
+
+.litlas-marathon-stat summary {
+    display: inline-flex;
+    align-items: center;
+    list-style: none;
+    cursor: pointer;
+    font-family: "Source Sans", sans-serif;
+    font-size: 0.875rem;
+    color: #96785D;
+    line-height: 1.5;
+}
+
+.litlas-marathon-stat summary::-webkit-details-marker {
+    display: none;
+}
+
+.litlas-marathon-stat summary:focus-visible {
+    outline: 2px solid #A47B43;
+    outline-offset: 3px;
+}
+
+.litlas-marathon-stat .litlas-nobel-panel {
+    right: 0;
+}
+
+/* Mobile: five metrics instead of four */
+
+@media screen and (max-width: 640px) {
+
+    [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat) {
+        grid-template-columns:
+            repeat(5, minmax(0, 1fr)) !important;
+    }
+
+    .litlas-marathon-stat summary {
+        min-height: 0 !important;
+        height: 18px;
+        margin: 0 0 2px !important;
+        line-height: 1.2 !important;
+    }
+
+    .litlas-marathon-stat summary span {
+        display: none !important;
+    }
+
+    .litlas-marathon-stat summary::after {
+        content: "Marathons";
+        font-family: Georgia, serif;
+        font-size: 11px;
+        color: #96785D;
+    }
+
+    .litlas-marathon-stat .litlas-nobel-value {
+        margin: 0 !important;
+        font-size: 22px !important;
+        line-height: 1.2 !important;
+    }
+}
+
+
 </style>
 """)
 
@@ -711,7 +779,7 @@ read_authors = read_books["Author"].dropna().unique()
 nobel_authors = match_nobel_authors(read_authors)
 nobel_data_available = bool(load_literature_laureates())
 
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
     st.metric("Books devoured", summary["books"])
@@ -765,6 +833,45 @@ with col4:
         '</div>'
         '</details>'
         f'<div class="litlas-nobel-value">{count}</div>'
+        '</div>'
+    )
+
+
+with col5:
+    long_books = stats["page_stats"]["long_books"]
+
+    rows = "".join(
+        f'<div class="litlas-nobel-author">'
+        f'<span><i>{escape(book["title"])}</i></span>'
+        f'<span style="float:right;color:#A47B43;">'
+        f'{book["pages"]:,} pp.</span>'
+        f'<div style="font-size:11px;color:#81776E;">'
+        f'{escape(book["author"])}</div>'
+        f'</div>'
+        for book in long_books
+    )
+
+    content = (
+        f'<div class="litlas-nobel-list">{rows}</div>'
+        if rows
+        else '<div class="litlas-nobel-empty">No literary marathons yet.</div>'
+    )
+
+    st.html(
+        '<div class="litlas-marathon-stat">'
+        '<details>'
+        '<summary title="View long books">'
+        '<span>Literary Marathons</span>'
+        '</summary>'
+        '<div class="litlas-nobel-panel">'
+        '<div class="litlas-nobel-title">Literary Marathons</div>'
+        '<div class="litlas-nobel-caption">'
+        'Books exceeding 600 pages'
+        '</div>'
+        f'{content}'
+        '</div>'
+        '</details>'
+        f'<div class="litlas-nobel-value">{len(long_books)}</div>'
         '</div>'
     )
 
