@@ -689,6 +689,10 @@ render_page_header(
 ## Load reading statistics
 stats = load_statistics_data(backend_name())
 
+## Temporary analysis of long books
+books = repository.load_read_books()
+print(books.columns.tolist())
+
 # ---------------------------------------------------------
 # Reading summary
 # ---------------------------------------------------------
