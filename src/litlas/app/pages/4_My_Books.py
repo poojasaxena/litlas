@@ -26,8 +26,8 @@ render_page_header(
     "Ink & Verse",
     "My literary world, in my own words",
     illustration="book_author",
-    illustration_size=210,
-    illustration_top=-35,
+    illustration_size=230,
+    illustration_top=-42,
 
     illustration_left=0,
     heading_gap=5,
