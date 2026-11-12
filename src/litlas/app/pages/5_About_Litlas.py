@@ -26,10 +26,9 @@ render_page_header(
     "About Litlas",
     "A personal journey through stories and the world",
     illustration="about_litlas",
+    illustration_size=210,
+    illustration_top=-35,
 
-    # Desktop — unchanged
-    illustration_size=220,
-    illustration_top=-45,
     illustration_left=0,
     heading_gap=5,
     title_height=90,

@@ -38,10 +38,9 @@ render_page_header(
     "Reading Density",
     "Where literature meets geography",
     illustration="reading_density",
+    illustration_size=210,
+    illustration_top=-35,
 
-    # Desktop — unchanged
-    illustration_size=160,
-    illustration_top=-20,
     illustration_left=0,
     heading_gap=20,
     title_height=95,

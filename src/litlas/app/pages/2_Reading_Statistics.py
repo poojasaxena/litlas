@@ -730,10 +730,9 @@ render_page_header(
     "Reading Statistics",
     "A life in books, told through numbers and patterns",
     illustration="reading_statistics",
+    illustration_size=210,
+    illustration_top=-35,
 
-    # Desktop — unchanged
-    illustration_size=220,
-    illustration_top=-50,
     illustration_left=0,
     heading_gap=5,
     title_height=90,

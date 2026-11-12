@@ -47,10 +47,9 @@ render_page_header(
     "Library Management",
     "A home for books and their stories",
     illustration="lib_management",
-
-    # Desktop — existing layout values
-    illustration_size=195,
+    illustration_size=210,
     illustration_top=-35,
+
     illustration_left=0,
     heading_gap=20,
     title_height=90,

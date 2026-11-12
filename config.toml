@@ -22,12 +22,12 @@ remove_subtitles = true
 logo = "data/assets/branding/nostalgic.svg"
 
 [illustrations]
-literary_atlas = "data/assets/illustrations/litlas_logo_browncolor.svg"
-reading_density = "data/assets/illustrations/reading_density.png"
-reading_statistics = "data/assets/illustrations/reading_statistics.png"
-lib_management = "data/assets/illustrations/library_management.png"
-book_author = "data/assets/illustrations/book_author.png"
-about_litlas = "data/assets/illustrations/about_litlas.png"
+literary_atlas = "data/assets/illustrations/litlas_logo.svg"
+reading_density = "data/assets/illustrations/litlas_logo.png"
+reading_statistics = "data/assets/illustrations/litlas_logo.png"
+lib_management = "data/assets/illustrations/litlas_logo.png"
+book_author = "data/assets/illustrations/litlas_logo.png"
+about_litlas = "data/assets/illustrations/litlas_logo.png"
 add_book = "data/assets/illustrations/add_book.png"
 constellation_illustration = "data/assets/illustrations/constellation_background.png"
 
