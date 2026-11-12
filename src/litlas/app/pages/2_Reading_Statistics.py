@@ -739,8 +739,8 @@ render_page_header(
     ornament_width=260,
 
     # Mobile
-    mobile_illustration_size=80,
-    mobile_illustration_top=-10,
+    mobile_illustration_size=100,
+    mobile_illustration_top=0,
 
     mobile_eyebrow_offset_x=-15,
     mobile_heading_gap=8,
