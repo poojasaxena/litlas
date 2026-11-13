@@ -40,7 +40,7 @@ FLAG_SIZE = map_config.get("flag_size", 14)
 MAP_TOP_OFFSET = int(map_config.get("top_offset", -25))
 
 st.set_page_config(page_title='Literary Atlas',
-                   page_icon='🌍',
+                   page_icon="data/assets/illustrations/add_book.png",
                    layout='wide',
                    initial_sidebar_state='collapsed')
 apply_page_style()
