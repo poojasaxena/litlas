@@ -69,6 +69,11 @@ def apply_map_style(m: folium.Map) -> None:
             color: #58412F !important;
         }
 
+        @media (max-width: 640px) {
+            .leaflet-popup-content:has(.litlas-country-popup) {
+                margin-right: 10px;
+            }
+        }
         /* Remove popup and tooltip pointers */
         .leaflet-popup-tip-container,
         .leaflet-popup-tip,
