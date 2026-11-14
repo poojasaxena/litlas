@@ -534,6 +534,10 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     color: #96785D !important;
 }
 
+.st-key-litlas_country_density {
+    margin-top: -16px !important;
+}
+
 /* Hide country chart axis title on mobile */
 .st-key-litlas_country_density .ytitle {
     display: none !important;
