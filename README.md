@@ -2,6 +2,8 @@
 
 **A personal literary atlas of books, authors, places, and reading journeys.**
 
+[Explore the live atlas](https://litlas.onrender.com/)
+
 Litlas turns a reading library into an interactive exploration of literature around the world. Discover where the authors you read were born, explore countries not yet represented in your collection, revisit reading patterns, and celebrate the writers and books that have stayed with you.
 
 Built with **Python**, **Streamlit**, **Folium/Leaflet**, and **Plotly**, Litlas combines a vintage-inspired interface with an editable literary library.
@@ -46,6 +48,7 @@ Litlas uses a `src/`-layout Python package with separate responsibilities for pr
 | `src/litlas/app/` | Streamlit interface, pages, and visualisations |
 | `src/litlas/app/visualizations/` | Individual charts and custom literary artwork integration |
 | `src/litlas/database/` | SQLite repositories and library data workflows |
+| `src/litlas/cloud_db/` | PostgreSQL connection and repositories for the hosted library |
 | `src/litlas/db_backend.py` | Selects the appropriate database repository |
 | `src/litlas/processing/` | Country reference data, transformation logic, and central asset paths |
 | `src/litlas/enrichment/` | Author metadata enrichment tools |
@@ -88,19 +91,18 @@ The package also defines data preparation and enrichment commands (`litlas-prepa
 
 ## Deployment
 
-Litlas is designed for a Streamlit-hosted frontend connected to Neon PostgreSQL.
+I published Litlas as a Docker web service on Render, connected to my existing Neon PostgreSQL library. The first installable version used a GitHub Pages wrapper that embedded Streamlit in an iframe. Google sign-in for Library Management returned a 403 through that wrapper. The Render version serves Litlas directly and receives the Google sign-in callback on the same site.
 
-Before deploying:
+1. **Build and host the app.** The Render service deploys from the `litlas-pwa` branch. Its `Dockerfile` installs the Python package and starts Streamlit with the PostgreSQL backend. At build time, `deploy/install_pwa.py` adds the Litlas install manifest and book-and-butterflies icons to the frontend. [Docker on Render](https://render.com/docs/docker)
+2. **Connect the library and configure owner sign-in.** In Render, set `DATABASE_URL` to the Neon connection string and add a private Secret File named `secrets.toml` with `admin_email` and the `[auth]` settings. Set `redirect_uri` under `[auth]` to `https://litlas.onrender.com/oauth2callback` and register that exact URL under **Authorized redirect URIs** for the Google OAuth client. Visitors can browse the atlas without signing in. Library editing requires the owner's verified Google account. [Render secrets](https://render.com/docs/configure-environment-variables) · [Streamlit Google sign-in](https://docs.streamlit.io/develop/tutorials/authentication/google)
 
-1. Verify that all runtime dependencies are declared in `pyproject.toml` and that the deployment installs the local package (for example, using a root-level `requirements.txt` containing `-e .`).
-2. Confirm the Streamlit application entrypoint and its cloud database-selection logic.
-3. Set database connection details and Google OAuth credentials in the hosting provider's **private secrets configuration**.
-4. Confirm that owner-only editing requires successful authentication and that public visitors cannot reach write operations.
-5. Validate the hosted Literary Atlas, Reading Density, Reading Statistics, and Book of Honour against the PostgreSQL data.
+**Never commit credentials** such as `.streamlit/secrets.toml`, database connection URLs, API tokens, or OAuth client secrets.
 
-**Never commit credentials** such as `.streamlit/secrets.toml`, database connection URLs, API tokens, or OAuth client secrets. The public `.streamlit/config.toml` can be version-controlled when it contains non-sensitive UI settings.
+Litlas is hosted on Render's free tier. The first visit after a period of inactivity may take longer while the service starts. Free-tier hosting is a project requirement. [Render free-tier limits](https://render.com/docs/free)
 
-Free-tier hosting is a project requirement. Review the providers' current free-plan conditions and usage limits before enabling any service; do not enable billing or paid add-ons.
+### Install on Android
+
+Open [Litlas](https://litlas.onrender.com/) in Chrome and choose **Install** from the browser menu. The installed app opens in its own window with the Litlas name and icon. I verified Google sign-in from the installed app on a Pixel 8 and confirmed in the browser that a book added in Library Management appeared on the homepage.
 
 ## Project configuration and artwork
 
@@ -129,7 +131,7 @@ Suggested smoke tests before publishing or updating the hosted version:
 
 ## Project status
 
-**Active development — version 0.4.0.** The hosted deployment and its configuration should be validated before a public deployment URL is advertised.
+**Active development — version 0.4.0.**
 
 ## Credits
 
