@@ -850,7 +850,7 @@ with col5:
         f'<div class="litlas-nobel-author">'
         f'<span><i>{escape(book["title"])}</i></span>'
         f'<span style="float:right;color:#A47B43;">'
-        f'{book["pages"]:,} pp.</span>'
+        f'{book["pages"]:,}</span>'
         f'<div style="font-size:11px;color:#81776E;">'
         f'{escape(book["author"])}</div>'
         f'</div>'
