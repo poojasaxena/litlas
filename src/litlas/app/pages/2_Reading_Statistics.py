@@ -702,6 +702,8 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
         height: 18px;
         margin: 0 0 2px !important;
         line-height: 1.2 !important;
+        display: flex !important;
+        align-items: flex-start !important;
     }
 
     .litlas-marathon-stat summary span {
