@@ -337,14 +337,14 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 }
 
 @media screen and (max-width: 640px) {
-
+    [data-testid="stLayoutWrapper"]:has(> .st-key-litlas_desktop_milestones),
     .st-key-litlas_desktop_milestones {
         display: none !important;
     }
 
     .st-key-litlas_mobile_milestones {
         display: block !important;
-        margin-top: 12px !important;
+        margin-top: 0 !important;
     }
 
     .litlas-mobile-milestones {
@@ -618,7 +618,7 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 
 [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
 .litlas-nobel-stat summary::after {
-    content: "Nobel Laureates";
+    content: "Laureates";
     font-family: Georgia, serif;
     font-size: 11px;
     color: #96785D;
