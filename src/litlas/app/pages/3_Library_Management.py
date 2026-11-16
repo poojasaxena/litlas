@@ -59,7 +59,7 @@ render_page_header(
     mobile_title_svg="Ledger.svg",
     mobile_title_width=140,
 
-    mobile_illustration_size=140,
+    mobile_illustration_size=100,
     mobile_illustration_top=0,  # Move the illustration up 4 px
 
     # Mobile layout of the text group
