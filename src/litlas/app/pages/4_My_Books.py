@@ -38,16 +38,24 @@ render_page_header(
     mobile_illustration_size=100,
     mobile_illustration_top=0,
 
-    mobile_eyebrow_offset_x=-15,
-    mobile_heading_gap=8,
-    mobile_title_width=250,
-    mobile_title_offset_x=-5,
-    mobile_ornament_width=120,
-    mobile_ornament_offset_x=-15,
-    mobile_subtitle_offset_x=-10,
+    # Mobile layout of the text group
+    mobile_heading_gap=0,         # Gap between the illustration and text columns
+    mobile_heading_offset_x=-45, # Move the entire text group left 45 px
 
-    mobile_header_bottom_gap=-10,
+    # Individual elements, from top to bottom
+    mobile_eyebrow_offset_x=6,   # Move the eyebrow right 2 px
+    mobile_eyebrow_offset_y=-9,  # Move the eyebrow up 9 px
+    mobile_title_width=290,      # Large decorative page title (Literary Atlas here)
+    mobile_title_offset_x=17,
+    mobile_title_offset_y=-12,  # Move the large Litlas lettering up 12 px
+    mobile_ornament_width=120,   # Thin decorative line
+    mobile_ornament_offset_x=12,
+    mobile_ornament_offset_y=-12,  # Move the line up
+    mobile_subtitle_offset_x=13, # Where stories meet the world
+    mobile_subtitle_offset_y=-12,  # Move “Where stories meet the world” up
+    mobile_header_bottom_gap=-14,  # Pull the mobile navigation up toward the header
 )
+
 
 # For now, publication information stays with this small presentation page.
 # When the collection grows, move these records into a separate data file.

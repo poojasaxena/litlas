@@ -53,7 +53,7 @@ render_page_header(
     illustration_left=0,
     heading_gap=20,
     title_height=90,
-    ornament_width=170,
+    ornament_width=230,
 
     # Mobile illustration on the left
     mobile_title_svg="Ledger.svg",
