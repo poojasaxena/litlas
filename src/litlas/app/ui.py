@@ -430,6 +430,11 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
     font-family: Georgia, serif !important;
 }
     
+[data-testid="stPopoverBody"]:has(.st-key-litlas_mobile_menu_links) {
+    width: 12rem;
+    min-width: 0 !important;
+    padding: 0.5rem;
+}
 /* Control spacing within the mobile header */
 .st-key-litlas_sticky_header [data-testid="stVerticalBlock"] {
     gap: 0 !important;
@@ -575,11 +580,12 @@ def render_chapter_navigation(active_page: str) -> None:
             st.page_link(path, label=label)
 
 
-    # New mobile navigation
     with st.container(key="litlas_mobile_nav"):
         with st.popover("☰ Menu"):
-            for label, path, _ in pages:
-                st.page_link(path, label=label)
+            with st.container(key="litlas_mobile_menu_links", gap=None):
+                for label, path, route in pages:
+                    mobile_label = "Ledger" if route == "Library_Management" else label
+                    st.page_link(path, label=mobile_label)
 
 
 def is_mobile_browser() -> bool:
