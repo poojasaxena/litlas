@@ -57,7 +57,7 @@ render_page_header(
 
     # Mobile illustration on the left
     mobile_title_svg="Ledger.svg",
-    mobile_title_width=250,
+    mobile_title_width=170,
 
     mobile_illustration_size=100,
     mobile_illustration_top=0,  # Move the illustration up 4 px
