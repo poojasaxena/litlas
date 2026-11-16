@@ -383,8 +383,12 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         order: 2;
         width: var(--mobile-ornament-width, 120px) !important;
         margin: 3px auto 5px !important;
-        transform: translateX(var(--mobile-ornament-offset-x, 0px)) !important;
-    }
+        /* Decorative line */
+        transform: translate(
+            var(--mobile-ornament-offset-x, 0px),
+            var(--mobile-ornament-offset-y, 0px)
+        ) !important;
+}
 
     /* Subtitle */
     .litlas-header-composition .litlas-home-tagline {
@@ -394,8 +398,11 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         font-size: 11px;
         line-height: 1.3;
         text-align: center !important;
-        transform: translateX(var(--mobile-subtitle-offset-x, 0px)) !important;
-    }
+        /* Subtitle */
+        transform: translate(
+            var(--mobile-subtitle-offset-x, 0px),
+            var(--mobile-subtitle-offset-y, 0px)
+        ) !important;        }
 
     /* Hide personal signature on mobile */
 .st-key-litlas_sticky_header .litlas-logo {
@@ -637,6 +644,8 @@ def render_page_header(
     mobile_header_bottom_gap: int = 12,
     mobile_eyebrow_offset_y: int = -6,
     mobile_title_offset_y: int = 0,
+    mobile_ornament_offset_y: int = 0,
+    mobile_subtitle_offset_y: int = 0,
 ) -> None:
     """Render the shared sticky vintage Litlas heading."""
 
@@ -746,6 +755,8 @@ def render_page_header(
             --mobile-heading-offset-x: {mobile_heading_offset_x}px;
             --mobile-eyebrow-offset-y: {mobile_eyebrow_offset_y}px;
             --mobile-title-offset-y: {mobile_title_offset_y}px;
+            --mobile-ornament-offset-y: {mobile_ornament_offset_y}px;
+            --mobile-subtitle-offset-y: {mobile_subtitle_offset_y}px;   
          ">
         {image_html}
         {heading_html}

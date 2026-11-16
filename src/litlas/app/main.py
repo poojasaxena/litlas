@@ -70,8 +70,9 @@ render_page_header(
     mobile_title_offset_y=-12,  # Move the large Litlas lettering up 12 px
     mobile_ornament_width=120,   # Thin decorative line
     mobile_ornament_offset_x=12,
+    mobile_ornament_offset_y=-12,  # Move the line up
     mobile_subtitle_offset_x=13, # Where stories meet the world
-
+    mobile_subtitle_offset_y=-12,  # Move “Where stories meet the world” up
     mobile_header_bottom_gap=-14,  # Pull the mobile navigation up toward the header
 )
 
