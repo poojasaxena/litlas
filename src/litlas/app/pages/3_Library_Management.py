@@ -56,6 +56,9 @@ render_page_header(
     ornament_width=290,
 
     # Mobile illustration on the left
+    mobile_title_svg="Ledger.svg",
+    mobile_title_width=250,
+
     mobile_illustration_size=100,
     mobile_illustration_top=0,  # Move the illustration up 4 px
 
@@ -66,7 +69,6 @@ render_page_header(
     # Individual elements, from top to bottom
     mobile_eyebrow_offset_x=15,
     mobile_eyebrow_offset_y=-22,    # Move the eyebrow up 9 px
-    mobile_title_width=290,      # Large decorative page title (Literary Atlas here)
     mobile_title_offset_x=17,
     mobile_title_offset_y=-20,  # Move the large Litlas lettering up 12 px
     mobile_ornament_width=120,   # Thin decorative line

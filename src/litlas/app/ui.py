@@ -368,6 +368,9 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         align-items: center;
     }
 
+    .litlas-header-composition .litlas-svg-title picture {
+        display: contents;
+    }
     .litlas-header-composition .litlas-svg-title img {
         width: min(100%, var(--mobile-title-width, 190px)) !important;
         height: auto !important;
@@ -586,7 +589,9 @@ def is_mobile_browser() -> bool:
         for device in ("android", "iphone", "ipod", "mobile")
     )
 
-def render_header_title(title: str) -> str:
+def render_header_title(
+    title: str, mobile_title_svg: str | None = None
+) -> str:
     """Return the Vivaldi SVG heading, falling back to text."""
 
     filename = HEADER_FILES.get(title)
@@ -613,12 +618,29 @@ def render_header_title(title: str) -> str:
         svg_content.encode("utf-8")
     ).decode("ascii")
 
-    return (
-        '<h1 class="litlas-svg-title">'
+    image = (
         f'<img src="data:image/svg+xml;base64,{encoded}" '
         f'alt="{escape(title, quote=True)}">'
-        '</h1>'
     )
+
+    if mobile_title_svg:
+        mobile_path = HEADER_DIR / mobile_title_svg
+        if mobile_path.is_file():
+            mobile_svg = mobile_path.read_text(encoding="utf-8")
+            mobile_svg = mobile_svg.replace("#000000", "#58412F")
+            mobile_encoded = base64.b64encode(
+                mobile_svg.encode("utf-8")
+            ).decode("ascii")
+
+            image = (
+                '<picture>'
+                '<source media="(max-width: 640px)" '
+                f'srcset="data:image/svg+xml;base64,{mobile_encoded}">'
+                f'{image}'
+                '</picture>'
+            )
+
+    return f'<h1 class="litlas-svg-title">{image}</h1>'
 
 def render_page_header(
     title: str,
@@ -646,6 +668,7 @@ def render_page_header(
     mobile_title_offset_y: int = 0,
     mobile_ornament_offset_y: int = 0,
     mobile_subtitle_offset_y: int = 0,
+    mobile_title_svg: str | None = None,
 ) -> None:
     """Render the shared sticky vintage Litlas heading."""
 
@@ -722,7 +745,7 @@ def render_page_header(
                 + heading_gap
             )
 
-    title_html = render_header_title(title)
+    title_html = render_header_title(title, mobile_title_svg=mobile_title_svg)
 
     tagline = subtitle
 
