@@ -59,7 +59,7 @@ render_page_header(
     mobile_title_svg="Ledger.svg",
     mobile_title_width=140,
 
-    mobile_illustration_size=100,
+    mobile_illustration_size=140,
     mobile_illustration_top=0,  # Move the illustration up 4 px
 
     # Mobile layout of the text group
@@ -69,7 +69,7 @@ render_page_header(
     # Individual elements, from top to bottom
     mobile_eyebrow_offset_x=15,
     mobile_eyebrow_offset_y=-22,    # Move the eyebrow up 9 px
-    mobile_title_offset_x=27,
+    mobile_title_offset_x=-27,
     mobile_title_offset_y=-20,  # Move the large Litlas lettering up 12 px
     mobile_ornament_width=120,   # Thin decorative line
     mobile_ornament_offset_x=12,
