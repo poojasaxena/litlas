@@ -372,7 +372,10 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         width: min(100%, var(--mobile-title-width, 190px)) !important;
         height: auto !important;
         max-width: 100%;
-        transform: translateX(var(--mobile-title-offset-x, 0px)) !important;
+        transform: translate(
+            var(--mobile-title-offset-x, 0px),
+            var(--mobile-title-offset-y, 0px)
+        ) !important;
     }
 
     /* Decorative line */
@@ -633,6 +636,7 @@ def render_page_header(
     mobile_subtitle_offset_x: int = 0,
     mobile_header_bottom_gap: int = 12,
     mobile_eyebrow_offset_y: int = -6,
+    mobile_title_offset_y: int = 0,
 ) -> None:
     """Render the shared sticky vintage Litlas heading."""
 
@@ -741,6 +745,7 @@ def render_page_header(
             --mobile-subtitle-offset-x: {mobile_subtitle_offset_x}px;
             --mobile-heading-offset-x: {mobile_heading_offset_x}px;
             --mobile-eyebrow-offset-y: {mobile_eyebrow_offset_y}px;
+            --mobile-title-offset-y: {mobile_title_offset_y}px;
          ">
         {image_html}
         {heading_html}
