@@ -55,7 +55,6 @@ render_page_header(
     title_height=90,
     ornament_width=290,
 
-
     # Mobile illustration on the left
     mobile_illustration_size=100,
     mobile_illustration_top=0,  # Move the illustration up 4 px
