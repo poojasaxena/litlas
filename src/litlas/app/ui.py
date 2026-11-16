@@ -431,9 +431,19 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
 }
     
 [data-testid="stPopoverBody"]:has(.st-key-litlas_mobile_menu_links) {
-    width: 12rem;
+    width: 11.5rem;
     min-width: 0 !important;
-    padding: 0.5rem;
+    padding: 0.6rem;
+    background-color: #FAF7F1;
+    border: 1px solid #D4C1A7;
+    border-radius: 8px;
+}
+
+.st-key-litlas_mobile_menu_links a[data-testid="stPageLink-NavLink"],
+.st-key-litlas_mobile_menu_links a[data-testid="stPageLink-NavLink"] p {
+    color: #58412F;
+    font-family: Georgia, serif;
+    font-size: 0.875rem;
 }
 /* Control spacing within the mobile header */
 .st-key-litlas_sticky_header [data-testid="stVerticalBlock"] {
@@ -582,7 +592,7 @@ def render_chapter_navigation(active_page: str) -> None:
 
     with st.container(key="litlas_mobile_nav"):
         with st.popover("☰ Menu"):
-            with st.container(key="litlas_mobile_menu_links", gap=None):
+            with st.container(key="litlas_mobile_menu_links"):
                 for label, path, route in pages:
                     mobile_label = "Ledger" if route == "Library_Management" else label
                     st.page_link(path, label=mobile_label)
