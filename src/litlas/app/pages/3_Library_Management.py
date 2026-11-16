@@ -69,8 +69,8 @@ render_page_header(
     # Individual elements, from top to bottom
     mobile_eyebrow_offset_x=15,
     mobile_eyebrow_offset_y=-10,    # Move the eyebrow up 9 px
-    mobile_title_offset_x=27,
-    mobile_title_offset_y=-20,  # Move the large Litlas lettering up 12 px
+    mobile_title_offset_x=36,
+    mobile_title_offset_y=-10,  # Move the large Litlas lettering up 12 px
     mobile_ornament_width=120,   # Thin decorative line
     mobile_ornament_offset_x=12,
     mobile_ornament_offset_y=-12,  # Move the line up
