@@ -61,7 +61,7 @@ render_page_header(
     mobile_illustration_top=0,  # Move the illustration up 4 px
 
     # Mobile layout of the text group
-    mobile_heading_gap=0,         # Gap between the illustration and text columns
+    mobile_heading_gap=-10,         # Gap between the illustration and text columns
     mobile_heading_offset_x=-45, # Move the entire text group left 45 px
 
     # Individual elements, from top to bottom
@@ -69,7 +69,7 @@ render_page_header(
     mobile_eyebrow_offset_y=-22,    # Move the eyebrow up 9 px
     mobile_title_width=290,      # Large decorative page title (Literary Atlas here)
     mobile_title_offset_x=17,
-    mobile_title_offset_y=-12,  # Move the large Litlas lettering up 12 px
+    mobile_title_offset_y=-20,  # Move the large Litlas lettering up 12 px
     mobile_ornament_width=120,   # Thin decorative line
     mobile_ornament_offset_x=12,
     mobile_ornament_offset_y=-12,  # Move the line up
