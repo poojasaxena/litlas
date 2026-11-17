@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 import pandas as pd
 import streamlit as st
 from pathlib import Path
-from litlas.app.ui import apply_page_style, render_page_header
+from litlas.app.ui import apply_page_style, is_mobile_browser, render_page_header
 
 from litlas.app.popups import format_rating
 from litlas.processing.paths import default_constellation_csv
@@ -116,6 +116,7 @@ st.set_page_config(
 )
 
 apply_page_style()
+is_mobile = is_mobile_browser()
 
 
 st.html("""
@@ -534,9 +535,13 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     color: #96785D !important;
 }
 
-[data-testid="stLayoutWrapper"]:has(> .st-key-litlas_country_density),
-[data-testid="stLayoutWrapper"].st-key-litlas_country_density {
-    margin-top: -16px !important;
+/* Keep the heading and chart together in the Geography column. */
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"].st-key-litlas_country_density) {
+    gap: 0 !important;
+}
+
+[data-testid="stColumn"]:has(.st-key-litlas_country_density) [data-testid="stHeading"] h3 {
+    padding-bottom: 0 !important;
 }
 
 /* Hide country chart axis title on mobile */
@@ -547,12 +552,6 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 /* Country and Ratings — compact mobile stacking */
 [data-testid="stHorizontalBlock"]:has(.st-key-litlas_country_density) {
     gap: 0 !important;
-}
-/* Reduce internal spacing in the country chart column */
-[data-testid="stVerticalBlock"]:has(
-    .st-key-litlas_country_density
-) {
-    row-gap: 0 !important;
 }
 
 /* Reading history — compact mobile spacing */
@@ -722,8 +721,30 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
         color: #96785D;
     }
 
-    .litlas-marathon-stat .litlas-nobel-value {
+    [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+    [data-testid="stMetricLabel"],
+    [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+    :is(.litlas-nobel-stat, .litlas-marathon-stat) summary {
+        display: flex !important;
+        align-items: center !important;
+        height: 18px !important;
+        min-height: 18px !important;
+        line-height: 18px !important;
         margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+    [data-testid="stMetricLabel"] p,
+    [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+    :is(.litlas-nobel-stat, .litlas-marathon-stat) summary::after {
+        line-height: 18px !important;
+        margin: 0 !important;
+    }
+
+    [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+    :is(.litlas-nobel-stat, .litlas-marathon-stat) .litlas-nobel-value {
+        margin: 2px 0 0 !important;
         font-size: 22px !important;
         line-height: 1.2 !important;
     }
@@ -735,7 +756,7 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 
 render_page_header(
     "Reading Statistics",
-    "A life in books, told through numbers and patterns",
+    "A life in books" if is_mobile else "A life in books, told through numbers and patterns",
     illustration="reading_statistics",
     illustration_size=230,
     illustration_top=-42,
@@ -1411,7 +1432,7 @@ for iso3, group in read_books.groupby("ISO3"):
 
 
 with country_col:
-    st.subheader("Literary Geography")
+    st.subheader("Geography" if is_mobile else "Literary Geography")
 
     if density.empty:
         st.info("No country statistics available yet.")
@@ -1460,7 +1481,7 @@ with country_col:
 
         fig.update_layout(
             height=380,
-            margin=dict(l=20, r=40, t=30, b=45),
+            margin=dict(l=20, r=40, t=17 if is_mobile else 30, b=45),
             paper_bgcolor="#FAF7F1",
             plot_bgcolor="#F5EFE4",
             font=dict(
@@ -1490,11 +1511,13 @@ with country_col:
             xref="paper",
             yref="paper",
             x=-0.01,
-            y=1.08,
+            y=1 if is_mobile else 1.08,
             xanchor="left",
-            yanchor="top",
+            yanchor="bottom" if is_mobile else "top",
             showarrow=False,
-            text="✧ Click a country to explore its literary journeys",
+            text="Tap a country to see its books" if is_mobile else (
+                "✧ Click a country to explore its literary journeys"
+            ),
             font=dict(
                 family="Georgia, serif",
                 size=11,
@@ -1744,7 +1767,7 @@ all_authors = stats["all_authors"]
 # ---------------------------------------------------------
 
 with most_read_col:
-    st.subheader("Most-Read Authors")
+    st.subheader("Most Read" if is_mobile else "Most-Read Authors")
 
     if all_authors.empty:
         st.info("No author statistics available yet.")
@@ -1826,7 +1849,7 @@ with most_read_col:
 # ---------------------------------------------------------
 
 with favourite_col:
-    st.subheader("Favourite Authors")
+    st.subheader("Favourites" if is_mobile else "Favourite Authors")
 
     # Only include authors with at least two rated books.
     favourites = all_authors[
@@ -1945,7 +1968,7 @@ with favourite_col:
 # ---------------------------------------------------------
 
 with wanderlust_col:
-    st.subheader("Literary Wanderlust")
+    st.subheader("Wanderlust" if is_mobile else "Literary Wanderlust")
 
     wanderlust = stats["wanderlust"]
 
