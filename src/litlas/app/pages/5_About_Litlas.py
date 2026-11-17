@@ -165,6 +165,64 @@ st.html("""
     text-underline-offset: 3px;
 }
 
+@media screen and (width > 840px) {
+    [data-testid="stMain"]:has(.litlas-about) {
+        overflow-x: clip;
+    }
+
+    .litlas-about {
+        position: relative;
+        isolation: isolate;
+        margin-bottom: 0;
+        padding-bottom: 8px;
+    }
+
+    .litlas-about-reading-page {
+        position: static;
+        isolation: auto;
+        overflow: visible;
+        padding: clamp(18px, 4vh, 34px) 5px 12px;
+    }
+
+    .litlas-about-watercolor {
+        top: 8px;
+        left: 50%;
+        width: 100vw;
+        max-width: none;
+        height: calc(100% - 8px);
+        transform: translateX(-50%);
+        object-fit: cover;
+        mask-image: linear-gradient(180deg, transparent, #000 9%, #000 86%, transparent);
+    }
+
+    .litlas-about-signoff {
+        margin-top: clamp(10px, 2vh, 18px);
+    }
+
+    .litlas-about-personal-logo {
+        width: clamp(84px, 12vh, 112px);
+        height: clamp(84px, 12vh, 112px);
+    }
+}
+
+@media screen and (width > 840px) and (max-height: 780px) {
+    .litlas-about-reading-page {
+        padding-block: 16px 8px;
+    }
+
+    .litlas-about-story {
+        line-height: 1.5;
+    }
+
+    .litlas-about-signoff {
+        margin-top: 9px;
+    }
+
+    .litlas-about-signoff::before {
+        margin-bottom: 6px;
+    }
+}
+
 @media screen and (max-width: 840px) {
     .litlas-about-story {
         width: min(calc(100% - 36px), 520px);
@@ -254,7 +312,7 @@ if logo_path:
 # About Litlas — story and signature
 # -------------------------------------------------
 
-watercolor_path = ILLUSTRATIONS_DIR / "about-literary-margins.png"
+watercolor_path = ILLUSTRATIONS_DIR / "about-literary-margins_v1.png"
 watercolor_src = base64.b64encode(watercolor_path.read_bytes()).decode("ascii")
 
 st.html(f"""
