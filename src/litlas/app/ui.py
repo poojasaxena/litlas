@@ -540,7 +540,7 @@ def render_chapter_navigation(active_page: str) -> None:
 
     pages = [
         ("Litlas", "main.py", ""),
-        ("Reading Density", "pages/1_Reading_Density.py", "Reading_Density"),
+        #("Reading Density", "pages/1_Reading_Density.py", "Reading_Density"),
         ("Reading Statistics", "pages/2_Reading_Statistics.py", "Reading_Statistics"),
         ("Library Management", "pages/3_Library_Management.py", "Library_Management"),
         ("Ink & Verse", "pages/4_My_Books.py", "My_Books"),

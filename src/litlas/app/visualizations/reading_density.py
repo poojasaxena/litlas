@@ -203,52 +203,90 @@ class ReadingDensitySwitch(MacroElement):
 
             const control = L.control({position: "topright"});
             control.onAdd = () => {
-                const label = L.DomUtil.create("label", "litlas-density-switch");
-                const checkbox = L.DomUtil.create("input", "", label);
-                checkbox.type = "checkbox";
-                label.append("Show reading density");
-                L.DomEvent.disableClickPropagation(label);
-                L.DomEvent.disableScrollPropagation(label);
+                const compact = {{ this.compact | tojson }};
+                const panel = L.DomUtil.create("div", "litlas-density-switch");
+                panel.setAttribute("role", "group");
+                panel.setAttribute("aria-label", "Map view");
 
-                checkbox.addEventListener("change", () => {
-                    const enabled = checkbox.checked;
-                    map.closePopup();
-                    map.removeLayer(enabled ? flags : density);
-                    map.addLayer(enabled ? density : flags);
-                    if (legend) legend.hidden = !enabled;
-                    if (journey) journey.hidden = enabled;
-                    if (explorer) explorer.hidden = enabled;
+                function button(label) {
+                    const item = L.DomUtil.create("button", "", panel);
+                    item.type = "button";
+                    item.textContent = label;
+                    return item;
+                }
+
+                const flagButton = compact ? null : button("Flags");
+                const densityButton = button(compact ? "Reading density" : "Density");
+                let enabled = false;
+
+                function selectDensity(next) {
+                    if (enabled !== next) {
+                        enabled = next;
+                        map.closePopup();
+                        map.removeLayer(enabled ? flags : density);
+                        map.addLayer(enabled ? density : flags);
+                        if (legend) legend.hidden = !enabled;
+                        if (journey) journey.hidden = enabled;
+                        if (explorer) explorer.hidden = enabled;
+                    }
+                    if (flagButton) flagButton.setAttribute("aria-pressed", String(!enabled));
+                    densityButton.setAttribute("aria-pressed", String(enabled));
+                }
+
+                if (flagButton) {
+                    flagButton.addEventListener("click", () => selectDensity(false));
+                }
+                densityButton.addEventListener("click", () => {
+                    selectDensity(compact ? !enabled : true);
                 });
-                return label;
+                selectDensity(false);
+
+                L.DomEvent.disableClickPropagation(panel);
+                L.DomEvent.disableScrollPropagation(panel);
+                return panel;
             };
+
             control.addTo(map);
         })();
         {% endmacro %}
     """)
 
-    def __init__(self, flags, density):
+    def __init__(self, flags, density, *, compact=False):
         super().__init__()
         self.flags = flags
         self.density = density
+        self.compact = compact
 
     def render(self, **kwargs):
         self.get_root().header.add_child(Element("""
             <style>
             .litlas-density-switch {
-                display: flex;
-                align-items: center;
-                gap: 5px;
-                padding: 4px 8px;
+                display: inline-flex;
                 border: 1px solid #D4C1A7;
-                border-radius: 5px;
+                border-radius: 6px;
                 background: #FAF7F1;
+                overflow: hidden;
+            }
+            .litlas-density-switch button {
+                min-height: 44px;
+                padding: 0 11px;
+                border: 0;
+                background: transparent;
                 color: #58412F;
-                font: 13px Georgia, serif;
+                font: 14px Georgia, serif;
+                white-space: nowrap;
                 cursor: pointer;
             }
-            .litlas-density-switch input {
-                margin: 0;
-                accent-color: #795740;
+            .litlas-density-switch button + button {
+                border-left: 1px solid #D4C1A7;
+            }
+            .litlas-density-switch button[aria-pressed="true"] {
+                background: #E6D8C3;
+                font-weight: 700;
+            }
+            .litlas-density-switch button:focus-visible {
+                outline: 2px solid #795740;
+                outline-offset: -3px;
             }
             .litlas-explorer-control[hidden] {
                 display: none;

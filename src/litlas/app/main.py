@@ -766,7 +766,7 @@ st.html("""
 
 density_layer = add_reading_density(m, books, show=False)
 if density_layer is not None:
-    ReadingDensitySwitch(flag_layer, density_layer).add_to(m)
+    ReadingDensitySwitch(flag_layer, density_layer, compact=True).add_to(m)
 
 with st.container(key="litlas_main_map"):
     st_folium(
