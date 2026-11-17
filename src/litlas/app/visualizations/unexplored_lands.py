@@ -146,13 +146,13 @@ def add_unexplored_lands_control(
     @media (max-width: 640px) {
     .litlas-explorer-control .unexplored-toggle {
         box-sizing: border-box;
-        width: 30px;
-        height: 30px;
-        font-size: 16px;
+        width: 20px;
+        height: 20px;
+        font-size: 14px;
     }
 
     .litlas-explorer-panel {
-        top: 34px;
+        top: calc(100% + 3px);
         left: 0;
         width: 158px;
         max-width: calc(100vw - 4px);
