@@ -267,6 +267,33 @@ st.html("""
 
     }
 
+.litlas-about {
+    padding: 28px;
+}
+
+.litlas-about-opening {
+    margin: 0 auto 16px;
+}
+
+.litlas-about-section {
+    max-width: 60ch;
+    margin: 0 auto;
+}
+
+.litlas-about-section p {
+    text-align: left;
+}
+
+@media screen and (max-width: 640px) {
+    .litlas-about {
+        padding: 16px;
+    }
+
+    .litlas-about-opening {
+        margin-bottom: 10px;
+    }
+}
+    
 </style>
 """)
 
