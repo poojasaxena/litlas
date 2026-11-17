@@ -308,7 +308,7 @@ class ReadingDensitySwitch(MacroElement):
                 }
 
                 .litlas-density-switch button {
-                    min-height: 30px; /* 34 px including the surrounding border */
+                    min-height: 28px; /* 34 px including the surrounding border */
                     padding: 0 6px;
                     font-size: 10px;
                 }
