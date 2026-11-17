@@ -537,11 +537,12 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 
 /* Keep the heading and chart together in the Geography column. */
 [data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"].st-key-litlas_country_density) {
-    gap: 0 !important;
+    gap: 4px !important;
 }
 
 [data-testid="stColumn"]:has(.st-key-litlas_country_density) [data-testid="stHeading"] h3 {
-    padding-bottom: 0 !important;
+    line-height: 1.2 !important;
+    padding-bottom: 8px !important;
 }
 
 /* Hide country chart axis title on mobile */
