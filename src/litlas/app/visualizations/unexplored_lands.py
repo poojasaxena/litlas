@@ -143,6 +143,43 @@ def add_unexplored_lands_control(
         color: #5D3F2E;
     }
 
+    @media (max-width: 640px) {
+    .litlas-explorer-control .unexplored-toggle {
+        box-sizing: border-box;
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+    }
+
+    .litlas-explorer-panel {
+        top: 34px;
+        left: 0;
+        width: 158px;
+        max-width: calc(100vw - 4px);
+        padding: 8px;
+    }
+
+    .litlas-explorer-heading {
+        font-size: 14px;
+        margin-bottom: 3px;
+    }
+
+    .litlas-explorer-summary {
+        font-size: 11px;
+        margin-bottom: 6px;
+    }
+
+    .leaflet-container .litlas-explorer-panel input.litlas-explorer-search {
+        width: 100%;
+        padding: 4px 6px;
+        margin: 0 0 6px;
+    }
+
+    .litlas-explorer-list {
+        grid-template-columns: minmax(0, 1fr);
+        max-height: min(150px, 40vh);
+    }
+}
     </style>
     """
 

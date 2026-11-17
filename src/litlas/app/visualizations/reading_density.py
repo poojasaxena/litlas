@@ -312,6 +312,14 @@ class ReadingDensitySwitch(MacroElement):
                     padding: 0 6px;
                     font-size: 10px;
                 }
+
+                .litlas-explorer-control .unexplored-toggle {
+                    box-sizing: border-box;
+                    width: 10px;
+                    height: 10px;
+                    font-size: 16px;
+                }
+
             }
             </style>
         """))
