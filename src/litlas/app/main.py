@@ -30,6 +30,7 @@ from litlas.processing.countries import (
 from litlas.app.visualizations.unexplored_lands import (
     add_unexplored_lands_control,
 )
+from litlas.app.visualizations.reading_density import ReadingDensitySwitch, add_reading_density
 from litlas.app.ui import apply_page_style, render_page_header
 
 ## Configuration constants for the map and flag display
@@ -479,9 +480,7 @@ books["My Rating"] = pd.to_numeric(books["My Rating"], errors="coerce").fillna(0
 mapped = books[books["ISO3"].astype(bool)].copy()
 
 m = create_litlas_map(mobile_focus=True)
-#     fit_world=False,
-#     initial_zoom=1,
-# )
+flag_layer = folium.FeatureGroup(name="Countries explored").add_to(m)
 
 ## Highlight countries that have been read
 read_countries = explored_country_codes(books["ISO3"])
@@ -507,7 +506,6 @@ for feature in geojson["features"]:
 
 folium.GeoJson(
     geojson,
-    name="Countries explored",
     style_function=lambda feature: {
         "fillColor": (
             EXPLORED_COLOR
@@ -525,7 +523,7 @@ folium.GeoJson(
         labels=False,
         sticky=True,
     ),
-).add_to(m)
+).add_to(flag_layer)
 
 placed = 0
 
@@ -569,13 +567,11 @@ for iso, group in mapped.groupby("ISO3", sort=True):
             auto_pan_padding_bottom_right=(65, 20),
         ),
         tooltip=name,
-    ).add_to(m)
+    ).add_to(flag_layer)
 
     placed += 1
 
 
-
-folium.LayerControl(position="topright").add_to(m)
 
 add_unexplored_lands_control(
     m,
@@ -767,6 +763,10 @@ st.html("""
 </div>
 """)
 
+
+density_layer = add_reading_density(m, books, show=False)
+if density_layer is not None:
+    ReadingDensitySwitch(flag_layer, density_layer).add_to(m)
 
 with st.container(key="litlas_main_map"):
     st_folium(
