@@ -1,13 +1,13 @@
 
 """About Litlas — the story behind a personal literary atlas."""
 
+import base64
 from html import escape
 
 import streamlit as st
 
-from litlas.app.ui import apply_page_style, render_page_header
-import base64
-from litlas.app.ui import load_logo_path
+from litlas.app.ui import apply_page_style, load_logo_path, render_page_header
+from litlas.processing.paths import ILLUSTRATIONS_DIR
 
 # -------------------------------------------------
 # Page configuration
@@ -51,8 +51,8 @@ render_page_header(
     mobile_ornament_width=120,   # Thin decorative line
     mobile_ornament_offset_x=12,
     mobile_ornament_offset_y=-14,  # Move the line up
-    mobile_subtitle_offset_x=13, # Where stories meet the world
-    mobile_subtitle_offset_y=-14,  # Move “Where stories meet the world” up
+    mobile_subtitle_offset_x=13,
+    mobile_subtitle_offset_y=-14,
     mobile_header_bottom_gap=-14,  # Pull the mobile navigation up toward the header
 )
 
@@ -72,228 +72,134 @@ GITHUB_URL = "https://github.com/poojasaxena"
 
 st.html("""
 <style>
-
 .litlas-about {
-    max-width: 1050px;
-    margin: 0 auto 12px;
-    padding: 28px 42px 30px;
-    background: #FAF7F1;
-    border: 1px solid #D4C1A7;
-    border-radius: 12px;
-    color: #58412F;
-    font-family: Georgia, serif;
-    text-align: center;
-    box-shadow: 0 5px 22px rgba(88, 65, 47, 0.06);
     box-sizing: border-box;
-}
-
-.litlas-about-kicker {
-    text-align: center;
-    font-size: 11px;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    color: #9B8063;
-}
-
-.litlas-about-title {
-    text-align: center;
-    font-family: Georgia, serif;
-    font-style: italic;
-    font-size: 32px;
-    font-weight: 400;
-    margin: 10px 0;
+    max-width: 1130px;
+    margin: 0 auto 12px;
+    padding: 8px 0 24px;
     color: #58412F;
+    font: 16px/1.65 Georgia, serif;
 }
 
-.litlas-about-rule {
-    width: 145px;
-    height: 1px;
-    background: #B29A7C;
-    margin: 16px auto;
+.litlas-about-reading-page {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding: clamp(24px, 4vw, 52px) 0;
 }
 
-.litlas-about-opening {
+.litlas-about-watercolor {
+    position: absolute;
+    z-index: -1;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: auto;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.litlas-about-story {
+    width: min(47%, 520px);
+    margin: 0 auto;
     text-align: center;
-    font-style: italic;
-    font-size: 18px;
-    line-height: 1.5;
-    color: #7B5B45;
-    margin: 16px auto 20px;
-    max-width: 100%;
 }
 
-/* Personal narrative */
-.litlas-about-section {
-    max-width: 850px;
-    margin: 12px auto 0;
-    text-align: center;
-}
-
-.litlas-about-section h3 {
-    font-family: Georgia, serif;
-    font-weight: 400;
-    font-size: 21px;
-    font-style: italic;
+.litlas-about .litlas-about-title {
+    margin: 0 0 13px;
+    padding: 0;
     color: #76563E;
-    margin: 0 0 18px;
-}
-
-.litlas-about-section p {
-    font-size: 15px;
-    line-height: 1.8;
-    margin: 0 0 16px;
+    font: 400 14px/1.4 Georgia, serif;
+    letter-spacing: 0.06em;
     text-align: center;
 }
 
+.litlas-about-story p {
+    margin: 0;
+    font: inherit;
+}
 
-.litlas-about-signature {
+.litlas-about-story p + p {
+    margin-top: 0.85em;
+}
+
+.litlas-about-signoff {
+    margin: 30px 0 0;
     text-align: center;
-    font-style: italic;
-    font-size: 14px;
-    color: #896A50;
-    margin-top: 8px;
 }
 
-.litlas-about-links {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 28px;
-    margin-top: 12px;
-}
-
-.litlas-about-links a {
-    color: #795740;
-    font-family: Georgia, serif;
-    font-size: 14px;
-    text-decoration: none;
-}
-
-.litlas-about-links a:hover {
-    text-decoration: underline;
-    text-underline-offset: 4px;
+.litlas-about-signoff::before {
+    display: block;
+    width: 64px;
+    height: 1px;
+    margin: 0 auto 10px;
+    background: #B29A7C;
+    content: "";
 }
 
 .litlas-about-personal-logo {
     display: block;
-    width: 115px;
-    height: 115px;
+    width: 132px;
+    height: 132px;
+    margin: 0 auto 5px;
     object-fit: contain;
-    margin: 0 auto 2px;
 }
 
-.litlas-about-opening strong {
-    font-weight: 600;
+.litlas-about-signature {
+    color: #7B5B45;
     font-style: italic;
 }
 
-.litlas-opening-ornament {
-    color: #B29A7C;
-    font-style: normal;
-    font-size: 18px;
-    margin: 0 12px;
+.litlas-about-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 18px;
+    margin-top: 7px;
 }
 
+.litlas-about-links a {
+    color: #795740;
+    font-size: 14px;
+    text-decoration-color: #B29A7C;
+    text-underline-offset: 3px;
+}
 
-/* -------------------------------------------------
-   Mobile version
-   ------------------------------------------------- */
+@media screen and (max-width: 840px) {
+    .litlas-about-story {
+        width: min(calc(100% - 36px), 520px);
+        text-align: left;
+    }
+
+    .litlas-about-watercolor {
+        opacity: 0.23;
+        mask-image: linear-gradient(90deg, #000, transparent 12%, transparent 88%, #000);
+    }
+}
 
 @media screen and (max-width: 640px) {
-
     .litlas-about {
-        margin: 5px 0 20px;
-        padding: 12px 18px 24px;
-        border-radius: 8px;
+        font-size: 15px;
+        line-height: 1.6;
     }
 
-    .litlas-about-kicker {
-        font-size: 9px;
-        letter-spacing: 1.4px;
+    .litlas-about-reading-page {
+        padding: 18px 0 12px;
     }
 
-    .litlas-about-title {
-        font-size: 27px;
+    .litlas-about-signoff {
+        margin-top: 22px;
     }
-
-    .litlas-about-rule {
-        margin: 14px auto;
-    }
-
-    .litlas-about-opening {
-        font-size: 16px;
-        line-height: 1.5;
-        margin: 4px auto 8px;
-    }
-
-    .litlas-about-section {
-        margin-top: 0;
-    }
-
-    .litlas-about-section h3 {
-        font-size: 20px;
-    }
-
-    .litlas-about-section p {
-        font-size: 14px;
-        line-height: 1.65;
-        margin-bottom: 12px;
-    }
-
-    .litlas-about-links {
-        gap: 22px;
-        flex-wrap: wrap;
-    }
-
-    .litlas-about-links a {
-        font-size: 13px;
-    }
-}
-@media screen and (max-width: 640px) {
 
     .litlas-about-personal-logo {
-        width: 100px;
-        height: 100px;
-    }
-.litlas-about-section {
-    max-width: 100%;
-    margin-top: 18px;
-}
-
-.litlas-about-section p {
-    font-size: 14px;
-    line-height: 1.7;
-}
-
+        width: 108px;
+        height: 108px;
     }
 
-.litlas-about {
-    padding: 28px;
-}
-
-.litlas-about-opening {
-    margin: 0 auto 16px;
-}
-
-.litlas-about-section {
-    max-width: 60ch;
-    margin: 0 auto;
-}
-
-.litlas-about-section p {
-    text-align: left;
-}
-
-@media screen and (max-width: 640px) {
-    .litlas-about {
-        padding: 16px;
-    }
-
-    .litlas-about-opening {
-        margin-bottom: 10px;
+    .litlas-about-signature {
+        font-size: 14px;
     }
 }
-    
 </style>
 """)
 
@@ -341,55 +247,47 @@ if logo_path:
 
     logo_html = (
         f'<img src="data:{mime};base64,{logo_data}" '
-        f'alt="Personal logo" class="litlas-about-personal-logo">'
+        f'alt="" class="litlas-about-personal-logo">'
     )
 
 # -------------------------------------------------
-# About Litlas — single integrated card
+# About Litlas — story and signature
 # -------------------------------------------------
 
+watercolor_path = ILLUSTRATIONS_DIR / "about-literary-margins.png"
+watercolor_src = base64.b64encode(watercolor_path.read_bytes()).decode("ascii")
+
 st.html(f"""
-<div class="litlas-about">
+<section class="litlas-about" aria-labelledby="litlas-about-title">
+    <div class="litlas-about-reading-page">
+        <img class="litlas-about-watercolor" src="data:image/png;base64,{watercolor_src}" alt="">
+        <div class="litlas-about-story">
+            <h2 id="litlas-about-title" class="litlas-about-title">The Stories I Carry</h2>
+            <p>
+                I'm an enthusiastic reader with a curiosity for
+                literature from around the world. I love discovering
+                unfamiliar writers, exploring different cultures,
+                and occasionally finding a book that stays with me
+                long after I've turned its last page.
+            </p>
 
-    <div class="litlas-about-opening">
-        <span class="litlas-opening-ornament">✧</span>
-        The Stories I Carry
-        <span class="litlas-opening-ornament">✧</span>
+            <p>
+                I created Litlas to bring my reading life together
+                in one place: part personal library, part literary
+                world map, and always a book in progress.
+            </p>
+
+            <p>
+                You're welcome to explore my collection and see
+                where the stories have taken me.
+            </p>
+        </div>
     </div>
 
-    <div class="litlas-about-section">
-
-        <p>
-            I'm an enthusiastic reader with a curiosity for
-            literature from around the world. I love discovering
-            unfamiliar writers, exploring different cultures,
-            and occasionally finding a book that stays with me
-            long after I've turned its last page.
-        </p>
-
-        <p>
-            I created Litlas to bring my reading life together
-            in one place: part personal library, part literary
-            world map, and always a book in progress.
-        </p>
-
-        <p>
-            You're welcome to explore my collection and see
-            where the stories have taken me.
-        </p>
-
-    </div>
-
-    <div class="litlas-about-rule"></div>
-
-    <div class="litlas-about-signature">
+    <figure class="litlas-about-signoff">
         {logo_html}
-        <div>{name_html}</div>
-    </div>
-
-    <div class="litlas-about-links">
-        {links_html}
-    </div>
-
-</div>
+        <figcaption class="litlas-about-signature">{name_html}</figcaption>
+    </figure>
+    <div class="litlas-about-links">{links_html}</div>
+</section>
 """)
