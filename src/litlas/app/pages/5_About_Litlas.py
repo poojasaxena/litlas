@@ -203,7 +203,7 @@ st.html("""
 
     .litlas-about {
         margin: 5px 0 20px;
-        padding: 20px 18px 24px;
+        padding: 12px 18px 24px;
         border-radius: 8px;
     }
 
@@ -223,11 +223,11 @@ st.html("""
     .litlas-about-opening {
         font-size: 16px;
         line-height: 1.5;
-        margin: 14px auto 18px;
+        margin: 4px auto 8px;
     }
 
     .litlas-about-section {
-        margin-top: 14px;
+        margin-top: 0;
     }
 
     .litlas-about-section h3 {
