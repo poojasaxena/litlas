@@ -291,6 +291,28 @@ class ReadingDensitySwitch(MacroElement):
             .litlas-explorer-control[hidden] {
                 display: none;
             }
+
+            @media (max-width: 640px) {
+                .leaflet-control-zoom {
+                    display: none;
+                }
+
+                .litlas-explorer-control {
+                    left: 4px;
+                    margin-top: 4px !important;
+                }
+
+                .leaflet-top.leaflet-right .litlas-density-switch {
+                    margin-top: 4px;
+                    margin-right: 4px;
+                }
+
+                .litlas-density-switch button {
+                    min-height: 32px; /* 34 px including the surrounding border */
+                    padding: 0 7px;
+                    font-size: 12px;
+                }
+            }
             </style>
         """))
         super().render(**kwargs)
