@@ -298,19 +298,19 @@ class ReadingDensitySwitch(MacroElement):
                 }
 
                 .litlas-explorer-control {
-                    left: 4px;
-                    margin-top: 4px !important;
+                    left: 2px;
+                    margin-top: 2px !important;
                 }
 
                 .leaflet-top.leaflet-right .litlas-density-switch {
-                    margin-top: 4px;
-                    margin-right: 4px;
+                    margin-top: 2px;
+                    margin-right: 2px;
                 }
 
                 .litlas-density-switch button {
-                    min-height: 32px; /* 34 px including the surrounding border */
-                    padding: 0 7px;
-                    font-size: 12px;
+                    min-height: 30px; /* 34 px including the surrounding border */
+                    padding: 0 6px;
+                    font-size: 10px;
                 }
             }
             </style>
