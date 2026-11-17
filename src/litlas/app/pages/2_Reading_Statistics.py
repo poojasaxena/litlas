@@ -537,7 +537,7 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 
 /* Keep the heading and chart together in the Geography column. */
 [data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"].st-key-litlas_country_density) {
-    gap: 8px !important;
+    gap: 10px !important;
 }
 
 [data-testid="stColumn"]:has(.st-key-litlas_country_density) [data-testid="stHeading"] h3 {
