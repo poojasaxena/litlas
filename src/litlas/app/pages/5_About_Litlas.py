@@ -6,7 +6,7 @@ from html import escape
 
 import streamlit as st
 
-from litlas.app.ui import apply_page_style, load_logo_path, render_page_header
+from litlas.app.ui import apply_page_style, load_logo_path, render_page_header, is_mobile_browser
 from litlas.processing.paths import ILLUSTRATIONS_DIR
 
 # -------------------------------------------------
@@ -21,10 +21,12 @@ st.set_page_config(
 )
 
 apply_page_style()
+is_mobile = is_mobile_browser()
 
 render_page_header(
     "About Litlas",
-    "A personal journey through stories and the world",
+    "A personal journey through stories" if is_mobile else "A personal journey through stories and the world",
+
     illustration="about_litlas",
     illustration_size=230,
     illustration_top=-42,
