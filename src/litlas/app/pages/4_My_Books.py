@@ -231,7 +231,7 @@ for book in BOOKS:
     cover_path = Path(book["cover"])
     encoded = base64.b64encode(cover_path.read_bytes()).decode("ascii")
     mime = "image/png" if cover_path.suffix.lower() == ".png" else "image/jpeg"
-    label = "Edition ↗" if is_mobile else "View published edition ↗"
+    label = "View edition ↗" if is_mobile else "View published edition ↗"
 
     gallery_html.append(
         dedent(f"""
