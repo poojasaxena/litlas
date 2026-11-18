@@ -169,6 +169,7 @@ st.html("""
     text-underline-offset: 3px;
 }
 
+/* Media query for large screens */
 @media screen and (width > 840px) {
     [data-testid="stMain"]:has(.litlas-about) {
         overflow-x: clip;
@@ -279,6 +280,7 @@ st.html("""
     }
 }
 
+/* Mobile styles */
 @media screen and (max-width: 640px) {
     .litlas-about {
         font-size: 15px;
@@ -288,20 +290,20 @@ st.html("""
     }
 
     .litlas-about-watercolor {
-    top: auto;
-    left: auto;
-    right: -12px;
-    bottom: 36px;
-    width: min(170%, 650px);
-    max-width: none;
-    height: auto;
-    transform: none;
-    opacity: 0.18;
-    mask-image: radial-gradient(
-        ellipse 33% 58% at 82% 73%,
-        #000 35%,
-        transparent 100%
-    );
+        top: auto;
+        left: auto;
+        right: -12px;
+        bottom: 36px;
+        width: min(170%, 650px);
+        max-width: none;
+        height: auto;
+        transform: none;
+        opacity: 0.38;
+        mask-image: radial-gradient(
+            ellipse 33% 58% at 82% 73%,
+            #000 35%,
+            transparent 100%
+        );
     }
 
     .litlas-about-reading-page {
@@ -309,7 +311,7 @@ st.html("""
     }
 
     .litlas-about-signoff {
-        margin-top: 22px;
+        margin-top: 8px;
     }
 
     .litlas-about-personal-logo {
