@@ -293,7 +293,7 @@ st.html("""
         top: auto;
         left: auto;
         right: -12px;
-        bottom: 36px;
+        bottom: 6px;
         width: min(170%, 650px);
         max-width: none;
         height: auto;
