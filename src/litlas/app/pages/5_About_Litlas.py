@@ -307,11 +307,11 @@ st.html("""
     }
 
     .litlas-about-reading-page {
-        padding: 2px 0 4px;
+        padding: 0 0 0;
     }
 
     .litlas-about-signoff {
-        margin-top: 2px;
+        margin-top: 0;
     }
 
     .litlas-about-personal-logo {
