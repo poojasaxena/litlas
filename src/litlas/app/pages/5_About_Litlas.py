@@ -57,7 +57,7 @@ render_page_header(
     mobile_ornament_offset_y=-14,  # Move the line up
     mobile_subtitle_offset_x=13,
     mobile_subtitle_offset_y=-14,
-    mobile_header_bottom_gap=-14,  # Pull the mobile navigation up toward the header
+    mobile_header_bottom_gap=-28,  # Pull the mobile navigation up toward the header
 )
 
 # -------------------------------------------------
@@ -283,10 +283,29 @@ st.html("""
     .litlas-about {
         font-size: 15px;
         line-height: 1.6;
+        padding-top: 0;
+
     }
 
+    .litlas-about-watercolor {
+    top: auto;
+    left: auto;
+    right: -12px;
+    bottom: 36px;
+    width: min(170%, 650px);
+    max-width: none;
+    height: auto;
+    transform: none;
+    opacity: 0.18;
+    mask-image: radial-gradient(
+        ellipse 33% 58% at 82% 73%,
+        #000 35%,
+        transparent 100%
+    );
+    }
+    
     .litlas-about-reading-page {
-        padding: 18px 0 12px;
+        padding: 4px 0 12px;
     }
 
     .litlas-about-signoff {
