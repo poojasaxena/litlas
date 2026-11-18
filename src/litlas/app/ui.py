@@ -159,6 +159,14 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
     font-style: italic;
     color: #81776E;
 }
+.litlas-home-heading .litlas-home-ornament {
+    transform: translateY(var(--ornament-offset-y, 0px));
+}
+
+.litlas-home-heading .litlas-home-tagline {
+    transform: translateY(var(--subtitle-offset-y, 0px));
+}
+
 .litlas-home-ornament {
     width: min(100%, var(--ornament-width, 170px));
     height: 1px;
@@ -685,6 +693,8 @@ def render_page_header(
     mobile_ornament_offset_y: int = 0,
     mobile_subtitle_offset_y: int = 0,
     mobile_title_svg: str | None = None,
+    ornament_offset_y: int = 0,
+    subtitle_offset_y: int = 0,
 ) -> None:
     """Render the shared sticky vintage Litlas heading."""
 
@@ -795,7 +805,9 @@ def render_page_header(
             --mobile-eyebrow-offset-y: {mobile_eyebrow_offset_y}px;
             --mobile-title-offset-y: {mobile_title_offset_y}px;
             --mobile-ornament-offset-y: {mobile_ornament_offset_y}px;
-            --mobile-subtitle-offset-y: {mobile_subtitle_offset_y}px;   
+            --mobile-subtitle-offset-y: {mobile_subtitle_offset_y}px;  
+            --ornament-offset-y: {ornament_offset_y}px;
+            --subtitle-offset-y: {subtitle_offset_y}px;
          ">
         {image_html}
         {heading_html}

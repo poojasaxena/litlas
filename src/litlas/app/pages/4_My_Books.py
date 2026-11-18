@@ -33,6 +33,8 @@ render_page_header(
     heading_gap=5,
     title_height=90,
     ornament_width=290,
+    ornament_offset_y=-6,
+    subtitle_offset_y=-6,
 
     # Mobile
     mobile_illustration_size=100,

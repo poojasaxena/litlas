@@ -33,6 +33,8 @@ render_page_header(
     heading_gap=5,
     title_height=90,
     ornament_width=290,
+    ornament_offset_y=-6,
+    subtitle_offset_y=-6,
 
     # Mobile
     mobile_illustration_size=100,
@@ -203,6 +205,36 @@ st.html("""
         width: clamp(84px, 12vh, 112px);
         height: clamp(84px, 12vh, 112px);
     }
+
+.litlas-about-story {
+    position: relative;
+    isolation: isolate;
+}
+
+.litlas-about-story::before {
+    content: "";
+    position: absolute;
+    inset: -12px auto 6% 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+
+    background:
+        radial-gradient(
+            ellipse 17% 37% at 19% 50%,
+            rgba(191, 148, 76, 0.10),
+            rgba(191, 148, 76, 0.035) 55%,
+            transparent 100%
+        ),
+        radial-gradient(
+            ellipse 17% 37% at 81% 58%,
+            rgba(176, 145, 111, 0.09),
+            rgba(176, 145, 111, 0.03) 55%,
+            transparent 100%
+        );
+    z-index: -1;
+    pointer-events: none;
+}
+
 }
 
 @media screen and (width > 840px) and (max-height: 780px) {
@@ -312,8 +344,9 @@ if logo_path:
 # About Litlas — story and signature
 # -------------------------------------------------
 
-#watercolor_path = ILLUSTRATIONS_DIR / "about-literary-margins_v1.png"
-watercolor_path = ILLUSTRATIONS_DIR / "about-literary-margins-desktop.png"
+#watercolor_path = ILLUSTRATIONS_DIR / "about-literary-margins.png"
+watercolor_path = ILLUSTRATIONS_DIR / "about-literary-margins-muted.png"
+#watercolor_path = ILLUSTRATIONS_DIR / "about-literary-margins-desktop.png"
 watercolor_src = base64.b64encode(watercolor_path.read_bytes()).decode("ascii")
 
 st.html(f"""
