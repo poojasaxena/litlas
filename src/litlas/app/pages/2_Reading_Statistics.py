@@ -760,7 +760,7 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 
 render_page_header(
     "Reading Statistics",
-    "A life in books" if is_mobile else "A life in books, told through numbers and patterns",
+    "A life in books and numbers" if is_mobile else "A life in books, told through numbers and patterns",
     illustration="reading_statistics",
     illustration_size=230,
     illustration_top=-42,
@@ -784,7 +784,7 @@ render_page_header(
     mobile_title_width=290,      # Large decorative page title (Literary Atlas here)
     mobile_title_offset_x=17,
     mobile_title_offset_y=-12,  # Move the large Litlas lettering up 12 px
-    mobile_ornament_width=80,   # Thin decorative line
+    mobile_ornament_width=60,   # Thin decorative line
     mobile_ornament_offset_x=12,
     mobile_ornament_offset_y=-12,  # Move the line up
     mobile_subtitle_offset_x=13, # Where stories meet the world
