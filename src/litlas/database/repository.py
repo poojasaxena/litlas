@@ -317,6 +317,7 @@ def get_editable_books():
             b.display_title,
             b.original_title,
             b.date_read,
+            b.reading_note,
             a.name AS author,
             b.rating,
             b.rating_override,
@@ -340,8 +341,15 @@ def update_book_details(
     display_title,
     rating_override,
     pages_override,
+    *,
+    reading_note: str | None = None,
 ):
     """Save locally curated book details without changing Goodreads data."""
+
+    if reading_note is not None:
+        reading_note = reading_note.strip()
+        if len(reading_note) > 120:
+            raise ValueError("Reading note must be 120 characters or fewer.")
 
     display_title = display_title.strip()
 
@@ -364,7 +372,8 @@ def update_book_details(
             UPDATE books
             SET display_title = ?,
                 rating_override = ?,
-                pages_override = ?
+                pages_override = ?,
+                reading_note = COALESCE(?, reading_note)
             WHERE goodreads_id = ?
               AND shelf = 'read'
               AND excluded_from_display = 0
@@ -373,6 +382,7 @@ def update_book_details(
                 display_title,
                 rating_override,
                 pages_override,
+                reading_note,
                 goodreads_id,
             ),
         )

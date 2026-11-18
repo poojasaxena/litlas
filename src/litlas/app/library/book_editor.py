@@ -248,6 +248,14 @@ def render_book_editor_contents(show_heading=True):
                 else:
                     st.caption("Page count: missing")
 
+        reading_note = st.text_input(
+            "Reading note",
+            value=str(row["reading_note"]) if pd.notna(row["reading_note"]) else "",
+            max_chars=120,
+            key=f"book_reading_note_{selected_id}",
+            placeholder="One thought you want to remember",
+        )
+
         # Compact action row: Delete | Save | Confirmation
         delete_col, save_col, message_col = st.columns(
             [1, 1.25, 1.4],
@@ -308,6 +316,7 @@ def render_book_editor_contents(show_heading=True):
                 display_title=edited_title,
                 rating_override=rating_override,
                 pages_override=pages_override,
+                reading_note=reading_note,
             )
         except ValueError as exc:
             st.error(str(exc))
@@ -436,6 +445,14 @@ def render_book_editor_contents_sidebar(show_heading=True):
             ),
         )
 
+        reading_note = st.text_input(
+            "Reading note",
+            value=str(row["reading_note"]) if pd.notna(row["reading_note"]) else "",
+            max_chars=120,
+            key=f"sidebar_book_reading_note_{selected_id}",
+            placeholder="One thought you want to remember",
+        )
+
         submitted = st.form_submit_button(
             "Save to Litlas",
             type="secondary",
@@ -474,6 +491,7 @@ def render_book_editor_contents_sidebar(show_heading=True):
                 display_title=str(row["display_title"]),
                 rating_override=rating_override,
                 pages_override=pages_override,
+                reading_note=reading_note,
             )
 
         except ValueError as exc:

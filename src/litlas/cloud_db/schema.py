@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS books (
         CHECK (rating_override IS NULL OR rating_override BETWEEN 0 AND 5),
     shelf TEXT,
     date_read TEXT,
+    reading_note TEXT,
     excluded_from_display INTEGER NOT NULL DEFAULT 0
         CHECK (excluded_from_display IN (0, 1)),
     FOREIGN KEY (author_id) REFERENCES authors(id),
@@ -64,6 +65,7 @@ def initialize_database():
     """Create PostgreSQL tables and indexes without deleting existing data."""
     with connect() as db:
         db.execute(SCHEMA)
+        db.execute("ALTER TABLE books ADD COLUMN IF NOT EXISTS reading_note TEXT")
 
 
 if __name__ == "__main__":

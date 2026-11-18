@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS books (
         CHECK (rating_override IS NULL OR rating_override BETWEEN 0 AND 5),
     shelf TEXT,
     date_read TEXT,
+    reading_note TEXT,
     excluded_from_display INTEGER NOT NULL DEFAULT 0
         CHECK (excluded_from_display IN (0, 1)),
     FOREIGN KEY (author_id) REFERENCES authors(id),
@@ -81,3 +82,6 @@ def initialize_database():
                 "ALTER TABLE books ADD COLUMN rating_override REAL "
                 "CHECK (rating_override IS NULL OR rating_override BETWEEN 0 AND 5)"
             )
+
+        if "reading_note" not in columns:
+            db.execute("ALTER TABLE books ADD COLUMN reading_note TEXT")
