@@ -298,7 +298,7 @@ st.html("""
         max-width: none;
         height: auto;
         transform: none;
-        opacity: 0.68;
+        opacity: 0.88;
         mask-image: radial-gradient(
             ellipse 33% 58% at 82% 73%,
             #000 35%,
@@ -320,7 +320,7 @@ st.html("""
     }
 
     .litlas-about-signature {
-        font-size: 14px;
+        font-size: 12px;
     }
 }
 </style>
