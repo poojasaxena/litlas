@@ -299,10 +299,11 @@ st.html("""
         height: auto;
         transform: none;
         opacity: 0.78;
-        mask-image: radial-gradient(
-            ellipse 33% 58% at 82% 73%,
-            #000 35%,
-            transparent 100%
+        mask-image: linear-gradient(
+            to right,
+            transparent 52%,
+            rgba(0, 0, 0, 0.35) 64%,
+            #000 78%
         );
     }
 
