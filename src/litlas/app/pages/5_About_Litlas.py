@@ -57,7 +57,7 @@ render_page_header(
     mobile_ornament_offset_y=-14,  # Move the line up
     mobile_subtitle_offset_x=13,
     mobile_subtitle_offset_y=-14,
-    mobile_header_bottom_gap=-320,  # Pull the mobile navigation up toward the header
+    mobile_header_bottom_gap=-32,  # Pull the mobile navigation up toward the header
 )
 
 # -------------------------------------------------
