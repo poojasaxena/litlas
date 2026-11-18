@@ -7,7 +7,7 @@ import base64
 from pathlib import Path
 from textwrap import dedent
 
-from litlas.app.ui import apply_page_style, render_page_header
+from litlas.app.ui import apply_page_style, render_page_header, mobile_browser
 from litlas.processing.paths import (
     JINDAGI_COVER,
     LIFE_ENDLESS_EBB_COVER,
@@ -21,6 +21,7 @@ st.set_page_config(
 )
 
 apply_page_style()
+is_mobile = mobile_browser()
 
 render_page_header(
     "Ink & Verse",
@@ -230,6 +231,7 @@ for book in BOOKS:
     cover_path = Path(book["cover"])
     encoded = base64.b64encode(cover_path.read_bytes()).decode("ascii")
     mime = "image/png" if cover_path.suffix.lower() == ".png" else "image/jpeg"
+    label = "Edition ↗" if is_mobile else "View published edition ↗"
 
     gallery_html.append(
         dedent(f"""
@@ -249,7 +251,7 @@ for book in BOOKS:
                 href="{escape(book["url"], quote=True)}"
                 target="_blank"
                 rel="noopener noreferrer">
-                    View published edition ↗
+                    {label}
                 </a>
             </div>
         """).strip()
