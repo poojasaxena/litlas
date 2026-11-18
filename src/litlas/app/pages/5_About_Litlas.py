@@ -268,7 +268,7 @@ st.html("""
 
 goodreads_link = (
     f'<a href="{escape(GOODREADS_URL, quote=True)}" '
-    f'target="_blank" rel="noopener noreferrer">♧ Goodreads</a>'
+    f'target="_blank" rel="noopener noreferrer"><span style="color: #6E4B3A;">♣︎</span> Goodreads</a>'
     if GOODREADS_URL else ""
 )
 
@@ -312,7 +312,8 @@ if logo_path:
 # About Litlas — story and signature
 # -------------------------------------------------
 
-watercolor_path = ILLUSTRATIONS_DIR / "about-literary-margins_v1.png"
+#watercolor_path = ILLUSTRATIONS_DIR / "about-literary-margins_v1.png"
+watercolor_path = ILLUSTRATIONS_DIR / "about-literary-margins-desktop.png"
 watercolor_src = base64.b64encode(watercolor_path.read_bytes()).decode("ascii")
 
 st.html(f"""
