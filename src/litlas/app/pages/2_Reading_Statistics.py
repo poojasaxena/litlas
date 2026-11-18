@@ -1642,9 +1642,9 @@ with recent_col:
                 margin: 0;
                 padding: 0 12px !important;
                 list-style: none;
-                background: #FAF7F1;
-                border: 1px solid #E2D5C3;
-                border-radius: 8px;
+                background: #F5EFE4;
+                border: 1px solid #D4C1A7;
+                border-radius: 6px;
                 color: #58412F;
                 font-family: Georgia, serif;
             }
@@ -1658,7 +1658,11 @@ with recent_col:
                 column-gap: 10px;
             }
             .litlas-recent-reads li + li {
-                border-top: 1px solid #E8DED0;
+                border-top: 1px solid #D4C1A7;
+            }
+            .litlas-recent-reads .recent-byline,
+            .litlas-recent-reads .recent-meta {
+                color: #81776E;
             }
             .litlas-recent-reads cite {
                 display: block;
