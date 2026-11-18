@@ -252,6 +252,8 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
     color: #B29A7C !important;
     font-family: Georgia, serif;
     font-size: 15px;
+    padding-inline: 3px;
+
 }
 .st-key-litlas_sticky_header [data-testid="stPageLink"] p,
 .st-key-litlas_sticky_header .litlas-chapter-separator {

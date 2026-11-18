@@ -236,6 +236,16 @@ st.html("""
 }
 
 }
+.litlas-about-story p {
+    text-align: center;
+}
+
+.litlas-drop-cap {
+    float: left;
+    margin: 0.06em 0.12em 0 0;
+    color: #6E4B3A;
+    font: bold 3em/0.85 Georgia, serif;
+}
 
 @media screen and (width > 840px) and (max-height: 780px) {
     .litlas-about-reading-page {
@@ -356,7 +366,7 @@ st.html(f"""
         <div class="litlas-about-story">
             <h2 id="litlas-about-title" class="litlas-about-title">The Stories I Carry</h2>
             <p>
-                I'm an enthusiastic reader with a curiosity for
+                <span class="litlas-drop-cap">I</span> am an enthusiastic reader with a curiosity for
                 literature from around the world. I love discovering
                 unfamiliar writers, exploring different cultures,
                 and occasionally finding a book that stays with me

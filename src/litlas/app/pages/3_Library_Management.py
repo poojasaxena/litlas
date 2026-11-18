@@ -49,11 +49,13 @@ render_page_header(
     illustration="lib_management",
     illustration_size=230,
     illustration_top=-42,
+    ornament_offset_y=-6,
+    subtitle_offset_y=-6,
 
     illustration_left=0,
     heading_gap=20,
     title_height=90,
-    ornament_width=230,
+    ornament_width=200,
 
     # Mobile illustration on the left
     mobile_title_svg="Ledger.svg",
