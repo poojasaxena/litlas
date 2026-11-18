@@ -55,11 +55,14 @@ def load_statistics_data(backend):
         "history": repo.get_books_read_by_year(),
         "page_stats": repo.get_page_statistics(),
         "highlights": repo.get_yearly_highlights(),
-        "constellation": repo.get_constellation_book_details(),
         "favourite_authors": repo.get_favourite_authors(),
         "all_authors": repo.get_top_authors(limit=10000),
         "wanderlust": repo.get_literary_wanderlust(),
     }
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def load_constellation_details(backend):
+    return get_repository().get_constellation_book_details()
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_popup_books(read_books):
@@ -792,10 +795,6 @@ render_page_header(
 ## Load reading statistics
 stats = load_statistics_data(backend_name())
 
-## Temporary analysis of long books
-books = repository.load_read_books()
-print(books.columns.tolist())
-
 # ---------------------------------------------------------
 # Reading summary
 # ---------------------------------------------------------
@@ -813,6 +812,56 @@ read_authors = read_books["Author"].dropna().unique()
 
 nobel_authors = match_nobel_authors(read_authors)
 nobel_data_available = bool(load_literature_laureates())
+
+if not is_mobile:
+    st.html("""
+    <style>
+    @media screen and (min-width: 641px) {
+        [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+        > [data-testid="stColumn"]:nth-child(1) [data-testid="stMetricLabel"] p {
+            --litlas-stat-icon: "book_2";
+        }
+
+        [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+        > [data-testid="stColumn"]:nth-child(2) [data-testid="stMetricLabel"] p {
+            --litlas-stat-icon: "person_edit";
+        }
+
+        [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+        > [data-testid="stColumn"]:nth-child(3) [data-testid="stMetricLabel"] p {
+            --litlas-stat-icon: "public";
+        }
+
+        .litlas-nobel-stat summary {
+            --litlas-stat-icon: "workspace_premium";
+        }
+
+        .litlas-marathon-stat summary {
+            --litlas-stat-icon: "hourglass_bottom";
+        }
+
+        :is(.litlas-nobel-stat, .litlas-marathon-stat) summary {
+            gap: 0;
+        }
+
+        [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+        [data-testid="stMetricLabel"] p::before,
+        :is(.litlas-nobel-stat, .litlas-marathon-stat) summary::before {
+            content: var(--litlas-stat-icon, none) / "";
+            display: inline-block;
+            width: 1em;
+            flex: 0 0 1em;
+            margin-right: 5px;
+            overflow: hidden;
+            white-space: nowrap;
+            vertical-align: -0.15em;
+            font: normal 16px/1 "Material Symbols Rounded";
+            font-feature-settings: "liga";
+            color: #96785D;
+        }
+    }
+    </style>
+    """)
 
 col1, col2, col3, col4, col5 = st.columns(5)
 
@@ -856,7 +905,6 @@ with col4:
         '<div class="litlas-nobel-stat">'
         '<details>'
         '<summary title="View Nobel laureates">'
-        '<span aria-hidden="true">🏅</span>'
         '<span>Nobel Laureates Read</span>'
         '</summary>'
         '<div class="litlas-nobel-panel">'
@@ -1536,18 +1584,10 @@ with country_col:
         country_names = dict(zip(top_density["iso3"], top_density["country"]))
 
         render_rating_popup(
-            country_books,
+            {iso: country_books.get(iso, []) for iso in country_names},
             mode="country",
             country_names=country_names,
         )
-
-
-blue_spine_path = make_book_spine_asset(
-    name="rating_3_blue",
-    base_color="#4F647A",
-    edge_color="#344556",
-    gold_color="#D8B36A",
-)
 
 ratings = stats["ratings"]
 
@@ -1712,30 +1752,30 @@ with highlights_col:
     # )
 
 ### Constellation Plot
+if not is_mobile:
+    with st.container(key="litlas_constellation_section"):
+        st.divider()
+        st.subheader("Literary Constellation")
 
-with st.container(key="litlas_constellation_section"):
-    st.divider()
-    st.subheader("Literary Constellation")
+        try:
+            constellation_df = load_constellation_books(
+                default_constellation_csv(),
+                load_constellation_details(backend_name())
+            )
 
-    try:
-        constellation_df = load_constellation_books(
-            default_constellation_csv(),
-            stats["constellation"],
-        )
+            constellation_fig = build_constellation_figure(
+                constellation_df,
+                height=530,
+            )
 
-        constellation_fig = build_constellation_figure(
-            constellation_df,
-            height=530,
-        )
+            st.plotly_chart(
+                constellation_fig,
+                width="stretch",
+                config={"displayModeBar": False},
+            )
 
-        st.plotly_chart(
-            constellation_fig,
-            width="stretch",
-            config={"displayModeBar": False},
-        )
-
-    except (ValueError, FileNotFoundError) as exc:
-        st.warning(f"Constellation could not be loaded: {exc}")
+        except (ValueError, FileNotFoundError) as exc:
+            st.warning(f"Constellation could not be loaded: {exc}")
 
 # ---------------------------------------------------------
 # My Literary Book of Honour

@@ -12,6 +12,24 @@ from litlas.app.map_style import BORDER_COLOR, DENSITY_COLORS, LAND_COLOR
 from litlas.app.popups import pop_html
 from litlas.processing.countries import country_name, load_simplified_country_boundaries
 
+class ReadingDensityPopups(MacroElement):
+    """Bind work details only where a country has mapped works."""
+
+    _template = Template("""
+        {% macro script(this, kwargs) %}
+        {{ this._parent.get_name() }}.eachLayer((countryLayer) => {
+            const html = countryLayer.feature.properties.litlas_popup;
+            if (!html) return;
+
+            const content = document.createElement("div");
+            content.style.cssText =
+                "border:0;font-family:system-ui,sans-serif;font-size:12px;line-height:1.35;";
+            content.innerHTML = html;
+            countryLayer.bindPopup(content, {maxWidth: 400});
+        });
+        {% endmacro %}
+    """)
+
 
 def add_reading_density(m, books, *, show=True):
     """Add the choropleth and legend using the same distinct-work count as SQL."""
@@ -56,9 +74,7 @@ def add_reading_density(m, books, *, show=True):
                 iso,
             )
         else:
-            props["litlas_popup"] = (
-                f"<strong>{escape(str(name))}</strong>" "<div>No mapped works</div>"
-            )
+            props["litlas_popup"] = None
 
 
     def style_country(feature):
@@ -90,18 +106,7 @@ def add_reading_density(m, books, *, show=True):
         ),
     ).add_to(m)
 
-    folium.GeoJsonPopup(
-        fields=["litlas_popup"],
-        labels=False,
-        localize=False,
-        max_width=400,
-        style=(
-            "border:0;"
-            "font-family:system-ui,sans-serif;"
-            "font-size:12px;"
-            "line-height:1.35;"
-        ),
-    ).add_to(layer)
+    ReadingDensityPopups().add_to(layer)
 
     # Compact reading-density legend inside the map
     legend_counts = sorted(
