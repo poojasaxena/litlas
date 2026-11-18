@@ -284,7 +284,7 @@ st.html("""
 @media screen and (max-width: 640px) {
     .litlas-about {
         font-size: 15px;
-        line-height: 1.6;
+        line-height: 1.5;
         padding-top: 0;
 
     }
