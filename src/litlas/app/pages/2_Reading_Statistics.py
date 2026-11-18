@@ -1448,7 +1448,7 @@ def add_horizontal_book_stacks(fig, counts):
 # Row 1: Country distribution and ratings
 # ---------------------------------------------------------
 
-country_col, ratings_col = st.columns([2, 1], gap="small")
+country_col, recent_col, ratings_col = st.columns([1.4, 0.8, 1], gap="small")
 
 density = stats["density"]
 density = density[
@@ -1588,6 +1588,127 @@ with country_col:
             mode="country",
             country_names=country_names,
         )
+
+with recent_col:
+    st.subheader("Latest Reads")
+
+    finished = pd.to_datetime(
+        read_books["Date Read"]
+        .astype("string")
+        .str.strip()
+        .str.replace("/", "-", regex=False),
+        format="%Y-%m-%d",
+        errors="coerce",
+    )
+    recent = (
+        read_books.loc[
+            finished.notna(),
+            ["Display Title", "Author", "ISO3", "Country", "My Rating"],
+        ]
+        .assign(finished=finished)
+        .nlargest(6, "finished")
+    )
+
+    if recent.empty:
+        st.caption("No books with a recorded finish date yet.")
+    else:
+        entries = []
+
+        for title, author, iso, country, rating, date in recent.itertuples(
+            index=False, name=None
+        ):
+            iso = str(iso).strip() if pd.notna(iso) else ""
+            country = str(country).strip() if pd.notna(country) else ""
+            place = country_name(iso, fallback=country or "Country unknown")
+            date_label = date.strftime("%d %b %Y").lstrip("0")
+
+            entries.append(
+                '<li>'
+                '<div class="recent-text">'
+                f'<cite>{escape(str(title))}</cite>'
+                f'<div class="recent-byline">{escape(str(author))}'
+                f' · {escape(place)}</div>'
+                '</div>'
+                '<div class="recent-meta">'
+                f'<time datetime="{date.date().isoformat()}">{date_label}</time>'
+                f'{format_rating(rating)}'
+                '</div>'
+                '</li>'
+            )
+        st.html(
+            """
+            <style>
+            .litlas-recent-reads {
+                margin: 0;
+                padding: 0 12px !important;
+                list-style: none;
+                background: #FAF7F1;
+                border: 1px solid #E2D5C3;
+                border-radius: 8px;
+                color: #58412F;
+                font-family: Georgia, serif;
+            }
+            .litlas-recent-reads li {
+                margin: 0;
+                padding: 8px 0;
+                overflow-wrap: anywhere;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                align-items: start;
+                column-gap: 10px;
+            }
+            .litlas-recent-reads li + li {
+                border-top: 1px solid #E8DED0;
+            }
+            .litlas-recent-reads cite {
+                display: block;
+                font-size: 15px;
+                line-height: 1.25;
+            }
+            .litlas-recent-reads .recent-byline {
+                margin-top: 2px;
+                color: #746655;
+                font-size: 12px;
+                line-height: 1.35;
+            }
+            .litlas-recent-reads .recent-meta {
+                display: grid;
+                justify-items: end;
+                align-content: start;
+                row-gap: 2px;
+                color: #746655;
+                font-size: 12px;
+                line-height: 1.25;
+                white-space: nowrap;
+            }
+            @media screen and (max-width: 640px) {
+                [data-testid="stHorizontalBlock"]:has(
+                    > [data-testid="stColumn"] .litlas-recent-reads
+                ) {
+                    flex-direction: column;
+                }
+                [data-testid="stHorizontalBlock"]:has(
+                    > [data-testid="stColumn"] .litlas-recent-reads
+                ) > [data-testid="stColumn"] {
+                    width: 100% !important;
+                    flex: none !important;
+                }
+                [data-testid="stColumn"]:has(.litlas-recent-reads) {
+                    order: -1;
+                }
+            }
+            @media screen and (min-width: 641px) {
+                .litlas-recent-reads {
+                    margin-top: 24px !important;
+                }
+            }
+            </style>
+            """
+            + '<ul class="litlas-recent-reads">'
+            + "".join(entries)
+            + "</ul>"
+        )
+
 
 ratings = stats["ratings"]
 
