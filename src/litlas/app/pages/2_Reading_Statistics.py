@@ -1790,7 +1790,18 @@ with history_col:
     if history.empty:
         st.info("No books have a recorded reading date yet.")
     else:
-        fig_history = build_year_spines_figure(history, spine_width=0.60, image_height=400)
+        fig_history = build_year_spines_figure(
+            history,
+            spine_width=0.78 if is_mobile else 0.60,
+            image_height=400,
+        )
+
+        if is_mobile:
+            fig_history.update_xaxes(
+                tickangle=-50,
+                tickfont_size=10,
+                automargin=True,
+            )
         fig_history.update_yaxes(title_text=None)
 
         st.plotly_chart(
