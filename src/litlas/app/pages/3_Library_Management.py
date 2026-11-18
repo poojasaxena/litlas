@@ -846,7 +846,7 @@ with st.container(key="litlas_library_navigation"):
             selected = st.session_state.library_tool == name
             label = "Author" if is_mobile and name == "Author Details" else name
             if st.button(
-                name,
+                label,
                 icon=symbol,
                 key="tool_add_book" if name == "Add a Book" else f"tool_{name}",
                 type="primary" if selected else "secondary",
