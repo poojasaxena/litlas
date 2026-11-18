@@ -298,7 +298,7 @@ st.html("""
         max-width: none;
         height: auto;
         transform: none;
-        opacity: 0.88;
+        opacity: 0.98;
         mask-image: radial-gradient(
             ellipse 33% 58% at 82% 73%,
             #000 35%,
