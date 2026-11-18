@@ -307,7 +307,7 @@ st.html("""
     }
 
     .litlas-about-reading-page {
-        padding: 4px 0 12px;
+        padding: 2px 0 4px;
     }
 
     .litlas-about-signoff {
