@@ -298,7 +298,7 @@ st.html("""
         max-width: none;
         height: auto;
         transform: none;
-        opacity: 0.38;
+        opacity: 0.68;
         mask-image: radial-gradient(
             ellipse 33% 58% at 82% 73%,
             #000 35%,
@@ -311,7 +311,7 @@ st.html("""
     }
 
     .litlas-about-signoff {
-        margin-top: 8px;
+        margin-top: 4px;
     }
 
     .litlas-about-personal-logo {
