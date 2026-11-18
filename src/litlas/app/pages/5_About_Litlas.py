@@ -311,7 +311,7 @@ st.html("""
     }
 
     .litlas-about-signoff {
-        margin-top: 0;
+        margin-top: 1px;
     }
 
     .litlas-about-personal-logo {
