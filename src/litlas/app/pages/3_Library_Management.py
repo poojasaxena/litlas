@@ -19,7 +19,7 @@ from litlas.app.library.author_favourites import (
 from textwrap import dedent
 from litlas.app.library.author_details import render_author_details
 from litlas.app.library.book_add import render_add_book
-from litlas.app.ui import apply_page_style, render_page_header
+from litlas.app.ui import apply_page_style, render_page_header, is_mobile_browser
 from litlas.app.library.book_editor import render_book_editor_contents
 from litlas.database.importer import (
     preview_goodreads_import,
@@ -42,6 +42,7 @@ st.set_page_config(
 )
 
 apply_page_style()
+is_mobile = is_mobile_browser()
 
 render_page_header(
     "Library Management",
@@ -843,7 +844,7 @@ with st.container(key="litlas_library_navigation"):
     for column, (name, symbol) in zip(columns, TOOLS):
         with column:
             selected = st.session_state.library_tool == name
-
+            label = "Author" if is_mobile and name == "Author Details" else name
             if st.button(
                 name,
                 icon=symbol,
