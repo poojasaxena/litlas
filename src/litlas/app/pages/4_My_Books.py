@@ -7,7 +7,7 @@ import base64
 from pathlib import Path
 from textwrap import dedent
 
-from litlas.app.ui import apply_page_style, render_page_header, mobile_browser
+from litlas.app.ui import apply_page_style, render_page_header, is_mobile_browser
 from litlas.processing.paths import (
     JINDAGI_COVER,
     LIFE_ENDLESS_EBB_COVER,
@@ -21,7 +21,7 @@ st.set_page_config(
 )
 
 apply_page_style()
-is_mobile = mobile_browser()
+is_mobile = is_mobile_browser()
 
 render_page_header(
     "Ink & Verse",
