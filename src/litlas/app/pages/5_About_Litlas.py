@@ -294,7 +294,7 @@ st.html("""
         left: auto;
         right: -12px;
         bottom: 6px;
-        width: min(170%, 650px);
+        width: min(170%, 850px);
         max-width: none;
         height: auto;
         transform: none;
