@@ -4,6 +4,8 @@
 import streamlit as st
 import pycountry
 from html import escape
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from litlas.app.library.book_editor import RATING_OPTIONS
 from litlas.app.library.author_details import find_author_matches
@@ -163,10 +165,13 @@ def render_add_book():
                 )
 
             with col6:
+                reader_timezone = ZoneInfo(
+                    getattr(st.context, "timezone", None) or "Europe/Berlin"
+                )
                 date_read = st.date_input(
                     "Date read (optional)",
                     value=None,
-                    max_value="today",
+                    max_value=datetime.now(reader_timezone).date(),
                     format="DD.MM.YYYY",
                     key="add_book_date",
                 )
