@@ -11,6 +11,7 @@ from litlas.app.library.book_editor import RATING_OPTIONS
 from litlas.app.library.author_details import find_author_matches
 from litlas.processing.countries import COUNTRY_DISPLAY_NAMES, country_name
 from litlas.db_backend import connect, get_repository
+from litlas.reading_notes import READING_NOTE_MAX_CHARS
 
 add_book = get_repository().add_book
 
@@ -140,6 +141,9 @@ def render_add_book():
     # -------------------------------------------------
     # Book details
     # -------------------------------------------------
+    if "added_book" in st.session_state:
+        st.session_state.pop("add_book_reading_note", None)
+
     with st.form(
         "add_book_form",
         clear_on_submit=False,
@@ -175,6 +179,13 @@ def render_add_book():
                     format="DD.MM.YYYY",
                     key="add_book_date",
                 )
+
+        reading_note = st.text_input(
+            "Reading note (optional)",
+            max_chars=READING_NOTE_MAX_CHARS,
+            key="add_book_reading_note",
+            placeholder="One thought you want to remember",
+        )
 
         submitted = st.form_submit_button(
             "Add to Litlas",
@@ -234,6 +245,7 @@ def render_add_book():
                 rating=RATING_OPTIONS[rating_label],
                 pages=int(pages) if pages else None,
                 shelf='read',
+                reading_note=reading_note,
                 date_read=(
                     date_read.strftime("%Y/%m/%d")
                     if date_read is not None

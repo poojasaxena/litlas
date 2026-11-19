@@ -6,6 +6,7 @@ Database queries used by the Litlas application.
 import pandas as pd
 
 from litlas.cloud_db.connection import connect
+from litlas.reading_notes import normalize_reading_note
 from litlas.processing.cleaning import clean_title
 from litlas.processing.paths import load_config
 from difflib import SequenceMatcher
@@ -406,10 +407,7 @@ def update_book_details(
 ):
     """Save locally curated book details without changing Goodreads data."""
 
-    if reading_note is not None:
-        reading_note = reading_note.strip()
-        if len(reading_note) > 180:
-            raise ValueError("Reading note must be 180 characters or fewer.")
+    reading_note = normalize_reading_note(reading_note)
 
     display_title = display_title.strip()
 
@@ -568,10 +566,13 @@ def add_book(
     new_author_name: str | None = None,
     new_author_iso3: str | None = None,
     confirm_similar: bool = False,
+    *,
+    reading_note: str | None = None,
 ) -> str:
     """Add a book independently of Goodreads."""
 
     title = title.strip()
+    reading_note = normalize_reading_note(reading_note) or None
 
     if not title:
         raise ValueError("Book title cannot be empty.")
@@ -686,9 +687,10 @@ def add_book(
                 pages,
                 shelf,
                 date_read,
+                reading_note,
                 excluded_from_display
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0)
             """,
             (
                 book_id,
@@ -701,6 +703,7 @@ def add_book(
                 pages,
                 shelf,
                 date_read,
+                reading_note,
             ),
         )
 

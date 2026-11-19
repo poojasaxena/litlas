@@ -6,6 +6,7 @@ import streamlit as st
 from html import escape
 
 from litlas.db_backend import get_repository
+from litlas.reading_notes import READING_NOTE_MAX_CHARS
 
 repository = get_repository()
 
@@ -251,7 +252,7 @@ def render_book_editor_contents(show_heading=True):
         reading_note = st.text_input(
             "Reading note",
             value=str(row["reading_note"]) if pd.notna(row["reading_note"]) else "",
-            max_chars=180,
+            max_chars=READING_NOTE_MAX_CHARS,
             key=f"book_reading_note_{selected_id}",
             placeholder="One thought you want to remember",
         )
@@ -448,7 +449,7 @@ def render_book_editor_contents_sidebar(show_heading=True):
         reading_note = st.text_input(
             "Reading note",
             value=str(row["reading_note"]) if pd.notna(row["reading_note"]) else "",
-            max_chars=180,
+            max_chars=READING_NOTE_MAX_CHARS,
             key=f"sidebar_book_reading_note_{selected_id}",
             placeholder="One thought you want to remember",
         )
