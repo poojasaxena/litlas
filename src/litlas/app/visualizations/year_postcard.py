@@ -16,9 +16,9 @@ from litlas.processing.paths import ASSETS_DIR, ILLUSTRATIONS_DIR, load_config, 
 
 
 WIDTH = 1440
-BODY_TOP = 222
-FOOTER_TOP = BODY_TOP + 360
-BASE_HEIGHT = FOOTER_TOP + 126
+BODY_TOP = 265
+FOOTER_TOP = BODY_TOP + 530
+BASE_HEIGHT = FOOTER_TOP + 165
 BOOK_LIMIT = 4
 PAPER = "#f8f3e9"
 INK = "#51392d"
@@ -97,12 +97,12 @@ def _title_art():
     return ImageOps.contain(title.crop(bounds), (750, 61), Image.Resampling.LANCZOS)
 
 
-@lru_cache(maxsize=1)
-def _logo_art():
-    with Image.open(ILLUSTRATIONS_DIR / "litlas_logo.png") as source:
+@lru_cache(maxsize=2)
+def _logo_art(path, size):
+    with Image.open(path) as source:
         logo = source.convert("RGBA")
     logo = logo.crop(logo.getchannel("A").getbbox())
-    return ImageOps.contain(logo, (193, 152), Image.Resampling.LANCZOS)
+    return ImageOps.contain(logo, size, Image.Resampling.LANCZOS)
 
 
 def _wrap(text, font, width, max_lines):
@@ -150,7 +150,7 @@ def _draw_map(draw, codes):
             polygons = [polygons]
         for polygon in polygons:
             outline = [
-                (802 + (lon + 180) * 1.38, BODY_TOP + 153 - lat * 1.38)
+                (770 + (lon + 180) * 1.62, BODY_TOP + 205 - lat * 1.9)
                 for lon, lat in polygon[0]
             ]
             if len(outline) >= 3:
@@ -204,27 +204,57 @@ def render_postcard(
     draw.rounded_rectangle((24, 24, WIDTH - 24, height - 24), radius=8, outline=RULE, width=2)
 
     center = WIDTH // 2
-    logo = _logo_art()
+    logo = _logo_art(ILLUSTRATIONS_DIR / "litlas_logo.png", (225, 175))
     image.paste(logo, (68, 42), logo)
+
+    author_logo = _logo_art(ASSETS_DIR / "branding" / "author_logo.png", (155, 155))
+    author_x = WIDTH - 68 - author_logo.width
+    author_y = 42 + (logo.height - author_logo.height) // 2
+    image.paste(author_logo, (author_x, author_y), author_logo)
+
+    ## Render the header section with title and year
+    header_shift = 16
     title = _title_art()
+
     if title is None:
-        draw.text((center, 53), "A Year in Books", anchor="mt", font=_heading_font(55), fill=INK)
+        draw.text(
+            (center, 53 + header_shift),
+            "A Year in Books",
+            anchor="mt",
+            font=_heading_font(55),
+            fill=INK,
+        )
     else:
-        image.paste(title, ((WIDTH - title.width) // 2, 83 - title.height // 2), title)
-    draw.line((center - 88, 129, center + 88, 129), fill=RULE, width=2)
-    _draw_number(draw, (center, 150), str(year), 36, anchor="mt")
-    draw.ellipse((1261, 44, 1345, 128), outline=RULE, width=2)
-    draw.ellipse((1267, 50, 1339, 122), outline=RULE, width=1)
-    _draw_number(draw, (1303, 86), str(year), 27, anchor="mm")
+        title_x = (WIDTH - title.width) // 2
+        title_y = 83 - title.height // 2 + header_shift
+        image.paste(title, (title_x, title_y), title)
+
+    rule_y = 129 + header_shift
+    draw.line((center - 88, rule_y, center + 88, rule_y), fill=RULE, width=2)
+    _draw_number(draw, (center, 150 + header_shift), str(year), 36, anchor="mt")
+    # draw.line((center - 88, 129, center + 88, 129), fill=RULE, width=2)
+    # _draw_number(draw, (center, 150), str(year), 36, anchor="mt")
+    # draw.ellipse((1261, 44, 1345, 128), outline=RULE, width=2)
+    # draw.ellipse((1267, 50, 1339, 122), outline=RULE, width=1)
+    #_draw_number(draw, (1303, 86), str(year), 27, anchor="mm")
     draw.line((68, BODY_TOP - 15, WIDTH - 68, BODY_TOP - 15), fill=RULE, width=2)
 
     book_heading = "Books I’d Carry Forward" if selected_books else "Highest-Rated Reads"
     draw.text((68, BODY_TOP), book_heading, font=_heading_font(31), fill=INK)
     if not books:
         draw.text((68, BODY_TOP + 45), "No rated books recorded this year", font=_font(22), fill=MUTED)
-    for index, (title, author) in enumerate(books):
-        y = BODY_TOP + 41 + index * 76
-        title_lines = _wrap(title, _font(25, "-Italic"), 620, 2)
+
+    ## Render the list of books
+    for index, (title, author, rating) in enumerate(books):
+        y = BODY_TOP + 72 + index * 108
+        title_lines = _wrap(title, _font(25, "-Italic"), 510, 2)
+
+        if pd.notna(rating) and rating > 0:
+            draw.text(
+                (675, y), f"{rating:g}/5",
+                anchor="rt", font=_font(23), fill=GOLD,
+            )
+
         for line_no, line in enumerate(title_lines):
             draw.text((68, y + line_no * 26), line, font=_font(25, "-Italic"), fill=INK)
         for author_line in _wrap(author, _font(20), 620, 1):
@@ -232,6 +262,8 @@ def render_postcard(
 
     draw.line((720, BODY_TOP + 2, 720, FOOTER_TOP - 20), fill=RULE, width=1)
     draw.text((752, BODY_TOP), "New Places on the Map", font=_heading_font(31), fill=INK)
+
+    ## Render the map of new countries
     _draw_map(draw, set(first_countries["code"]))
     countries = [country_name(code) for code in first_countries["code"]]
     if 0 < len(countries) <= 3:
@@ -243,7 +275,7 @@ def render_postcard(
         names = " · ".join(countries) if countries else "No first reads from new countries recorded"
         map_labels = _wrap(names, _font(20), 608, 2)
     for index, line in enumerate(map_labels):
-        draw.text((752, BODY_TOP + 281 + index * 22), line, font=_font(20), fill=MUTED)
+        draw.text((752, BODY_TOP + 352 + index * 28), line, font=_font(20), fill=MUTED)
 
     draw.line((68, FOOTER_TOP, WIDTH - 68, FOOTER_TOP), fill=RULE, width=2)
     for x, label, value in ((68, "BOOKS FINISHED", count), (247, "NEW COUNTRIES", len(countries))):
@@ -279,10 +311,12 @@ def highest_rated_books(books):
     ratings = pd.to_numeric(books["My Rating"], errors="coerce")
     rated = books.loc[ratings.gt(0)].assign(rating=ratings)
     ranked = rated.sort_values(["rating", "finished"], ascending=False)
-    return list(ranked.head(BOOK_LIMIT)[["Display Title", "Author"]].itertuples(index=False, name=None))
+    return list(
+        ranked.head(BOOK_LIMIT)[["Display Title", "Author", "rating"]]
+        .itertuples(index=False, name=None)
+    )
 
-
-@st.dialog("A Year in Books", width="large")
+@st.dialog("A Year in Books", width=780)
 def show_year_postcard(read_books, page_details):
     dated = dated_books(read_books)
     years = sorted(dated["finished"].dt.year.unique().tolist(), reverse=True)
@@ -298,19 +332,25 @@ def show_year_postcard(read_books, page_details):
     preview = st.empty()
     download = st.empty()
 
+    rated_options = books.assign(
+        rating=pd.to_numeric(books["My Rating"], errors="coerce")
+    )
     options = {
-        str(book_id): (str(title), str(author))
-        for book_id, title, author in books[["Book Id", "Display Title", "Author"]].itertuples(index=False, name=None)
+        str(book_id): (str(title), str(author), rating)
+        for book_id, title, author, rating in rated_options[
+            ["Book Id", "Display Title", "Author", "rating"]
+        ].itertuples(index=False, name=None)
     }
     drafts = st.session_state.setdefault("litlas_postcard_drafts", {})
     previous_choices, previous_note = drafts.get(year, ([], ""))
+
     with st.expander("Personalize the postcard"):
         chosen = st.multiselect(
             "Books you’d carry forward",
             list(options),
             default=[book_id for book_id in previous_choices if book_id in options][:BOOK_LIMIT],
             max_selections=BOOK_LIMIT,
-            format_func=lambda book_id: " · ".join(options[book_id]),
+            format_func=lambda book_id: " · ".join(options[book_id][:2]),
             key=f"litlas_postcard_books_{year}",
         )
         note = st.text_input(
