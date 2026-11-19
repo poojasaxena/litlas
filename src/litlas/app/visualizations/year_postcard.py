@@ -4,7 +4,7 @@ from functools import lru_cache
 from io import BytesIO
 
 import pandas as pd
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageFont, ImageOps, features
 import streamlit as st
 
 from litlas.processing.countries import (
@@ -12,15 +12,21 @@ from litlas.processing.countries import (
     explored_country_codes,
     litlas_country_features,
 )
-from litlas.processing.paths import ILLUSTRATIONS_DIR
+from litlas.processing.paths import ASSETS_DIR, ILLUSTRATIONS_DIR, load_config, resolve_project_path
 
 
-SIZE = (1440, 1060)
+WIDTH = 1440
+BODY_TOP = 222
+FOOTER_TOP = BODY_TOP + 360
+BASE_HEIGHT = FOOTER_TOP + 126
+BOOK_LIMIT = 4
 PAPER = "#f8f3e9"
 INK = "#51392d"
 MUTED = "#765d49"
 GOLD = "#976338"
 RULE = "#c9af91"
+FIGURE_INK = "#6E4B3A"
+FONT_DIR = ASSETS_DIR / "fonts"
 
 
 def dated_books(books):
@@ -47,6 +53,58 @@ def _font(size, style=""):
         return ImageFont.load_default(size=size)
 
 
+@lru_cache(maxsize=4)
+def _heading_font(size):
+    return ImageFont.truetype(FONT_DIR / "NotoSerifDisplay-BoldItalic.ttf", size)
+
+
+@lru_cache(maxsize=8)
+def _figure_font(size):
+    for filename in ("georgiab.ttf", "Georgia Bold.ttf"):
+        try:
+            return ImageFont.truetype(filename, size), None
+        except OSError:
+            continue
+    font = ImageFont.truetype(FONT_DIR / "NotoSerif-Numerals.ttf", size)
+    return font, ["onum"] if features.check_feature("raqm") else None
+
+
+def _draw_number(draw, position, value, size, *, anchor="rs"):
+    font, font_features = _figure_font(size)
+    draw.text(
+        position, value, font=font, features=font_features,
+        anchor=anchor, fill=FIGURE_INK,
+    )
+
+
+@lru_cache(maxsize=1)
+def _title_art():
+    configured_path = load_config().get("branding", {}).get("year_postcard_title")
+    if not configured_path:
+        return None
+    path = resolve_project_path(configured_path)
+    if not path.is_file():
+        return None
+
+    from resvg_py import svg_to_bytes
+
+    svg = path.read_text(encoding="utf-8").replace("#000000", "#58412F")
+    with Image.open(BytesIO(bytes(svg_to_bytes(svg_string=svg, width=1000)))) as source:
+        title = source.convert("RGBA")
+    bounds = title.getchannel("A").getbbox()
+    if bounds is None:
+        return None
+    return ImageOps.contain(title.crop(bounds), (750, 61), Image.Resampling.LANCZOS)
+
+
+@lru_cache(maxsize=1)
+def _logo_art():
+    with Image.open(ILLUSTRATIONS_DIR / "litlas_logo.png") as source:
+        logo = source.convert("RGBA")
+    logo = logo.crop(logo.getchannel("A").getbbox())
+    return ImageOps.contain(logo, (193, 152), Image.Resampling.LANCZOS)
+
+
 def _wrap(text, font, width, max_lines):
     lines = []
     remaining = " ".join(text.split())
@@ -70,11 +128,12 @@ def _wrap(text, font, width, max_lines):
     return lines
 
 
-@lru_cache(maxsize=1)
-def _paper():
-    image = Image.new("RGBA", SIZE, PAPER)
+@lru_cache(maxsize=2)
+def _paper(height):
+    size = (WIDTH, height)
+    image = Image.new("RGBA", size, PAPER)
     with Image.open(ILLUSTRATIONS_DIR / "about-literary-margins-muted.png") as source:
-        wash = ImageOps.fit(source.convert("RGBA"), SIZE, method=Image.Resampling.LANCZOS)
+        wash = ImageOps.fit(source.convert("RGBA"), size, method=Image.Resampling.LANCZOS)
     wash.putalpha(wash.getchannel("A").point(lambda value: round(value * 0.26)))
     image.alpha_composite(wash)
     return image.convert("RGB")
@@ -91,83 +150,136 @@ def _draw_map(draw, codes):
             polygons = [polygons]
         for polygon in polygons:
             outline = [
-                (782 + (lon + 180) * 1.48, 707 - lat * 1.48)
+                (802 + (lon + 180) * 1.38, BODY_TOP + 153 - lat * 1.38)
                 for lon, lat in polygon[0]
             ]
             if len(outline) >= 3:
                 draw.polygon(outline, fill=color, outline=PAPER)
 
 
+def _draw_length(draw, x, width, label, book):
+    draw.text((x, FOOTER_TOP + 20), label, font=_font(17), fill=MUTED)
+    title_font = _font(23, "-Italic")
+    if book is None:
+        draw.text((x, FOOTER_TOP + 61), "No page count recorded", anchor="ls", font=title_font, fill=INK)
+        return
+
+    title, pages = book
+    page_text = f"{pages:,}"
+    number_font, number_features = _figure_font(23)
+    number_width = draw.textlength(page_text, font=number_font, features=number_features)
+    unit_font = _font(20)
+    separator = " · "
+    suffix_width = (
+        draw.textlength(separator, font=unit_font) + number_width
+        + draw.textlength(" pages", font=unit_font)
+    )
+    lines = _wrap(title, title_font, width, 2)
+    if lines and draw.textlength(lines[-1], font=title_font) + suffix_width > width:
+        lines = _wrap(title, title_font, width - suffix_width, 2)
+
+    baseline = FOOTER_TOP + 61
+    for line in lines:
+        draw.text((x, baseline), line, anchor="ls", font=title_font, fill=INK)
+        baseline += 25
+    if lines:
+        baseline -= 25
+    suffix_x = x + (draw.textlength(lines[-1], font=title_font) if lines else 0)
+    draw.text((suffix_x, baseline), separator, anchor="ls", font=unit_font, fill=MUTED)
+    number_x = suffix_x + draw.textlength(separator, font=unit_font)
+    _draw_number(draw, (number_x, baseline), page_text, 23, anchor="ls")
+    draw.text((number_x + number_width, baseline), " pages", anchor="ls", font=unit_font, fill=MUTED)
+
+
+
 def render_postcard(
-    year, count, first_countries, longest, books, note, *, selected_books=False
+    year, count, first_countries, shortest, longest, books, note, *, selected_books=False
 ):
     """Draw the preview and downloadable PNG from the same source."""
-    image = _paper().copy()
+    note_font = _font(24, "-Italic")
+    note_lines = _wrap(f"“{note}”", note_font, 1260, 2) if note else []
+    height = BASE_HEIGHT + (28 + 30 * len(note_lines) if note_lines else 0)
+    image = _paper(height).copy()
     draw = ImageDraw.Draw(image)
-    draw.rounded_rectangle((28, 28, 1412, 1032), radius=8, outline=RULE, width=2)
-    draw.text((80, 77), "LITLAS  /  A PERSONAL LITERARY ATLAS", font=_font(20), fill=MUTED)
-    draw.ellipse((1225, 58, 1353, 186), outline=RULE, width=3)
-    draw.ellipse((1234, 67, 1344, 177), outline=RULE, width=1)
-    draw.text((1289, 122), str(year), anchor="mm", font=_font(29, "-Bold"), fill=GOLD)
-    draw.text((720, 141), "A Year in Books", anchor="mt", font=_font(76, "-Italic"), fill=INK)
-    draw.line((624, 248, 816, 248), fill=RULE, width=2)
+    draw.rounded_rectangle((24, 24, WIDTH - 24, height - 24), radius=8, outline=RULE, width=2)
 
-    if note:
-        lines = _wrap(f"“{note}”", _font(39, "-Italic"), 1060, 3)
-        for index, line in enumerate(lines):
-            draw.text((720, 295 + index * 53), line, anchor="mt", font=_font(39, "-Italic"), fill=INK)
+    center = WIDTH // 2
+    logo = _logo_art()
+    image.paste(logo, (68, 42), logo)
+    title = _title_art()
+    if title is None:
+        draw.text((center, 53), "A Year in Books", anchor="mt", font=_heading_font(55), fill=INK)
     else:
-        draw.text((720, 318), str(year), anchor="mt", font=_font(44), fill=MUTED)
+        image.paste(title, ((WIDTH - title.width) // 2, 83 - title.height // 2), title)
+    draw.line((center - 88, 129, center + 88, 129), fill=RULE, width=2)
+    _draw_number(draw, (center, 150), str(year), 36, anchor="mt")
+    draw.ellipse((1261, 44, 1345, 128), outline=RULE, width=2)
+    draw.ellipse((1267, 50, 1339, 122), outline=RULE, width=1)
+    _draw_number(draw, (1303, 86), str(year), 27, anchor="mm")
+    draw.line((68, BODY_TOP - 15, WIDTH - 68, BODY_TOP - 15), fill=RULE, width=2)
 
-    draw.line((80, 464, 1360, 464), fill=RULE, width=2)
-    book_heading = "Books I’d Carry Forward" if selected_books else "Last Reads of the Year"
-    draw.text((85, 506), book_heading, font=_font(37, "-Italic"), fill=INK)
+    book_heading = "Books I’d Carry Forward" if selected_books else "Highest-Rated Reads"
+    draw.text((68, BODY_TOP), book_heading, font=_heading_font(31), fill=INK)
+    if not books:
+        draw.text((68, BODY_TOP + 45), "No rated books recorded this year", font=_font(22), fill=MUTED)
     for index, (title, author) in enumerate(books):
-        y = 569 + index * 85
-        title_lines = _wrap(title, _font(27, "-Italic"), 620, 2)
+        y = BODY_TOP + 41 + index * 76
+        title_lines = _wrap(title, _font(25, "-Italic"), 620, 2)
         for line_no, line in enumerate(title_lines):
-            draw.text((85, y + line_no * 27), line, font=_font(27, "-Italic"), fill=INK)
-        author_line = _wrap(author, _font(20), 620, 1)
-        if author_line:
-            draw.text(
-                (85, y + len(title_lines) * 27 + 2),
-                author_line[0],
-                font=_font(20),
-                fill=MUTED,
-            )
+            draw.text((68, y + line_no * 26), line, font=_font(25, "-Italic"), fill=INK)
+        for author_line in _wrap(author, _font(20), 620, 1):
+            draw.text((68, y + len(title_lines) * 26 + 1), author_line, font=_font(20), fill=MUTED)
 
-    draw.line((732, 506, 732, 863), fill=RULE, width=1)
-    draw.text((778, 506), "New Places on the Map", font=_font(37, "-Italic"), fill=INK)
+    draw.line((720, BODY_TOP + 2, 720, FOOTER_TOP - 20), fill=RULE, width=1)
+    draw.text((752, BODY_TOP), "New Places on the Map", font=_heading_font(31), fill=INK)
     _draw_map(draw, set(first_countries["code"]))
     countries = [country_name(code) for code in first_countries["code"]]
     if 0 < len(countries) <= 3:
         map_labels = [
-            _wrap(f"{name} · {title}", _font(21), 565, 1)[0]
+            _wrap(f"{name} · {title}", _font(20), 608, 1)[0]
             for name, title in zip(countries, first_countries["Display Title"])
         ]
     else:
         names = " · ".join(countries) if countries else "No first reads from new countries recorded"
-        map_labels = _wrap(names, _font(21), 565, 2)
+        map_labels = _wrap(names, _font(20), 608, 2)
     for index, line in enumerate(map_labels):
-        draw.text((778, 814 + index * 22), line, font=_font(21), fill=MUTED)
+        draw.text((752, BODY_TOP + 281 + index * 22), line, font=_font(20), fill=MUTED)
 
-    draw.line((80, 888, 1360, 888), fill=RULE, width=2)
-    longest_title = "No page count recorded"
-    if longest:
-        title, pages = longest
-        longest_title = f"{title} · {pages:,} pages"
-    stats = [
-        (85, "BOOKS FINISHED", str(count), 220),
-        (332, "NEW COUNTRIES", str(len(countries)), 222),
-        (582, "LONGEST READ", longest_title, 765),
-    ]
-    for x, label, value, width in stats:
-        draw.text((x, 910), label, font=_font(17), fill=MUTED)
-        draw.text((x, 944), _wrap(value, _font(28), width, 1)[0], font=_font(28), fill=INK)
+    draw.line((68, FOOTER_TOP, WIDTH - 68, FOOTER_TOP), fill=RULE, width=2)
+    for x, label, value in ((68, "BOOKS FINISHED", count), (247, "NEW COUNTRIES", len(countries))):
+        draw.text((x, FOOTER_TOP + 20), label, font=_font(17), fill=MUTED)
+        _draw_number(draw, (x, FOOTER_TOP + 61), f"{value:,}", 30, anchor="ls")
+    _draw_length(draw, 433, 430, "LONGEST READ", longest)
+    _draw_length(draw, 901, 471, "SHORTEST READ", shortest)
+
+    if note_lines:
+        draw.line((68, BASE_HEIGHT - 17, WIDTH - 68, BASE_HEIGHT - 17), fill=RULE, width=1)
+        for index, line in enumerate(note_lines):
+            draw.text((center, BASE_HEIGHT - 4 + index * 30), line, anchor="mt", font=note_font, fill=INK)
 
     output = BytesIO()
     image.save(output, format="PNG")
     return output.getvalue()
+
+
+def reading_lengths(page_details, year):
+    lengths = page_details.loc[page_details["year"].astype(str).eq(str(year)), ["title", "pages"]].copy()
+    lengths["pages"] = pd.to_numeric(lengths["pages"], errors="coerce")
+    lengths = lengths.loc[lengths["pages"].gt(0)].sort_values("title", kind="stable")
+    lengths = lengths.reset_index(drop=True)
+    if lengths.empty:
+        return None, None
+
+    shortest = lengths.loc[lengths["pages"].idxmin()]
+    longest = lengths.loc[lengths["pages"].idxmax()]
+    return (str(shortest["title"]), int(shortest["pages"])), (str(longest["title"]), int(longest["pages"]))
+
+
+def highest_rated_books(books):
+    ratings = pd.to_numeric(books["My Rating"], errors="coerce")
+    rated = books.loc[ratings.gt(0)].assign(rating=ratings)
+    ranked = rated.sort_values(["rating", "finished"], ascending=False)
+    return list(ranked.head(BOOK_LIMIT)[["Display Title", "Author"]].itertuples(index=False, name=None))
 
 
 @st.dialog("A Year in Books", width="large")
@@ -182,12 +294,9 @@ def show_year_postcard(read_books, page_details):
     books = dated[dated["finished"].dt.year.eq(year)].copy()
     first = new_countries(dated, year)
 
-    lengths = page_details[page_details["year"].astype(str).eq(str(year))].copy()
-    lengths["pages"] = pd.to_numeric(lengths["pages"], errors="coerce")
-    lengths = lengths[lengths["pages"].gt(0)].sort_values(
-        ["pages", "title"], ascending=[False, True]
-    )
-    longest = (str(lengths.iloc[0]["title"]), int(lengths.iloc[0]["pages"])) if not lengths.empty else None
+    shortest, longest = reading_lengths(page_details, year)
+    preview = st.empty()
+    download = st.empty()
 
     options = {
         str(book_id): (str(title), str(author))
@@ -199,8 +308,8 @@ def show_year_postcard(read_books, page_details):
         chosen = st.multiselect(
             "Books you’d carry forward",
             list(options),
-            default=[book_id for book_id in previous_choices if book_id in options],
-            max_selections=3,
+            default=[book_id for book_id in previous_choices if book_id in options][:BOOK_LIMIT],
+            max_selections=BOOK_LIMIT,
             format_func=lambda book_id: " · ".join(options[book_id]),
             key=f"litlas_postcard_books_{year}",
         )
@@ -212,12 +321,12 @@ def show_year_postcard(read_books, page_details):
         ).strip()
     drafts[year] = (chosen, note)
 
-    entries = [options[book_id] for book_id in chosen] if chosen else list(options.values())[-3:][::-1]
+    entries = [options[book_id] for book_id in chosen] if chosen else highest_rated_books(books)
     png = render_postcard(
-        year, len(books), first, longest, entries, note, selected_books=bool(chosen)
+        year, len(books), first, shortest, longest, entries, note, selected_books=bool(chosen)
     )
-    st.image(png, width="stretch", caption=f"Litlas · {year}")
-    st.download_button(
+    preview.image(png, width="stretch")
+    download.download_button(
         "Download PNG",
         png,
         file_name=f"litlas-{year}-year-in-books.png",

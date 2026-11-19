@@ -20,6 +20,7 @@ remove_subtitles = true
 
 [branding]
 logo = "data/assets/branding/nostalgic.svg"
+year_postcard_title = "data/assets/headers/Vivaldi/a_year_in_books.svg"
 
 [illustrations]
 literary_atlas = "data/assets/illustrations/litlas_logo.svg"
