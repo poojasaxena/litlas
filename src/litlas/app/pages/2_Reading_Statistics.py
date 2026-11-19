@@ -16,7 +16,7 @@ from litlas.app.visualizations.book_spines import (
     build_rating_spines_figure,
     build_year_spines_figure,
 )
-from litlas.processing.countries import country_name, explored_country_codes, unrecognized_country_codes
+from litlas.processing.countries import country_name, explored_country_codes
 from litlas.app.visualizations.constellation import (
     load_constellation_books,
     build_constellation_figure,
@@ -28,6 +28,8 @@ from litlas.app.visualizations.wanderlust import build_wanderlust_figure
 
 from litlas.db_backend import get_repository, backend_name
 
+
+## Repository and data access functions
 repository = get_repository()
 get_favourite_authors = repository.get_favourite_authors
 get_country_reading_density = repository.get_country_reading_density
@@ -1448,7 +1450,7 @@ def add_horizontal_book_stacks(fig, counts):
 # Row 1: Country distribution and ratings
 # ---------------------------------------------------------
 
-country_col, recent_col, ratings_col = st.columns([1.4, 0.8, 1], gap="small")
+country_col, recent_col, ratings_col = st.columns(3, gap="small")
 
 density = stats["density"]
 density = density[
@@ -1823,6 +1825,11 @@ with history_col:
 
 with highlights_col:
     st.subheader("Highlights")
+
+    if st.button("A Year in Books", key="litlas_year_postcard"):
+        from litlas.app.visualizations.year_postcard import show_year_postcard
+
+        show_year_postcard(read_books, load_constellation_details(backend_name()))
 
     highlights = stats["highlights"]
 
