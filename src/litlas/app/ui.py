@@ -553,7 +553,7 @@ def render_chapter_navigation(active_page: str) -> None:
         #("Reading Density", "pages/1_Reading_Density.py", "Reading_Density"),
         ("Reading Statistics", "pages/2_Reading_Statistics.py", "Reading_Statistics"),
         ("Library Management", "pages/3_Library_Management.py", "Library_Management"),
-        ("Ink & Verse", "pages/4_My_Books.py", "My_Books"),
+        ("Ink & Verse", "pages/4_Ink_&_Verse.py", "Ink_&_Verse"),
         ("About Litlas", "pages/5_About_Litlas.py", "About_Litlas"),
     ]
 

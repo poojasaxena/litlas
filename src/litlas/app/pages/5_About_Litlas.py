@@ -153,6 +153,15 @@ st.html("""
     color: #7B5B45;
     font-style: italic;
 }
+.litlas-about-established {
+    display: block;
+    margin-top: 0;
+    font-size: 0.9em;
+    line-height: 1.2;
+    color: #7B5B45;
+    font-style: normal;
+    letter-spacing: 0.03em;
+}
 
 .litlas-about-links {
     display: flex;
@@ -412,7 +421,12 @@ st.html(f"""
 
     <figure class="litlas-about-signoff">
         {logo_html}
-        <figcaption class="litlas-about-signature">{name_html}</figcaption>
+        <figcaption class="litlas-about-signature">
+            {name_html}
+            <span class="litlas-about-established">
+                <time datetime="2026-10">October 2026</time>
+            </span>
+        </figcaption>
     </figure>
     <div class="litlas-about-links">{links_html}</div>
 </section>
