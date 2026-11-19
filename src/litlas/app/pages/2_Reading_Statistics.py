@@ -1450,7 +1450,7 @@ def add_horizontal_book_stacks(fig, counts):
 # Row 1: Country distribution and ratings
 # ---------------------------------------------------------
 
-country_col, recent_col, ratings_col = st.columns(3, gap="small")
+country_col, recent_col, ratings_col = st.columns([1, 1.1, 0.9], gap="small")
 
 density = stats["density"]
 density = density[
@@ -1605,7 +1605,7 @@ with recent_col:
     recent = (
         read_books.loc[
             finished.notna(),
-            ["Display Title", "Author", "ISO3", "Country", "My Rating"],
+            ["Book Id", "Display Title", "Author", "ISO3", "Country", "My Rating"],
         ]
         .assign(finished=finished)
         .nlargest(6, "finished")
@@ -1614,15 +1614,32 @@ with recent_col:
     if recent.empty:
         st.caption("No books with a recorded finish date yet.")
     else:
+        # Notes are private. Use the same owner verification as Ledger on PostgreSQL.
+        show_notes = backend_name() == "sqlite"
+        if not show_notes and getattr(st.user, "is_logged_in", False):
+            owner_email = str(st.secrets.get("admin_email", "")).strip().casefold()
+            show_notes = (
+                bool(owner_email)
+                and st.user.get("email_verified") is True
+                and str(st.user.get("email", "")).strip().casefold() == owner_email
+            )
+
+        notes = (
+            repository.get_reading_notes(recent["Book Id"].astype(str).tolist())
+            if show_notes
+            else {}
+        )
         entries = []
 
-        for title, author, iso, country, rating, date in recent.itertuples(
+        for book_id, title, author, iso, country, rating, date in recent.itertuples(
             index=False, name=None
         ):
             iso = str(iso).strip() if pd.notna(iso) else ""
             country = str(country).strip() if pd.notna(country) else ""
             place = country_name(iso, fallback=country or "Country unknown")
             date_label = date.strftime("%d %b %Y").lstrip("0")
+            note = notes.get(str(book_id), "").strip()
+            note_html = f'<div class="recent-note">{escape(note)}</div>' if note else ""
 
             entries.append(
                 '<li>'
@@ -1635,6 +1652,7 @@ with recent_col:
                 f'<time datetime="{date.date().isoformat()}">{date_label}</time>'
                 f'{format_rating(rating)}'
                 '</div>'
+                f'{note_html}'
                 '</li>'
             )
         st.html(
@@ -1677,6 +1695,15 @@ with recent_col:
                 font-size: 12px;
                 line-height: 1.35;
             }
+            .litlas-recent-reads .recent-note {
+                grid-column: 1 / -1;
+                margin-top: 4px;
+                color: #746655;
+                font-size: 13px;
+                font-style: italic;
+                line-height: 1.45;
+                white-space: pre-line;
+            }
             .litlas-recent-reads .recent-meta {
                 display: grid;
                 justify-items: end;
@@ -1706,6 +1733,10 @@ with recent_col:
             @media screen and (min-width: 641px) {
                 .litlas-recent-reads {
                     margin-top: 24px !important;
+                }
+                .litlas-recent-reads:has(.recent-note) {
+                    max-height: 320px;
+                    overflow-y: auto;
                 }
             }
             </style>

@@ -351,6 +351,23 @@ def get_page_statistics():
 
 
 
+def get_reading_notes(book_ids):
+    """Return notes for the selected book IDs. Call only from owner views."""
+    if not book_ids:
+        return {}
+
+    with connect() as db:
+        rows = db.execute(
+            "SELECT goodreads_id, reading_note FROM books WHERE goodreads_id = ANY(%s)",
+            (book_ids,),
+        )
+        return {
+            str(row["goodreads_id"]): row["reading_note"]
+            for row in rows
+            if row["reading_note"]
+        }
+
+
 def get_editable_books():
     """Return tracked books for the Library Editor."""
 
@@ -391,8 +408,8 @@ def update_book_details(
 
     if reading_note is not None:
         reading_note = reading_note.strip()
-        if len(reading_note) > 120:
-            raise ValueError("Reading note must be 120 characters or fewer.")
+        if len(reading_note) > 180:
+            raise ValueError("Reading note must be 180 characters or fewer.")
 
     display_title = display_title.strip()
 
