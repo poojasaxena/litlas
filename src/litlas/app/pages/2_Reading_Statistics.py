@@ -342,6 +342,45 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     display: none;
 }
 
+.st-key-litlas_year_postcard button,
+.st-key-litlas_year_postcard_mobile button {
+    justify-content: flex-start;
+    min-height: 64px;
+    padding: 4px 10px;
+    background: #F5EFE4;
+    border: 1px solid #D4C1A7;
+    border-radius: 7px;
+    color: #6E4B3A;
+}
+
+.st-key-litlas_year_postcard button:hover,
+.st-key-litlas_year_postcard_mobile button:hover {
+    background: #EFE4D4;
+    border-color: #A4815D;
+    color: #6E4B3A;
+}
+
+.st-key-litlas_year_postcard button:focus-visible,
+.st-key-litlas_year_postcard_mobile button:focus-visible {
+    outline: 2px solid #96785D;
+    outline-offset: 2px;
+}
+
+.st-key-litlas_year_postcard button p,
+.st-key-litlas_year_postcard_mobile button p {
+    font: 17px/1.3 Georgia, serif;
+    text-align: left;
+    color: inherit;
+}
+
+.st-key-litlas_year_postcard button em,
+.st-key-litlas_year_postcard_mobile button em {
+    display: block;
+    margin-top: 3px;
+    font-size: 13px;
+    font-style: normal;
+}
+
 @media screen and (max-width: 640px) {
     [data-testid="stLayoutWrapper"]:has(> .st-key-litlas_desktop_milestones),
     .st-key-litlas_desktop_milestones {
@@ -351,6 +390,10 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     .st-key-litlas_mobile_milestones {
         display: block !important;
         margin-top: 0 !important;
+    }
+
+    .st-key-litlas_year_postcard_mobile button {
+        min-height: 44px;
     }
 
     .litlas-mobile-milestones {
@@ -1200,9 +1243,11 @@ def page_milestone(label, value, title="", author=""):
 
 
 ## Desktop Reading Milestones
+postcard_label = "**A Year in Books** *Browse years →*"
+
 with st.container(key="litlas_desktop_milestones"):
 
-    longest_col, pages_col, shortest_col = st.columns(3, gap="medium")
+    longest_col, pages_col, shortest_col, postcard_col = st.columns(4, gap="medium")
 
     with longest_col:
         page_milestone(
@@ -1225,6 +1270,11 @@ with st.container(key="litlas_desktop_milestones"):
             f"{shortest['pages']:,} pages" if shortest else "—",
             shortest["title"] if shortest else "",
             shortest["author"] if shortest else "",
+        )
+
+    with postcard_col:
+        open_desktop_postcard = st.button(
+            postcard_label, key="litlas_year_postcard", width="stretch"
         )
 
 
@@ -1274,8 +1324,16 @@ mobile_milestones = f"""
 </div>
 """
 
-with st.container(key="litlas_mobile_milestones"):
+with st.container(key="litlas_mobile_milestones", gap="xxsmall"):
     st.html(dedent(mobile_milestones))
+    open_mobile_postcard = st.button(
+        postcard_label, key="litlas_year_postcard_mobile", width="stretch"
+    )
+
+if open_desktop_postcard or open_mobile_postcard:
+    from litlas.app.visualizations.year_postcard import show_year_postcard
+
+    show_year_postcard(read_books, load_constellation_details(backend_name()))
 
 def add_book_spine_details(fig, x_vals, y_vals):
     """Subtle antique-book details over Plotly bars."""
@@ -1856,11 +1914,6 @@ with history_col:
 
 with highlights_col:
     st.subheader("Highlights")
-
-    if st.button("A Year in Books", key="litlas_year_postcard"):
-        from litlas.app.visualizations.year_postcard import show_year_postcard
-
-        show_year_postcard(read_books, load_constellation_details(backend_name()))
 
     highlights = stats["highlights"]
 
