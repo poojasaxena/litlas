@@ -8,55 +8,60 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps, features
 import streamlit as st
 
 from litlas.processing.countries import (
-    country_name,
     explored_country_codes,
     litlas_country_features,
 )
 from litlas.processing.paths import ASSETS_DIR, ILLUSTRATIONS_DIR, load_config, resolve_project_path
 
-### Customization Constants
-DIALOG_WIDTH = 600
-
-MAP_MOVE_RIGHT = -8
-MAP_MOVE_DOWN = 8
-MAP_ZOOM = 1.06
-
-# Header sizes. Logo and title-art tuples give maximum (width, height).
-LITLAS_LOGO_SIZE = (250, 190)
-AUTHOR_LOGO_SIZE = (250, 190)
-TITLE_ART_SIZE = (950, 81)
-TITLE_FALLBACK_FONT_SIZE = 55
-YEAR_FONT_SIZE = 40
-HEADER_SHIFT = 16
-
-# Main section
-SECTION_HEADING_SIZE = 38
-BOOK_TITLE_SIZE = 32
-BOOK_AUTHOR_SIZE = 25
-BOOK_ROW_SPACING = 108
-BODY_HEIGHT = 530  # Distance from the section headings to the footer rule.
-
-# Footer
-FOOTER_LABEL_SIZE = 17
-FOOTER_COUNT_SIZE = 30
-FOOTER_BOOK_SIZE = 23
-FOOTER_UNIT_SIZE = 20
-
-### Layout Constants
+# Preview and PNG dimensions.
+DIALOG_WIDTH = 685
+PREVIEW_WIDTH = 610
 WIDTH = 1500
-BASE_HEIGHT = 1660
+HEIGHT = 1660
+CENTER_X = WIDTH // 2
+CONTENT_MARGIN = 68
+CONTENT_WIDTH = WIDTH - 2 * CONTENT_MARGIN
 
-BODY_TOP = 265
-FOOTER_TOP = BODY_TOP + BODY_HEIGHT
-FOOTER_LABEL_Y = FOOTER_TOP + 22
-FOOTER_VALUE_Y = FOOTER_TOP + 80
+# Header artwork, yearly totals, and map.
+LITLAS_LOGO_SIZE = (266, 196)
+AUTHOR_LOGO_SIZE = (175, 175)
+TITLE_ART_SIZE = (600, 86)
+TITLE_FALLBACK_FONT_SIZE = 62
+YEAR_FONT_SIZE = 40
+HEADER_RULE_Y = 265
+STATS_LABEL_Y = 299
+STATS_VALUE_Y = 354
+STATS_LABEL_SIZE = 32
+STATS_VALUE_SIZE = 86
+MAP_HEADING_Y = 483
+MAP_TOP = 553
+MAP_SCALE_X = 3.70
+MAP_SCALE_Y = 3.75
+MAP_MOVE_RIGHT = 0
+MAP_MOVE_DOWN = 0
+
+# Reading grid and footer.
+BOOK_HEADING_Y = 1103
+SECTION_HEADING_SIZE = 49
+BOOK_TITLE_SIZE = 37
+BOOK_AUTHOR_SIZE = 29
+BOOK_COLUMN_GAP = 46
+BOOK_ROW_SPACING = 147
+FOOTER_RULE_Y = 1463
+FOOTER_RULE_WITH_NOTE_Y = 1440
+FOOTER_LABEL_SIZE = 27
+FOOTER_BOOK_SIZE = 33
+FOOTER_UNIT_SIZE = 27
+NOTE_FONT_SIZE = 21
+NOTE_TOP = 1592
+NOTE_LINE_SPACING = 23
 
 BOOK_LIMIT = 4
-PAPER = "#f8f3e9"
-INK = "#51392d"
-MUTED = "#765d49"
+PAPER = "#f5f1e6"
+INK = "#533c30"
+MUTED = "#6f5647"
 GOLD = "#976338"
-RULE = "#c9af91"
+RULE = "#cdb699"
 FIGURE_INK = "#6E4B3A"
 FONT_DIR = ASSETS_DIR / "fonts"
 
@@ -170,15 +175,14 @@ def _wrap(text, font, width, max_lines):
 
 
 @lru_cache(maxsize=2)
-def _paper(height):
-    size = (WIDTH, height)
+def _paper():
+    size = (WIDTH, HEIGHT)
     image = Image.new("RGBA", size, PAPER)
     with Image.open(ILLUSTRATIONS_DIR / "about-literary-margins-muted.png") as source:
         wash = ImageOps.fit(source.convert("RGBA"), size, method=Image.Resampling.LANCZOS)
-    wash.putalpha(wash.getchannel("A").point(lambda value: round(value * 0.26)))
+    wash.putalpha(wash.getchannel("A").point(lambda value: round(value * 0.12)))
     image.alpha_composite(wash)
     return image.convert("RGB")
-
 
 
 
@@ -187,6 +191,8 @@ def _draw_map(draw, codes):
     for feature in litlas_country_features():
         geometry = feature["geometry"]
         code = feature["properties"].get("ISO3166-1-Alpha-3")
+        if code == "ATA":
+            continue
         color = GOLD if code in codes else "#d7c8b2"
         polygons = geometry["coordinates"]
         if geometry["type"] == "Polygon":
@@ -194,8 +200,8 @@ def _draw_map(draw, codes):
         for polygon in polygons:
             outline = [
                 (
-                    1041.2 + MAP_MOVE_RIGHT + lon * 1.94 * MAP_ZOOM,
-                    BODY_TOP + 240 + MAP_MOVE_DOWN - lat * 1.98 * MAP_ZOOM,
+                    CENTER_X + MAP_MOVE_RIGHT + lon * MAP_SCALE_X,
+                    MAP_TOP + MAP_MOVE_DOWN + (84 - lat) * MAP_SCALE_Y,
                 )
                 for lon, lat in polygon[0]
             ]
@@ -203,51 +209,31 @@ def _draw_map(draw, codes):
                 draw.polygon(outline, fill=color, outline=PAPER)
 
 
-def _draw_length(draw, 
-                 x, 
-                 width, 
-                 label, 
-                 book):
-    center = x + width / 2
-    draw.text((center, FOOTER_LABEL_Y), label, anchor="mt", font=_font(FOOTER_LABEL_SIZE), fill=MUTED)
-    title_font = _font(FOOTER_BOOK_SIZE, "-Italic")
+def _draw_length(draw, center, width, top, label, book):
+    draw.text((center, top), label, anchor="mt", font=_font(FOOTER_LABEL_SIZE), fill=MUTED)
     if book is None:
-        draw.text((x, FOOTER_TOP + 61), "No page count recorded", anchor="ls", font=title_font, fill=INK)
+        draw.text(
+            (center, top + 48), "No page count recorded",
+            anchor="mt", font=_font(FOOTER_UNIT_SIZE), fill=MUTED,
+        )
         return
 
     title, pages = book
-    page_text = f"{pages:,}"
-    number_font, number_features = _figure_font(FOOTER_BOOK_SIZE)
-    number_width = draw.textlength(page_text, font=number_font, features=number_features)
-    unit_font = _font(FOOTER_UNIT_SIZE)
-    separator = " · "
-    suffix_width = (
-        draw.textlength(separator, font=unit_font) + number_width
-        + draw.textlength(" pages", font=unit_font)
-    )
+    title_font = _font(FOOTER_BOOK_SIZE, "-Italic")
     lines = _wrap(title, title_font, width, 2)
-    if lines and draw.textlength(lines[-1], font=title_font) + suffix_width > width:
-        lines = _wrap(title, title_font, width - suffix_width, 2)
+    for index, line in enumerate(lines):
+        draw.text(
+            (center, top + 38 + index * 34), line,
+            anchor="mt", font=title_font, fill=INK,
+        )
+    draw.text(
+        (center, top + 39 + max(1, len(lines)) * 34), f"{pages:,} pages",
+        anchor="mt", font=_font(FOOTER_UNIT_SIZE), fill=MUTED,
+    )
 
-    baseline = FOOTER_VALUE_Y
 
-    for line in lines[:-1]:
-        draw.text((center, baseline), line, anchor="ms", font=title_font, fill=INK)
-        baseline += FOOTER_BOOK_SIZE + 2
-
-    last_line = lines[-1] if lines else ""
-    title_width = draw.textlength(last_line, font=title_font)
-    title_x = center - (title_width + suffix_width) / 2
-
-    draw.text((title_x, baseline), last_line, anchor="ls", font=title_font, fill=INK)
-    suffix_x = title_x + title_width
-    draw.text((suffix_x, baseline), separator, anchor="ls", font=unit_font, fill=MUTED)
-    number_x = suffix_x + draw.textlength(separator, font=unit_font)
-    _draw_number(draw, (number_x, baseline), page_text, FOOTER_BOOK_SIZE, anchor="ls")
-    draw.text((number_x + number_width, baseline), " pages", anchor="ls", font=unit_font, fill=MUTED)
-
-def _draw_rating_stars(draw, right, top, rating):
-    size, gap = 17, 2
+def _draw_rating_stars(draw, left, top, rating):
+    size, gap = 17, 3
     star = Image.new("L", (size, size))
     ImageDraw.Draw(star).polygon(
         [(8, 0), (10, 6), (16, 6), (11, 10), (13, 16),
@@ -255,7 +241,6 @@ def _draw_rating_stars(draw, right, top, rating):
         fill=255,
     )
 
-    left = right - (5 * size + 4 * gap)
     for index in range(5):
         x = left + index * (size + gap)
         draw.bitmap((x, top), star, fill="#D8CDBC")
@@ -267,131 +252,158 @@ def _draw_rating_stars(draw, right, top, rating):
             )
 
 
-def render_postcard(
-    year, count, first_countries, shortest, longest, books, note, *, selected_books=False
-):
-    """Draw the preview and downloadable PNG from the same source."""
-    note_font = _font(24, "-Italic")
-    note_lines = _wrap(f"“{note}”", note_font, 1260, 2) if note else []
-    height = BASE_HEIGHT + (28 + 30 * len(note_lines) if note_lines else 0)
-    image = _paper(height).copy()
-    draw = ImageDraw.Draw(image)
-    draw.rounded_rectangle((24, 24, WIDTH - 24, height - 24), radius=8, outline=RULE, width=2)
-
-    center = WIDTH // 2
+def _draw_header(image, draw, year):
     logo = _logo_art(ILLUSTRATIONS_DIR / "litlas_logo.png", LITLAS_LOGO_SIZE)
-    image.paste(logo, (68, 42), logo)
+    image.paste(logo, (CONTENT_MARGIN, 42), logo)
 
     author_logo = _logo_art(ASSETS_DIR / "branding" / "author_logo.png", AUTHOR_LOGO_SIZE)
-    author_x = WIDTH - 68 - author_logo.width
+    author_x = WIDTH - CONTENT_MARGIN - author_logo.width
     author_y = 42 + (logo.height - author_logo.height) // 2
     image.paste(author_logo, (author_x, author_y), author_logo)
 
-    ## Render the header section with title and year
     title = _title_art()
-
     if title is None:
         draw.text(
-            (center, 53 + HEADER_SHIFT),
-            "A Year in Books",
-            anchor="mt",
-            font=_heading_font(TITLE_FALLBACK_FONT_SIZE),
-            fill=INK,
+            (CENTER_X, 75), "A Year in Books", anchor="mt",
+            font=_heading_font(TITLE_FALLBACK_FONT_SIZE), fill=INK,
         )
     else:
-        title_x = (WIDTH - title.width) // 2
-        title_y = 83 - title.height // 2 + HEADER_SHIFT
-        image.paste(title, (title_x, title_y), title)
+        image.paste(title, ((WIDTH - title.width) // 2, 106 - title.height // 2), title)
 
-    rule_y = 129 + HEADER_SHIFT
-    draw.line((center - 88, rule_y, center + 88, rule_y), fill=RULE, width=2)
-    _draw_number(draw, (center, 150 + HEADER_SHIFT), str(year), YEAR_FONT_SIZE, anchor="mt")
-    # draw.line((center - 88, 129, center + 88, 129), fill=RULE, width=2)
-    # _draw_number(draw, (center, 150), str(year), 36, anchor="mt")
-    # draw.ellipse((1261, 44, 1345, 128), outline=RULE, width=2)
-    # draw.ellipse((1267, 50, 1339, 122), outline=RULE, width=1)
-    #_draw_number(draw, (1303, 86), str(year), 27, anchor="mm")
-    draw.line((68, BODY_TOP - 15, WIDTH - 68, BODY_TOP - 15), fill=RULE, width=2)
+    draw.line((CENTER_X - 88, 158, CENTER_X + 88, 158), fill=RULE, width=2)
+    _draw_number(draw, (CENTER_X, 177), str(year), YEAR_FONT_SIZE, anchor="mt")
+    draw.line(
+        (CONTENT_MARGIN, HEADER_RULE_Y, WIDTH - CONTENT_MARGIN, HEADER_RULE_Y),
+        fill=RULE, width=2,
+    )
 
-    book_heading = "Books I’d Carry Forward" if selected_books else "Highest-Rated Reads"
-    draw.text((68, BODY_TOP), book_heading, font=_heading_font(SECTION_HEADING_SIZE), fill=INK)
+
+def _draw_totals(draw, count, country_count, pages_read):
+    label_font = _font(STATS_LABEL_SIZE)
+    for filename in ("Georgia.ttf", "georgia.ttf"):
+        try:
+            value_font = ImageFont.truetype(filename, STATS_VALUE_SIZE)
+            break
+        except OSError:
+            continue
+    else:
+        value_font = _font(STATS_VALUE_SIZE)
+    totals = (
+        ("Books finished", count),
+        ("New countries", country_count),
+        ("Pages read", pages_read),
+    )
+    for index, (label, value) in enumerate(totals):
+        center = CONTENT_MARGIN + CONTENT_WIDTH * (index + 0.5) / len(totals)
+        draw.text((center, STATS_LABEL_Y), label, anchor="mt", font=label_font, fill=MUTED)
+        draw.text(
+            (center, STATS_VALUE_Y), f"{value:,}" if value is not None else "—",
+            anchor="mt", font=value_font, fill=INK,
+        )
+
+
+def _draw_books(draw, books, selected_books):
+    heading = "Books I’d Carry Forward" if selected_books else "Highest-Rated Reads"
+    draw.text(
+        (CONTENT_MARGIN, BOOK_HEADING_Y), heading, anchor="lt",
+        font=_heading_font(SECTION_HEADING_SIZE), fill=INK,
+    )
     if not books:
-        draw.text((68, BODY_TOP + 45), "No rated books recorded this year", font=_font(22), fill=MUTED)
+        draw.text(
+            (CONTENT_MARGIN, BOOK_HEADING_Y + 67), "No rated books recorded this year",
+            anchor="lt", font=_font(BOOK_AUTHOR_SIZE), fill=MUTED,
+        )
+        return
 
-    # Render the list of books.
-    book_title_font = _font(BOOK_TITLE_SIZE, "-Italic")
+    column_width = (CONTENT_WIDTH - BOOK_COLUMN_GAP) // 2
+    title_font = _font(BOOK_TITLE_SIZE, "-Italic")
     author_font = _font(BOOK_AUTHOR_SIZE)
-    title_line_height = BOOK_TITLE_SIZE + 1
+    title_line_height = BOOK_TITLE_SIZE + 5
 
     for index, (title, author, rating) in enumerate(books):
-        y = BODY_TOP + 72 + index * BOOK_ROW_SPACING
-        title_lines = _wrap(title, book_title_font, 385, 2)
-
-        if pd.notna(rating) and rating > 0:
-            _draw_rating_stars(draw, 562, y + 4, rating)
-
-        for line_no, line in enumerate(title_lines):
+        row, column = divmod(index, 2)
+        x = CONTENT_MARGIN + column * (column_width + BOOK_COLUMN_GAP)
+        y = BOOK_HEADING_Y + 62 + row * BOOK_ROW_SPACING
+        title_lines = _wrap(title, title_font, column_width, 2)
+        for line_index, line in enumerate(title_lines):
             draw.text(
-                (68, y + line_no * title_line_height),
-                line, font=book_title_font, fill=INK,
+                (x, y + line_index * title_line_height), line,
+                anchor="lt", font=title_font, fill=INK,
             )
-        author_y = y + len(title_lines) * title_line_height + 1
-        for author_line in _wrap(author, author_font, 490, 1):
-            draw.text((68, author_y), author_line, font=author_font, fill=MUTED)
 
-    draw.line((590, BODY_TOP + 2, 590, FOOTER_TOP - 20), fill=RULE, width=1)
-    draw.text((752, BODY_TOP), "New Places on the Map", font=_heading_font(SECTION_HEADING_SIZE), fill=INK)
+        author_y = y + len(title_lines) * title_line_height + 2
+        show_rating = pd.notna(rating) and rating > 0
+        author_width = column_width - 113 if show_rating else column_width
+        author_lines = _wrap(author, author_font, author_width, 1)
+        if author_lines:
+            author_line = author_lines[0]
+            draw.text((x, author_y), author_line, anchor="lt", font=author_font, fill=MUTED)
+            stars_x = x + round(author_font.getlength(author_line)) + 13
+        else:
+            stars_x = x
+        if show_rating:
+            _draw_rating_stars(draw, stars_x, author_y + 4, rating)
 
-    ## Render the map of new countries
+
+def render_postcard(
+    year, count, first_countries, shortest, longest, books, note, *,
+    selected_books=False, pages_read=None,
+):
+    """Draw the preview and downloadable PNG at the same fixed aspect ratio."""
+    image = _paper().copy()
+    draw = ImageDraw.Draw(image)
+    draw.rounded_rectangle((24, 24, WIDTH - 24, HEIGHT - 24), radius=8, outline=RULE, width=2)
+
+    _draw_header(image, draw, year)
+    _draw_totals(draw, count, len(first_countries), pages_read)
+    draw.text(
+        (CENTER_X, MAP_HEADING_Y), "New horizons to Litlas", anchor="mt",
+        font=_heading_font(SECTION_HEADING_SIZE), fill=INK,
+    )
     _draw_map(draw, set(first_countries["code"]))
+    _draw_books(draw, books, selected_books)
 
-    ## Lets not write country names on the map for now
-    # countries = [country_name(code) for code in first_countries["code"]]
-    # if 0 < len(countries) <= 3:
-    #     map_labels = [
-    #         _wrap(f"{name} · {title}", _font(20), 608, 1)[0]
-    #         for name, title in zip(countries, first_countries["Display Title"])
-    #     ]
-    # else:
-    #     names = " · ".join(countries) if countries else "No first reads from new countries recorded"
-    #     map_labels = _wrap(names, _font(20), 608, 2)
-    # for index, line in enumerate(map_labels):
-    #     draw.text((752, BODY_TOP + 352 + index * 28), line, font=_font(20), fill=MUTED)
-
-    draw.line((68, FOOTER_TOP, WIDTH - 68, FOOTER_TOP), fill=RULE, width=2)
-
-    ## Render the footer statistics
-    for x, label, value in (
-        (158, "BOOKS FINISHED", count),
-        (345, "NEW COUNTRIES", len(first_countries)),
+    note_font = _font(NOTE_FONT_SIZE, "-Italic")
+    note_lines = _wrap(f"“{note}”", note_font, CONTENT_WIDTH, 2) if note else []
+    footer_width = CONTENT_WIDTH // 2
+    footer_top = FOOTER_RULE_WITH_NOTE_Y if note_lines else FOOTER_RULE_Y
+    draw.line((CONTENT_MARGIN, footer_top, WIDTH - CONTENT_MARGIN, footer_top), fill=RULE, width=2)
+    for center, label, book in (
+        (CENTER_X - footer_width / 2, "Longest read", longest),
+        (CENTER_X + footer_width / 2, "Shortest read", shortest),
     ):
-        draw.text((x, FOOTER_LABEL_Y), label, anchor="mt", font=_font(FOOTER_LABEL_SIZE), fill=MUTED)
-        _draw_number(draw, (x, FOOTER_VALUE_Y), f"{value:,}", FOOTER_COUNT_SIZE, anchor="ms")
-
-    _draw_length(draw, 433, 430, "LONGEST READ", longest)
-    _draw_length(draw, 901, 471, "SHORTEST READ", shortest)
-
-    if note_lines:
-        draw.line((68, BASE_HEIGHT - 17, WIDTH - 68, BASE_HEIGHT - 17), fill=RULE, width=1)
-        for index, line in enumerate(note_lines):
-            draw.text((center, BASE_HEIGHT - 4 + index * 30), line, anchor="mt", font=note_font, fill=INK)
+        _draw_length(draw, center, footer_width - 32, footer_top + 17, label, book)
+    for index, line in enumerate(note_lines):
+        draw.text(
+            (CENTER_X, NOTE_TOP + index * NOTE_LINE_SPACING), line,
+            anchor="mt", font=note_font, fill=INK,
+        )
 
     output = BytesIO()
     image.save(output, format="PNG")
     return output.getvalue()
 
 
-def reading_lengths(page_details, year):
+def _reading_page_summary(page_details, year):
     lengths = page_details.loc[page_details["year"].astype(str).eq(str(year)), ["title", "pages"]].copy()
     lengths["pages"] = pd.to_numeric(lengths["pages"], errors="coerce")
-    lengths = lengths.loc[lengths["pages"].gt(0)].sort_values("title", kind="stable")
-    lengths = lengths.reset_index(drop=True)
+    lengths = lengths.loc[lengths["pages"].gt(0) & lengths["pages"].lt(float("inf"))]
+    lengths = lengths.sort_values("title", kind="stable").reset_index(drop=True)
     if lengths.empty:
-        return None, None
+        return None, None, None
 
     shortest = lengths.loc[lengths["pages"].idxmin()]
     longest = lengths.loc[lengths["pages"].idxmax()]
-    return (str(shortest["title"]), int(shortest["pages"])), (str(longest["title"]), int(longest["pages"]))
+    return (
+        (str(shortest["title"]), int(shortest["pages"])),
+        (str(longest["title"]), int(longest["pages"])),
+        int(lengths["pages"].sum()),
+    )
+
+
+def reading_lengths(page_details, year):
+    shortest, longest, _ = _reading_page_summary(page_details, year)
+    return shortest, longest
 
 
 def highest_rated_books(books):
@@ -416,7 +428,7 @@ def show_year_postcard(read_books, page_details):
     books = dated[dated["finished"].dt.year.eq(year)].copy()
     first = new_countries(dated, year)
 
-    shortest, longest = reading_lengths(page_details, year)
+    shortest, longest, pages_read = _reading_page_summary(page_details, year)
     preview = st.empty()
     download = st.empty()
 
@@ -451,7 +463,8 @@ def show_year_postcard(read_books, page_details):
 
     entries = [options[book_id] for book_id in chosen] if chosen else highest_rated_books(books)
     png = render_postcard(
-        year, len(books), first, shortest, longest, entries, note, selected_books=bool(chosen)
+        year, len(books), first, shortest, longest, entries, note,
+        selected_books=bool(chosen), pages_read=pages_read,
     )
     preview.image(png, width="stretch")
     download.download_button(
