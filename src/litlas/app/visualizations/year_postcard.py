@@ -99,6 +99,21 @@ def _font(size, style=""):
     except OSError:
         return ImageFont.load_default(size=size)
 
+@lru_cache(maxsize=12)
+def _devanagari_font(size):
+    filename = "NotoSerifDevanagari-Regular.ttf"
+    for candidate in (FONT_DIR / filename, filename):
+        try:
+            return ImageFont.truetype(candidate, size)
+        except OSError:
+            continue
+    return _font(size)
+
+
+def _book_font(text, size, style=""):
+    if any("\u0900" <= char <= "\u097f" for char in text):
+        return _devanagari_font(size)
+    return _font(size, style)
 
 @lru_cache(maxsize=4)
 def _heading_font(size):
@@ -193,7 +208,7 @@ def _paper():
         )
 
     background_lift = 30
-    wash.putalpha(wash.getchannel("A").point(lambda value: round(value * 0.35)))
+    wash.putalpha(wash.getchannel("A").point(lambda value: round(value * 0.28)))
     image.alpha_composite(
         wash,
         dest=(0, HEIGHT - wash.height - background_lift),
@@ -234,7 +249,7 @@ def _draw_length(draw, center, width, top, label, book):
         return
 
     title, pages = book
-    title_font = _font(FOOTER_BOOK_SIZE, "-Italic")
+    title_font = _book_font(title, FOOTER_BOOK_SIZE, "-Italic")
     lines = _wrap(title, title_font, width, 2)
     for index, line in enumerate(lines):
         draw.text(
@@ -340,7 +355,6 @@ def _draw_books(image, draw, books, selected_books):
     cover_width, cover_height = cover.size if cover is not None else (184, BOOK_COVER_SIZE[1])
     row_width = len(entries) * cover_width + (len(entries) - 1) * BOOK_COVER_GAP
     row_left = (WIDTH - row_width) // 2
-    author_font = _font(BOOK_AUTHOR_SIZE)
     text_width = cover_width - 26
     author_step = BOOK_AUTHOR_SIZE + 2
 
@@ -357,13 +371,14 @@ def _draw_books(image, draw, books, selected_books):
             )
 
         for title_size in (BOOK_TITLE_SIZE, BOOK_TITLE_SIZE - 3, BOOK_TITLE_SIZE - 6):
-            title_font = _font(title_size, "-Italic")
+            title_font = _book_font(title, title_size, "-Italic")
             title_lines = _wrap(title, title_font, text_width, 4)
             if " ".join(title_lines) == " ".join(title.split()):
                 break
         title_step = title_size + 3
+        author_font = _book_font(author, BOOK_AUTHOR_SIZE)
         author_lines = _wrap(author, author_font, text_width, 2)
-        gap = 8 if title_lines and author_lines else 0
+        gap = 16 if title_lines and author_lines else 0
         text_height = len(title_lines) * title_step + gap + len(author_lines) * author_step
         y = BOOK_COVER_TOP + (cover_height - text_height) / 2
         for line in title_lines:
@@ -457,7 +472,13 @@ def show_year_postcard(read_books, page_details):
         st.info("No books with a recorded finish date yet.")
         return
 
-    year = st.selectbox("Reading year", years, index=years.index(2025) if 2025 in years else 0)
+    year = st.selectbox(
+        "Reading year",
+        years,
+        index=years.index(2025) if 2025 in years else 0,
+        key="litlas_postcard_year",
+    )
+
     books = dated[dated["finished"].dt.year.eq(year)].copy()
     first = new_countries(dated, year)
 
