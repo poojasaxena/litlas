@@ -473,8 +473,8 @@ def show_year_postcard(read_books, page_details):
         return
 
     controls = st.container(key="litlas_postcard_controls")
-    year_col, personalize_col = controls.columns(
-        [1, 2],
+    year_col, personalize_col, download_col = controls.columns(
+        3,
         gap="small",
         vertical_alignment="bottom",
     )
@@ -491,7 +491,7 @@ def show_year_postcard(read_books, page_details):
 
     shortest, longest, pages_read = _reading_page_summary(page_details, year)
     preview = st.empty()
-    download = st.empty()
+  
 
     rated_options = books.assign(
         rating=pd.to_numeric(books["My Rating"], errors="coerce")
@@ -505,7 +505,7 @@ def show_year_postcard(read_books, page_details):
     drafts = st.session_state.setdefault("litlas_postcard_drafts", {})
     previous_choices, previous_note = drafts.get(year, ([], ""))
 
-    with personalize_col.popover("Personalize the postcard"):
+    with personalize_col.popover("Personalize the postcard", width="stretch"):
         chosen = st.multiselect(
             "Books you’d carry forward",
             list(options),
@@ -528,7 +528,7 @@ def show_year_postcard(read_books, page_details):
         selected_books=bool(chosen), pages_read=pages_read,
     )
     preview.image(png, width="stretch")
-    download.download_button(
+    download_col.download_button(
         "Download PNG",
         png,
         file_name=f"litlas-{year}-year-in-books.png",

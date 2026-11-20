@@ -260,6 +260,32 @@ div[role="dialog"]:has(.st-key-litlas_year_books) {
     background-color: #F5EFE4 !important;
     color: #58412F !important;
 }
+/* Open list of reading years */
+[data-testid="stSelectboxVirtualDropdown"]:has(
+    [role="listbox"][aria-label="Reading year"]
+) {
+    background-color: #FAF7F1 !important;
+    border: 1px solid #D4C1A7 !important;
+}
+
+/* “A line to remember” field */
+[class*="st-key-litlas_postcard_note_"] [data-testid="stTextInputRootElement"],
+[class*="st-key-litlas_postcard_note_"] [data-testid="stTextInputField"] {
+    background-color: #F5EFE4 !important;
+    color: #58412F !important;
+}
+
+/* Postcard download button */
+[role="dialog"]:has(.st-key-litlas_postcard_controls)
+[data-testid="stDownloadButton"] button {
+    background: #F5EFE4 !important;
+    border: 1px solid #D4C1A7 !important;
+    color: #58412F !important;
+    border-radius: 8px !important;
+    height: 42px !important;
+    width: 100% !important;
+    font-family: Georgia, serif !important;
+}
 
 div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 [data-testid="stDialogHeader"] {
