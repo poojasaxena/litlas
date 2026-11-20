@@ -18,6 +18,8 @@ from litlas.processing.paths import ASSETS_DIR, ILLUSTRATIONS_DIR, load_config, 
 WIDTH = 1440
 BODY_TOP = 265
 FOOTER_TOP = BODY_TOP + 530
+FOOTER_LABEL_Y = FOOTER_TOP + 22
+FOOTER_VALUE_Y = FOOTER_TOP + 80
 BASE_HEIGHT = FOOTER_TOP + 165
 BOOK_LIMIT = 4
 PAPER = "#f8f3e9"
@@ -47,6 +49,15 @@ def new_countries(dated, year):
 
 @lru_cache(maxsize=24)
 def _font(size, style=""):
+    if style == "-Italic":
+        try:
+            return ImageFont.truetype(
+                "/usr/share/fonts/truetype/msttcorefonts/Georgia_Italic.ttf",
+                size,
+            )
+        except OSError:
+            pass
+
     try:
         return ImageFont.truetype(f"DejaVuSerif{style}.ttf", size)
     except OSError:
@@ -150,15 +161,20 @@ def _draw_map(draw, codes):
             polygons = [polygons]
         for polygon in polygons:
             outline = [
-                (770 + (lon + 180) * 1.62, BODY_TOP + 205 - lat * 1.9)
+                (648 + (lon + 180) * 1.94, BODY_TOP + 205 - lat * 1.94)
                 for lon, lat in polygon[0]
             ]
             if len(outline) >= 3:
                 draw.polygon(outline, fill=color, outline=PAPER)
 
 
-def _draw_length(draw, x, width, label, book):
-    draw.text((x, FOOTER_TOP + 20), label, font=_font(17), fill=MUTED)
+def _draw_length(draw, 
+                 x, 
+                 width, 
+                 label, 
+                 book):
+    center = x + width / 2
+    draw.text((center, FOOTER_LABEL_Y), label, anchor="mt", font=_font(17), fill=MUTED)
     title_font = _font(23, "-Italic")
     if book is None:
         draw.text((x, FOOTER_TOP + 61), "No page count recorded", anchor="ls", font=title_font, fill=INK)
@@ -178,18 +194,42 @@ def _draw_length(draw, x, width, label, book):
     if lines and draw.textlength(lines[-1], font=title_font) + suffix_width > width:
         lines = _wrap(title, title_font, width - suffix_width, 2)
 
-    baseline = FOOTER_TOP + 61
-    for line in lines:
-        draw.text((x, baseline), line, anchor="ls", font=title_font, fill=INK)
+    baseline = FOOTER_VALUE_Y
+
+    for line in lines[:-1]:
+        draw.text((center, baseline), line, anchor="ms", font=title_font, fill=INK)
         baseline += 25
-    if lines:
-        baseline -= 25
-    suffix_x = x + (draw.textlength(lines[-1], font=title_font) if lines else 0)
+
+    last_line = lines[-1] if lines else ""
+    title_width = draw.textlength(last_line, font=title_font)
+    title_x = center - (title_width + suffix_width) / 2
+
+    draw.text((title_x, baseline), last_line, anchor="ls", font=title_font, fill=INK)
+    suffix_x = title_x + title_width
     draw.text((suffix_x, baseline), separator, anchor="ls", font=unit_font, fill=MUTED)
     number_x = suffix_x + draw.textlength(separator, font=unit_font)
     _draw_number(draw, (number_x, baseline), page_text, 23, anchor="ls")
     draw.text((number_x + number_width, baseline), " pages", anchor="ls", font=unit_font, fill=MUTED)
 
+def _draw_rating_stars(draw, right, top, rating):
+    size, gap = 17, 2
+    star = Image.new("L", (size, size))
+    ImageDraw.Draw(star).polygon(
+        [(8, 0), (10, 6), (16, 6), (11, 10), (13, 16),
+         (8, 12), (3, 16), (5, 10), (0, 6), (6, 6)],
+        fill=255,
+    )
+
+    left = right - (5 * size + 4 * gap)
+    for index in range(5):
+        x = left + index * (size + gap)
+        draw.bitmap((x, top), star, fill="#D8CDBC")
+
+        filled = round(size * max(0, min(1, rating - index)))
+        if filled:
+            draw.bitmap(
+                (x, top), star.crop((0, 0, filled, size)), fill="#BC861E"
+            )
 
 
 def render_postcard(
@@ -247,20 +287,17 @@ def render_postcard(
     ## Render the list of books
     for index, (title, author, rating) in enumerate(books):
         y = BODY_TOP + 72 + index * 108
-        title_lines = _wrap(title, _font(25, "-Italic"), 510, 2)
+        title_lines = _wrap(title, _font(25, "-Italic"), 385, 2)
 
         if pd.notna(rating) and rating > 0:
-            draw.text(
-                (675, y), f"{rating:g}/5",
-                anchor="rt", font=_font(23), fill=GOLD,
-            )
+            _draw_rating_stars(draw, 562, y + 4, rating)
 
         for line_no, line in enumerate(title_lines):
             draw.text((68, y + line_no * 26), line, font=_font(25, "-Italic"), fill=INK)
-        for author_line in _wrap(author, _font(20), 620, 1):
+        for author_line in _wrap(author, _font(20), 490, 1):
             draw.text((68, y + len(title_lines) * 26 + 1), author_line, font=_font(20), fill=MUTED)
 
-    draw.line((720, BODY_TOP + 2, 720, FOOTER_TOP - 20), fill=RULE, width=1)
+    draw.line((590, BODY_TOP + 2, 590, FOOTER_TOP - 20), fill=RULE, width=1)
     draw.text((752, BODY_TOP), "New Places on the Map", font=_heading_font(31), fill=INK)
 
     ## Render the map of new countries
@@ -278,9 +315,15 @@ def render_postcard(
         draw.text((752, BODY_TOP + 352 + index * 28), line, font=_font(20), fill=MUTED)
 
     draw.line((68, FOOTER_TOP, WIDTH - 68, FOOTER_TOP), fill=RULE, width=2)
-    for x, label, value in ((68, "BOOKS FINISHED", count), (247, "NEW COUNTRIES", len(countries))):
-        draw.text((x, FOOTER_TOP + 20), label, font=_font(17), fill=MUTED)
-        _draw_number(draw, (x, FOOTER_TOP + 61), f"{value:,}", 30, anchor="ls")
+
+    ## Render the footer statistics
+    for x, label, value in (
+        (158, "BOOKS FINISHED", count),
+        (345, "NEW COUNTRIES", len(countries)),
+    ):
+        draw.text((x, FOOTER_LABEL_Y), label, anchor="mt", font=_font(17), fill=MUTED)
+        _draw_number(draw, (x, FOOTER_VALUE_Y), f"{value:,}", 30, anchor="ms")
+
     _draw_length(draw, 433, 430, "LONGEST READ", longest)
     _draw_length(draw, 901, 471, "SHORTEST READ", shortest)
 

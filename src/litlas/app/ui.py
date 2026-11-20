@@ -460,8 +460,13 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
     gap: 0 !important;
 }
 
-
 } /* End mobile media query */
+
+@media (max-width: 768px) {
+    iframe[title="managed-hosted-app-badge"] {
+        display: none !important;
+    }
+}
 
 </style>
 """,
