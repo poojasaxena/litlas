@@ -534,4 +534,5 @@ def show_year_postcard(read_books, page_details):
         file_name=f"litlas-{year}-year-in-books.png",
         mime="image/png",
         on_click="ignore",
+        width="stretch",
     )
