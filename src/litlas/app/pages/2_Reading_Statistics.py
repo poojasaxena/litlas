@@ -205,11 +205,22 @@ div[role="dialog"]:has(.st-key-litlas_year_books) {
 }
 
 /* Dialog title */
-[role="dialog"]:has(.st-key-litlas_postcard_year)
-[data-testid="stDialogHeader"] :is(h1, h2, h3, p) {
+[role="dialog"]:has(.st-key-litlas_postcard_year) h2 p {
     font-family: "Cormorant Garamond", Georgia, serif !important;
     font-style: italic !important;
     font-weight: 600 !important;
+    color: #58412F !important;
+}
+[role="dialog"] .st-key-litlas_postcard_controls {
+    margin-top: -20px !important;
+}
+[role="dialog"] .st-key-litlas_postcard_controls :is(
+    [data-baseweb="select"] > div,
+    button[data-testid="stPopoverButton"],
+    .stPopover > button
+) {
+    background-color: #F5EFE4 !important;
+    border-color: #D4C1A7 !important;
     color: #58412F !important;
 }
 

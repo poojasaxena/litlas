@@ -472,7 +472,14 @@ def show_year_postcard(read_books, page_details):
         st.info("No books with a recorded finish date yet.")
         return
 
-    year = st.selectbox(
+    controls = st.container(key="litlas_postcard_controls")
+    year_col, personalize_col = controls.columns(
+        [1, 2],
+        gap="small",
+        vertical_alignment="bottom",
+    )
+
+    year = year_col.selectbox(
         "Reading year",
         years,
         index=years.index(2025) if 2025 in years else 0,
@@ -498,7 +505,7 @@ def show_year_postcard(read_books, page_details):
     drafts = st.session_state.setdefault("litlas_postcard_drafts", {})
     previous_choices, previous_note = drafts.get(year, ([], ""))
 
-    with st.expander("Personalize the postcard"):
+    with personalize_col.popover("Personalize the postcard"):
         chosen = st.multiselect(
             "Books you’d carry forward",
             list(options),
