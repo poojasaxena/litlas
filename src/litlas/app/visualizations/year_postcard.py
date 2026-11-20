@@ -16,7 +16,7 @@ from litlas.processing.paths import ASSETS_DIR, ILLUSTRATIONS_DIR, load_config, 
 # Preview and PNG dimensions.
 DIALOG_WIDTH = 658
 WIDTH = 1500
-HEIGHT = 1720
+HEIGHT = 1680
 CENTER_X = WIDTH // 2
 CONTENT_MARGIN = 68
 CONTENT_WIDTH = WIDTH - 2 * CONTENT_MARGIN
@@ -32,29 +32,29 @@ STATS_LABEL_Y = 299
 STATS_VALUE_Y = 354
 STATS_LABEL_SIZE = 32
 STATS_VALUE_SIZE = 67
-MAP_HEADING_Y = 483
-MAP_TOP = 553
+MAP_HEADING_Y = 443
+MAP_TOP = 513
 MAP_SCALE_X = 3.70
 MAP_SCALE_Y = 3.75
 MAP_MOVE_RIGHT = 0
 MAP_MOVE_DOWN = 0
 
 # Reading grid and footer.
-BOOK_HEADING_Y = 1103
-SECTION_HEADING_SIZE = 49
-BOOK_HEADING_SIZE = 38
+BOOK_HEADING_Y = 1063
+SECTION_HEADING_SIZE = 44
+BOOK_HEADING_SIZE = SECTION_HEADING_SIZE
 BOOK_TITLE_SIZE = 29
 BOOK_AUTHOR_SIZE = 23
 BOOK_COVER_SIZE = (270, 280)
 BOOK_COVER_GAP = 82
 BOOK_COVER_TOP = BOOK_HEADING_Y + 66
-FOOTER_RULE_Y = 1523
-FOOTER_RULE_WITH_NOTE_Y = 1500
+FOOTER_RULE_Y = 1483
+FOOTER_RULE_WITH_NOTE_Y = 1460
 FOOTER_LABEL_SIZE = 27
 FOOTER_BOOK_SIZE = 33
 FOOTER_UNIT_SIZE = 27
 NOTE_FONT_SIZE = 21
-NOTE_TOP = 1652
+NOTE_TOP = 1612
 NOTE_LINE_SPACING = 23
 
 BOOK_LIMIT = 4
@@ -484,6 +484,7 @@ def show_year_postcard(read_books, page_details):
         years,
         index=years.index(2025) if 2025 in years else 0,
         key="litlas_postcard_year",
+        label_visibility="collapsed",
     )
 
     books = dated[dated["finished"].dt.year.eq(year)].copy()
