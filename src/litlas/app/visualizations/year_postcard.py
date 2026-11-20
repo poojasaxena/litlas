@@ -14,25 +14,24 @@ from litlas.processing.countries import (
 from litlas.processing.paths import ASSETS_DIR, ILLUSTRATIONS_DIR, load_config, resolve_project_path
 
 # Preview and PNG dimensions.
-DIALOG_WIDTH = 685
-PREVIEW_WIDTH = 610
+DIALOG_WIDTH = 658
 WIDTH = 1500
-HEIGHT = 1660
+HEIGHT = 1720
 CENTER_X = WIDTH // 2
 CONTENT_MARGIN = 68
 CONTENT_WIDTH = WIDTH - 2 * CONTENT_MARGIN
 
 # Header artwork, yearly totals, and map.
-LITLAS_LOGO_SIZE = (266, 196)
-AUTHOR_LOGO_SIZE = (175, 175)
-TITLE_ART_SIZE = (600, 86)
-TITLE_FALLBACK_FONT_SIZE = 62
-YEAR_FONT_SIZE = 40
+LITLAS_LOGO_SIZE = (270, 200)
+AUTHOR_LOGO_SIZE = (180, 180)
+TITLE_ART_SIZE = (800, 100)
+TITLE_FALLBACK_FONT_SIZE = 64
+YEAR_FONT_SIZE = 62
 HEADER_RULE_Y = 265
 STATS_LABEL_Y = 299
 STATS_VALUE_Y = 354
 STATS_LABEL_SIZE = 32
-STATS_VALUE_SIZE = 86
+STATS_VALUE_SIZE = 67
 MAP_HEADING_Y = 483
 MAP_TOP = 553
 MAP_SCALE_X = 3.70
@@ -43,17 +42,19 @@ MAP_MOVE_DOWN = 0
 # Reading grid and footer.
 BOOK_HEADING_Y = 1103
 SECTION_HEADING_SIZE = 49
-BOOK_TITLE_SIZE = 37
-BOOK_AUTHOR_SIZE = 29
-BOOK_COLUMN_GAP = 46
-BOOK_ROW_SPACING = 147
-FOOTER_RULE_Y = 1463
-FOOTER_RULE_WITH_NOTE_Y = 1440
+BOOK_HEADING_SIZE = 38
+BOOK_TITLE_SIZE = 29
+BOOK_AUTHOR_SIZE = 23
+BOOK_COVER_SIZE = (270, 280)
+BOOK_COVER_GAP = 82
+BOOK_COVER_TOP = BOOK_HEADING_Y + 66
+FOOTER_RULE_Y = 1523
+FOOTER_RULE_WITH_NOTE_Y = 1500
 FOOTER_LABEL_SIZE = 27
 FOOTER_BOOK_SIZE = 33
 FOOTER_UNIT_SIZE = 27
 NOTE_FONT_SIZE = 21
-NOTE_TOP = 1592
+NOTE_TOP = 1652
 NOTE_LINE_SPACING = 23
 
 BOOK_LIMIT = 4
@@ -143,11 +144,16 @@ def _title_art():
     return ImageOps.contain(title.crop(bounds), TITLE_ART_SIZE, Image.Resampling.LANCZOS)
 
 
-@lru_cache(maxsize=2)
-def _logo_art(path, size):
+@lru_cache(maxsize=3)
+def _logo_art(path, size, *, alpha_threshold=0):
     with Image.open(path) as source:
         logo = source.convert("RGBA")
-    logo = logo.crop(logo.getchannel("A").getbbox())
+    alpha = logo.getchannel("A")
+    if alpha_threshold:
+        alpha = alpha.point(lambda value: 255 if value > alpha_threshold else 0)
+    bounds = alpha.getbbox()
+    if bounds:
+        logo = logo.crop(bounds)
     return ImageOps.contain(logo, size, Image.Resampling.LANCZOS)
 
 
@@ -227,12 +233,12 @@ def _draw_length(draw, center, width, top, label, book):
             anchor="mt", font=title_font, fill=INK,
         )
     draw.text(
-        (center, top + 39 + max(1, len(lines)) * 34), f"{pages:,} pages",
+        (center, top + 49 + max(1, len(lines)) * 34), f"{pages:,} pages",
         anchor="mt", font=_font(FOOTER_UNIT_SIZE), fill=MUTED,
     )
 
 
-def _draw_rating_stars(draw, left, top, rating):
+def _draw_rating_stars(draw, center, top, rating):
     size, gap = 17, 3
     star = Image.new("L", (size, size))
     ImageDraw.Draw(star).polygon(
@@ -241,6 +247,7 @@ def _draw_rating_stars(draw, left, top, rating):
         fill=255,
     )
 
+    left = round(center - (5 * size + 4 * gap) / 2)
     for index in range(5):
         x = left + index * (size + gap)
         draw.bitmap((x, top), star, fill="#D8CDBC")
@@ -271,7 +278,7 @@ def _draw_header(image, draw, year):
         image.paste(title, ((WIDTH - title.width) // 2, 106 - title.height // 2), title)
 
     draw.line((CENTER_X - 88, 158, CENTER_X + 88, 158), fill=RULE, width=2)
-    _draw_number(draw, (CENTER_X, 177), str(year), YEAR_FONT_SIZE, anchor="mt")
+    _draw_number(draw, (CENTER_X, 187), str(year), YEAR_FONT_SIZE, anchor="mt")
     draw.line(
         (CONTENT_MARGIN, HEADER_RULE_Y, WIDTH - CONTENT_MARGIN, HEADER_RULE_Y),
         fill=RULE, width=2,
@@ -302,47 +309,64 @@ def _draw_totals(draw, count, country_count, pages_read):
         )
 
 
-def _draw_books(draw, books, selected_books):
+def _draw_books(image, draw, books, selected_books):
     heading = "Books I’d Carry Forward" if selected_books else "Highest-Rated Reads"
     draw.text(
-        (CONTENT_MARGIN, BOOK_HEADING_Y), heading, anchor="lt",
-        font=_heading_font(SECTION_HEADING_SIZE), fill=INK,
+        (CENTER_X, BOOK_HEADING_Y), heading, anchor="mt",
+        font=_heading_font(BOOK_HEADING_SIZE), fill=INK,
     )
-    if not books:
+    entries = books[:BOOK_LIMIT]
+    if not entries:
         draw.text(
-            (CONTENT_MARGIN, BOOK_HEADING_Y + 67), "No rated books recorded this year",
-            anchor="lt", font=_font(BOOK_AUTHOR_SIZE), fill=MUTED,
+            (CENTER_X, BOOK_COVER_TOP), "No rated books recorded this year",
+            anchor="mt", font=_font(BOOK_AUTHOR_SIZE), fill=MUTED,
         )
         return
 
-    column_width = (CONTENT_WIDTH - BOOK_COLUMN_GAP) // 2
-    title_font = _font(BOOK_TITLE_SIZE, "-Italic")
+    outline_path = ILLUSTRATIONS_DIR / "book_outline.png"
+    cover = (
+        _logo_art(outline_path, BOOK_COVER_SIZE, alpha_threshold=16)
+        if outline_path.is_file() else None
+    )
+    cover_width, cover_height = cover.size if cover is not None else (184, BOOK_COVER_SIZE[1])
+    row_width = len(entries) * cover_width + (len(entries) - 1) * BOOK_COVER_GAP
+    row_left = (WIDTH - row_width) // 2
     author_font = _font(BOOK_AUTHOR_SIZE)
-    title_line_height = BOOK_TITLE_SIZE + 5
+    text_width = cover_width - 26
+    author_step = BOOK_AUTHOR_SIZE + 2
 
-    for index, (title, author, rating) in enumerate(books):
-        row, column = divmod(index, 2)
-        x = CONTENT_MARGIN + column * (column_width + BOOK_COLUMN_GAP)
-        y = BOOK_HEADING_Y + 62 + row * BOOK_ROW_SPACING
-        title_lines = _wrap(title, title_font, column_width, 2)
-        for line_index, line in enumerate(title_lines):
-            draw.text(
-                (x, y + line_index * title_line_height), line,
-                anchor="lt", font=title_font, fill=INK,
+    for index, (title, author, rating) in enumerate(entries):
+        left = row_left + index * (cover_width + BOOK_COVER_GAP)
+        cover_center = left + cover_width / 2
+        text_center = cover_center + 4
+        if cover is not None:
+            image.paste(cover, (left, BOOK_COVER_TOP), cover)
+        else:
+            draw.rounded_rectangle(
+                (left, BOOK_COVER_TOP, left + cover_width, BOOK_COVER_TOP + cover_height),
+                radius=8, outline=RULE, width=2,
             )
 
-        author_y = y + len(title_lines) * title_line_height + 2
-        show_rating = pd.notna(rating) and rating > 0
-        author_width = column_width - 113 if show_rating else column_width
-        author_lines = _wrap(author, author_font, author_width, 1)
-        if author_lines:
-            author_line = author_lines[0]
-            draw.text((x, author_y), author_line, anchor="lt", font=author_font, fill=MUTED)
-            stars_x = x + round(author_font.getlength(author_line)) + 13
-        else:
-            stars_x = x
-        if show_rating:
-            _draw_rating_stars(draw, stars_x, author_y + 4, rating)
+        for title_size in (BOOK_TITLE_SIZE, BOOK_TITLE_SIZE - 3, BOOK_TITLE_SIZE - 6):
+            title_font = _font(title_size, "-Italic")
+            title_lines = _wrap(title, title_font, text_width, 4)
+            if " ".join(title_lines) == " ".join(title.split()):
+                break
+        title_step = title_size + 3
+        author_lines = _wrap(author, author_font, text_width, 2)
+        gap = 8 if title_lines and author_lines else 0
+        text_height = len(title_lines) * title_step + gap + len(author_lines) * author_step
+        y = BOOK_COVER_TOP + (cover_height - text_height) / 2
+        for line in title_lines:
+            draw.text((text_center, y), line, anchor="mt", font=title_font, fill=INK)
+            y += title_step
+        y += gap
+        for line in author_lines:
+            draw.text((text_center, y), line, anchor="mt", font=author_font, fill=MUTED)
+            y += author_step
+
+        if pd.notna(rating) and rating > 0:
+            _draw_rating_stars(draw, cover_center, BOOK_COVER_TOP + cover_height + 9, rating)
 
 
 def render_postcard(
@@ -361,7 +385,7 @@ def render_postcard(
         font=_heading_font(SECTION_HEADING_SIZE), fill=INK,
     )
     _draw_map(draw, set(first_countries["code"]))
-    _draw_books(draw, books, selected_books)
+    _draw_books(image, draw, books, selected_books)
 
     note_font = _font(NOTE_FONT_SIZE, "-Italic")
     note_lines = _wrap(f"“{note}”", note_font, CONTENT_WIDTH, 2) if note else []
