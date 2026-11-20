@@ -244,6 +244,23 @@ div[role="dialog"]:has(.st-key-litlas_year_books) {
     color: #58412F !important;
 }
 
+/* The open book-options list */
+[data-testid="stMultiSelectDropdown"]:has(
+    [role="listbox"][aria-label="Books you’d carry forward"]
+) {
+    background-color: #FAF7F1 !important;
+    border: 1px solid #D4C1A7 !important;
+}
+
+/* The visible year and book selector fields */
+.st-key-litlas_postcard_year [role="group"]:has([role="combobox"]),
+.st-key-litlas_postcard_year button[role="combobox"],
+[data-testid="stPopoverBody"]:has([class*="st-key-litlas_postcard_note_"])
+    [data-testid="stMultiSelect"] [role="group"]:has([role="combobox"]) {
+    background-color: #F5EFE4 !important;
+    color: #58412F !important;
+}
+
 div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 [data-testid="stDialogHeader"] {
     padding-bottom: 0 !important;
