@@ -287,6 +287,22 @@ div[role="dialog"]:has(.st-key-litlas_year_books) {
     font-family: Georgia, serif !important;
 }
 
+/* Compact postcard personalization popover */
+[data-testid="stPopoverBody"]:has([class*="st-key-litlas_postcard_note_"]) {
+    width: 380px !important;
+    max-width: calc(100vw - 32px) !important;
+    min-width: 0 !important;
+}
+
+/* Keep controls inside the popover */
+[data-testid="stPopoverBody"]:has([class*="st-key-litlas_postcard_note_"])
+[data-testid="stMultiSelect"],
+[data-testid="stPopoverBody"]:has([class*="st-key-litlas_postcard_note_"])
+[data-testid="stTextInput"] {
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
 div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 [data-testid="stDialogHeader"] {
     padding-bottom: 0 !important;

@@ -384,9 +384,11 @@ def _draw_books(image, draw, books, selected_books):
         text_height = len(title_lines) * title_step + gap + len(author_lines) * author_date_gap
 
         date_text = finished.strftime("%d %b %Y").lstrip("0") if pd.notna(finished) else ""
-        date_font = _font(14)
+        date_font = _font(19)
+        author_date_gap = 22
+
         if date_text:
-            text_height += 7 + date_font.size
+            text_height += author_date_gap + date_font.size
 
         y = BOOK_COVER_TOP + (cover_height - text_height) / 2
         for line in title_lines:
@@ -400,7 +402,7 @@ def _draw_books(image, draw, books, selected_books):
 
         if date_text:
             draw.text(
-                (text_center, y + 7),
+                (text_center, y + author_date_gap),
                 date_text,
                 anchor="mt",
                 font=date_font,
