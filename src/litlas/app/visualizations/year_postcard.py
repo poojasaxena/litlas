@@ -184,12 +184,21 @@ def _wrap(text, font, width, max_lines):
 def _paper():
     size = (WIDTH, HEIGHT)
     image = Image.new("RGBA", size, PAPER)
-    with Image.open(ILLUSTRATIONS_DIR / "about-literary-margins-muted.png") as source:
-        wash = ImageOps.fit(source.convert("RGBA"), size, method=Image.Resampling.LANCZOS)
-    wash.putalpha(wash.getchannel("A").point(lambda value: round(value * 0.12)))
-    image.alpha_composite(wash)
-    return image.convert("RGB")
 
+    with Image.open(ILLUSTRATIONS_DIR / "about-literary-margins-muted.png") as source:
+        wash = ImageOps.contain(
+            source.convert("RGBA"),
+            size,
+            method=Image.Resampling.LANCZOS,
+        )
+
+    background_lift = 30
+    wash.putalpha(wash.getchannel("A").point(lambda value: round(value * 0.35)))
+    image.alpha_composite(
+        wash,
+        dest=(0, HEIGHT - wash.height - background_lift),
+    )
+    return image.convert("RGB")
 
 
 def _draw_map(draw, codes):
