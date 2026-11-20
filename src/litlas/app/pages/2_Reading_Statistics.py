@@ -224,6 +224,26 @@ div[role="dialog"]:has(.st-key-litlas_year_books) {
     color: #58412F !important;
 }
 
+/* Open personalization panel */
+[data-testid="stPopoverBody"]:has([class*="st-key-litlas_postcard_note_"]) {
+    background-color: #FAF7F1 !important;
+    border: 1px solid #D4C1A7 !important;
+}
+
+/* Year selector and fields inside the personalization panel */
+:is(
+    .st-key-litlas_postcard_year,
+    [data-testid="stPopoverBody"]:has([class*="st-key-litlas_postcard_note_"])
+) :is(
+    [data-baseweb="select"],
+    [data-baseweb="select"] > div,
+    [data-baseweb="input"],
+    [data-baseweb="base-input"]
+) {
+    background-color: #F5EFE4 !important;
+    color: #58412F !important;
+}
+
 div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 [data-testid="stDialogHeader"] {
     padding-bottom: 0 !important;
