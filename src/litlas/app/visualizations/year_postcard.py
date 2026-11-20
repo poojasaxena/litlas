@@ -358,7 +358,7 @@ def _draw_books(image, draw, books, selected_books):
     text_width = cover_width - 26
     author_step = BOOK_AUTHOR_SIZE + 2
 
-    for index, (title, author, rating) in enumerate(entries):
+    for index, (title, author, rating, finished) in enumerate(entries):
         left = row_left + index * (cover_width + BOOK_COVER_GAP)
         cover_center = left + cover_width / 2
         text_center = cover_center + 4
@@ -379,15 +379,33 @@ def _draw_books(image, draw, books, selected_books):
         author_font = _book_font(author, BOOK_AUTHOR_SIZE)
         author_lines = _wrap(author, author_font, text_width, 2)
         gap = 16 if title_lines and author_lines else 0
-        text_height = len(title_lines) * title_step + gap + len(author_lines) * author_step
+        author_date_gap = 4
+        
+        text_height = len(title_lines) * title_step + gap + len(author_lines) * author_date_gap
+
+        date_text = finished.strftime("%d %b %Y").lstrip("0") if pd.notna(finished) else ""
+        date_font = _font(14)
+        if date_text:
+            text_height += 7 + date_font.size
+
         y = BOOK_COVER_TOP + (cover_height - text_height) / 2
         for line in title_lines:
             draw.text((text_center, y), line, anchor="mt", font=title_font, fill=INK)
             y += title_step
         y += gap
+
         for line in author_lines:
             draw.text((text_center, y), line, anchor="mt", font=author_font, fill=MUTED)
-            y += author_step
+            y += author_date_gap
+
+        if date_text:
+            draw.text(
+                (text_center, y + 7),
+                date_text,
+                anchor="mt",
+                font=date_font,
+                fill=MUTED,
+            )
 
         if pd.notna(rating) and rating > 0:
             _draw_rating_stars(draw, cover_center, BOOK_COVER_TOP + cover_height + 9, rating)
@@ -459,7 +477,7 @@ def highest_rated_books(books):
     rated = books.loc[ratings.gt(0)].assign(rating=ratings)
     ranked = rated.sort_values(["rating", "finished"], ascending=False)
     return list(
-        ranked.head(BOOK_LIMIT)[["Display Title", "Author", "rating"]]
+        ranked.head(BOOK_LIMIT)[["Display Title", "Author", "rating", "finished"]]
         .itertuples(index=False, name=None)
     )
 
@@ -498,9 +516,9 @@ def show_year_postcard(read_books, page_details):
         rating=pd.to_numeric(books["My Rating"], errors="coerce")
     )
     options = {
-        str(book_id): (str(title), str(author), rating)
-        for book_id, title, author, rating in rated_options[
-            ["Book Id", "Display Title", "Author", "rating"]
+        str(book_id): (str(title), str(author), rating, finished)
+        for book_id, title, author, rating, finished in rated_options[
+            ["Book Id", "Display Title", "Author", "rating", "finished"]
         ].itertuples(index=False, name=None)
     }
     drafts = st.session_state.setdefault("litlas_postcard_drafts", {})
