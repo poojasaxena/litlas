@@ -303,6 +303,29 @@ div[role="dialog"]:has(.st-key-litlas_year_books) {
     min-width: 0 !important;
 }
 
+/* Selected book tags — Litlas palette */
+[data-testid="stPopoverBody"]
+[data-testid="stMultiSelect"] [data-baseweb="tag"] {
+    background-color: #E8D9C3 !important;
+    color: #58412F !important;
+    border: 1px solid #CDB699 !important;
+    border-radius: 5px !important;
+}
+
+/* Text and remove icon inside selected tags */
+[data-testid="stPopoverBody"]
+[data-testid="stMultiSelect"] [data-baseweb="tag"] * {
+    color: #58412F !important;
+}
+
+/* Remove the red focus outline */
+[data-testid="stPopoverBody"]
+[data-testid="stMultiSelect"] [data-baseweb="select"] > div:focus-within {
+    border-color: #CDB699 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
 div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 [data-testid="stDialogHeader"] {
     padding-bottom: 0 !important;
