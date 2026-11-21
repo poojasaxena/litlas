@@ -55,7 +55,7 @@ FOOTER_LABEL_SIZE = 27
 FOOTER_BOOK_SIZE = 33
 FOOTER_UNIT_SIZE = 27
 NOTE_FONT_SIZE = 21
-NOTE_TOP = 1612
+NOTE_TOP = 1600
 NOTE_LINE_SPACING = 23
 
 ## Book
@@ -244,27 +244,58 @@ def _draw_map(draw, codes):
 
 
 def _draw_length(draw, center, width, top, label, book):
-    draw.text((center, top), label, anchor="mt", font=_font(FOOTER_LABEL_SIZE), fill=MUTED)
+    draw.text(
+        (center, top), label,
+        anchor="mt",
+        font=_font(FOOTER_LABEL_SIZE),
+        fill=MUTED,
+    )
+
     if book is None:
         draw.text(
             (center, top + 48), "No page count recorded",
-            anchor="mt", font=_font(FOOTER_UNIT_SIZE), fill=MUTED,
+            anchor="mt",
+            font=_font(FOOTER_UNIT_SIZE),
+            fill=MUTED,
         )
         return
 
-    title, pages = book
+    title, author, pages = book
+
     title_font = _book_font(title, FOOTER_BOOK_SIZE, "-Italic")
     lines = _wrap(title, title_font, width, 2)
+
     for index, line in enumerate(lines):
         draw.text(
-            (center, top + 38 + index * 34), line,
-            anchor="mt", font=title_font, fill=INK,
+            (center, top + 38 + index * 34),
+            line,
+            anchor="mt",
+            font=title_font,
+            fill=INK,
         )
-    draw.text(
-        (center, top + 49 + max(1, len(lines)) * 34), f"{pages:,} pages",
-        anchor="mt", font=_font(FOOTER_UNIT_SIZE), fill=MUTED,
-    )
 
+    next_y = top + 38 + len(lines) * 34 + 6
+
+    if author:
+        author_font = _book_font(author, 23)
+        author_line = _wrap(author, author_font, width, 1)
+        if author_line:
+            draw.text(
+                (center, next_y),
+                author_line[0],
+                anchor="mt",
+                font=author_font,
+                fill=MUTED,
+            )
+        next_y += 34
+
+    draw.text(
+        (center, next_y),
+        f"{pages:,} pages",
+        anchor="mt",
+        font=_font(FOOTER_UNIT_SIZE),
+        fill=MUTED,
+    )
 
 def _draw_rating_stars(draw, center, top, rating):
     size, gap = 21, 3
@@ -518,6 +549,33 @@ def show_year_postcard(read_books, page_details):
     year_countries = explored_country_codes(books["ISO3"])
 
     shortest, longest, pages_read = _reading_page_summary(page_details, year)
+    authors_by_title = {}
+
+    for _, row in books.iterrows():
+        author = row.get("Author")
+
+        if pd.isna(author):
+            continue
+
+        for column in ("Display Title", "Title"):
+            if column in books.columns and pd.notna(row[column]):
+                key = " ".join(str(row[column]).split()).casefold()
+                authors_by_title[key] = str(author)
+
+
+    def add_author(book):
+        if book is None:
+            return None
+
+        title, pages = book
+        key = " ".join(title.split()).casefold()
+
+        return title, authors_by_title.get(key, ""), pages
+
+
+    shortest = add_author(shortest)
+    longest = add_author(longest)
+
     preview = st.empty()
   
 
