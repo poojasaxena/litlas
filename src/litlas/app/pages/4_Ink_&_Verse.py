@@ -192,10 +192,6 @@ st.markdown(
         overflow-wrap: anywhere;
     }
 
-    .litlas-books-intro {
-        font-size: 0.2rem;
-        margin-bottom: 12px;
-    }
     .litlas-gallery-title {
         font-size: 0.80rem !important;
         line-height: 1.2;
@@ -212,6 +208,13 @@ st.markdown(
         font-size: 1.2rem;
         margin: 28px 0 4px;
     }
+
+@media screen and (max-width: 650px) {
+    .stMarkdown p.litlas-books-intro {
+        font-size: 0.2rem !important;
+        margin-bottom: 12px;
+    }
+}
     </style>
     """,
     unsafe_allow_html=True,
