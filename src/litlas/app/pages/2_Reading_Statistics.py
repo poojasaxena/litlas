@@ -1398,8 +1398,8 @@ reading_years = pd.to_numeric(
 
 
 postcard_label = (
-    f"Reading Years **{reading_years} years**  \n"
-    "*A year in books · Explore my postcards →*"
+    f"A year in books **{reading_years} years**  \n"
+    "*Litlas postcards· Explore →*"
 )
 #postcard_label = "**A Year in Books** *Browse years →*"
 
