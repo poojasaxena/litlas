@@ -1064,6 +1064,14 @@ nobel_data_available = bool(load_literature_laureates())
 if not is_mobile:
     st.html("""
     <style>
+
+    .litlas-nobel-stat summary,
+    .litlas-marathon-stat summary {
+        text-decoration: underline dotted;
+        text-decoration-color: #B29A7C;
+        text-underline-offset: 4px;
+    }
+
     @media screen and (min-width: 641px) {
 
     .litlas-nobel-stat summary span::after,
