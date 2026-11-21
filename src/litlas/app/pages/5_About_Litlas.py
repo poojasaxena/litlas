@@ -189,7 +189,7 @@ st.html("""
         isolation: isolate;
         margin-bottom: 0;
         padding-bottom: 8px;
-        margin-top: -22px !important;
+        margin-top: -82px !important;
     }
 
     .litlas-about-reading-page {
