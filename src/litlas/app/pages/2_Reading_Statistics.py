@@ -465,13 +465,15 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 
 .st-key-litlas_year_postcard button,
 .st-key-litlas_year_postcard_mobile button {
-    justify-content: flex-start;
+    display: block !important;
+    width: 100% !important;
     min-height: 64px;
-    padding: 4px 10px;
+    padding: 10px 14px !important;
     background: #F5EFE4;
     border: 1px solid #D4C1A7;
     border-radius: 7px;
-    color: #6E4B3A;
+    color: #58412F;
+    text-align: left !important;
 }
 
 .st-key-litlas_year_postcard button:hover,
@@ -487,19 +489,35 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     outline-offset: 2px;
 }
 
+/* Reading Years card text */
 .st-key-litlas_year_postcard button p,
 .st-key-litlas_year_postcard_mobile button p {
-    font: 17px/1.3 Georgia, serif;
-    text-align: left;
-    color: inherit;
+    display: block;
+    width: 100%;
+    margin: 0;
+    font: 15px/1.4 Georgia, serif;
+    text-align: left !important;
+    color: #96785D;
 }
 
+/* Distinct reading years — right aligned */
+.st-key-litlas_year_postcard button strong,
+.st-key-litlas_year_postcard_mobile button strong {
+    float: right;
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #6E4B3A;
+}
+
+/* Literary subtitle */
 .st-key-litlas_year_postcard button em,
 .st-key-litlas_year_postcard_mobile button em {
     display: block;
-    margin-top: 3px;
+    margin-top: 12px;
     font-size: 13px;
-    font-style: normal;
+    font-style: italic;
+    color: #58412F;
 }
 
 @media screen and (max-width: 640px) {
@@ -1363,8 +1381,19 @@ def page_milestone(label, value, title="", author=""):
     )
 
 
+
 ## Desktop Reading Milestones
-postcard_label = "**A Year in Books** *Browse years →*"
+
+reading_years = pd.to_numeric(
+    stats["history"]["year"], errors="coerce"
+).dropna().astype(int).nunique()
+
+
+postcard_label = (
+    f"Reading Years **{reading_years}**  \n"
+    "*A year in books · Explore my postcards →*"
+)
+#postcard_label = "**A Year in Books** *Browse years →*"
 
 with st.container(key="litlas_desktop_milestones"):
 
