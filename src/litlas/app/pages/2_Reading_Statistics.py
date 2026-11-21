@@ -628,7 +628,7 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
         display: grid !important;
         grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
         column-gap: 6px !important;
-        margin-top: -72px !important;
+        margin-top: -22px !important;
         row-gap: 10px !important;
     }
 
