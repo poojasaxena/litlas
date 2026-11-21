@@ -547,8 +547,8 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 
     .st-key-litlas_year_postcard_mobile button strong {
         margin-left: auto;
-        font-size: 21px;
         font-weight: 700;
+        font-size: 17px;
         color: #6E4B3A;
         }
 
@@ -628,6 +628,7 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
         display: grid !important;
         grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
         column-gap: 6px !important;
+        margin-top: -12px !important;
         row-gap: 10px !important;
     }
 
