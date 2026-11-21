@@ -1065,6 +1065,14 @@ if not is_mobile:
     st.html("""
     <style>
     @media screen and (min-width: 641px) {
+
+    .litlas-nobel-stat summary span::after,
+    .litlas-marathon-stat summary span::after {
+        content: " ▾";
+        color: #A47B43;
+        font-size: 12px;
+    }
+
         [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
         > [data-testid="stColumn"]:nth-child(1) [data-testid="stMetricLabel"] p {
             --litlas-stat-icon: "book_2";
