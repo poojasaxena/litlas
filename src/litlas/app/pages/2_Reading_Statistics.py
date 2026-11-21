@@ -1071,7 +1071,7 @@ if not is_mobile:
     .litlas-marathon-stat summary span::after {
         content: " ▾";
         color: #A47B43;
-        font-size: 12px;
+        font-size: 18px;
     }
 
         [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
