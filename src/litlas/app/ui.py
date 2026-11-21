@@ -427,26 +427,69 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
     display: none !important;
 }
 
-/* Show compact mobile navigation */
+/* Fixed mobile bottom navigation */
 .st-key-litlas_mobile_nav {
-    display: block !important;
-    margin-top: var(--mobile-header-bottom-gap, -20px) !important;
+    display: flex !important;
+    position: fixed !important;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
+    margin: 0 !important;
+    background: #F5EFE4;
+    border-top: 1px solid #D4C1A7;
+    box-shadow: 0 -3px 12px rgba(88, 65, 47, 0.08);
+    justify-content: space-around;
+    flex-wrap: nowrap !important;
+    gap: 0 !important;
 }
 
-.st-key-litlas_mobile_nav button {
-    background-color: #F5EFE4 !important;
-    color: #58412F !important;
-    border: 1px solid #D4C1A7 !important;
-    font-family: Georgia, serif !important;
+/* Five equally spaced destinations */
+.st-key-litlas_mobile_nav [data-testid="stPageLink"] {
+    flex: 1 1 20%;
+    min-width: 0;
 }
-    
-[data-testid="stPopoverBody"]:has(.st-key-litlas_mobile_menu_links) {
-    width: 11.5rem;
-    min-width: 0 !important;
-    padding: 0.6rem;
-    background-color: #FAF7F1;
-    border: 1px solid #D4C1A7;
-    border-radius: 8px;
+
+/* Icon above label */
+.st-key-litlas_mobile_nav a[data-testid="stPageLink-NavLink"] {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    width: 100% !important;
+    min-height: 46px;
+    padding: 4px 0 !important;
+    border: none !important;
+    border-radius: 7px !important;
+    background: transparent !important;
+    color: #96785D !important;
+    text-decoration: none !important;
+}
+
+.st-key-litlas_mobile_nav a[data-testid="stPageLink-NavLink"] p {
+    margin: 0 !important;
+    font-family: Georgia, serif !important;
+    font-size: 10px !important;
+    line-height: 1.2 !important;
+    color: inherit !important;
+    white-space: nowrap;
+}
+
+/* Active destination */
+.st-key-litlas_mobile_nav a[aria-current="page"],
+.st-key-litlas_mobile_nav a[aria-disabled="true"] {
+    background: #E8D9C3 !important;
+    color: #58412F !important;
+    font-weight: 700 !important;
+}
+
+/* Keep the bottom of each page accessible */
+.stApp .block-container {
+    padding-bottom: calc(85px + env(safe-area-inset-bottom)) !important;
 }
 
 .st-key-litlas_mobile_menu_links a[data-testid="stPageLink-NavLink"],
@@ -599,12 +642,21 @@ def render_chapter_navigation(active_page: str) -> None:
             st.page_link(path, label=label)
 
 
-    with st.container(key="litlas_mobile_nav"):
-        with st.popover("☰ Menu"):
-            with st.container(key="litlas_mobile_menu_links"):
-                for label, path, route in pages:
-                    mobile_label = "Ledger" if route == "Library_Management" else label
-                    st.page_link(path, label=mobile_label)
+    mobile_tabs = [
+        ("Litlas", "main.py", ":material/menu_book:"),
+        ("Stats", "pages/2_Reading_Statistics.py", ":material/bar_chart:"),
+        ("Ledger", "pages/3_Library_Management.py", ":material/library_books:"),
+        ("Ink & Verse", "pages/4_Ink_&_Verse.py", ":material/ink_pen:"),
+        ("About", "pages/5_About_Litlas.py", ":material/info:"),
+    ]
+
+    with st.container(
+        key="litlas_mobile_nav",
+        horizontal=True,
+        gap="small",
+    ):
+        for label, path, icon in mobile_tabs:
+            st.page_link(path, label=label, icon=icon)
 
 
 def is_mobile_browser() -> bool:
