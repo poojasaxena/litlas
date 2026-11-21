@@ -516,7 +516,7 @@ st.markdown(
 @media screen and (max-width: 640px) {
 
     .st-key-litlas_library_navigation {
-        margin-top: -180px !important;
+        margin-top: -80px !important;
     }
 
     /* Keep all five Streamlit columns in one row */
