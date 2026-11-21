@@ -850,7 +850,7 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 .litlas-nobel-stat summary::after {
     content: "Laureates ▾";
     font-family: Georgia, serif;
-    font-size: 11px;
+    font-size: 14px;
     color: #96785D;
 }
 
