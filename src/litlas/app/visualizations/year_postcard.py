@@ -89,19 +89,17 @@ def new_countries(dated, year):
 
 @lru_cache(maxsize=24)
 def _font(size, style=""):
-    if style == "-Italic":
-        try:
-            return ImageFont.truetype(
-                "/usr/share/fonts/truetype/msttcorefonts/Georgia_Italic.ttf",
-                size,
-            )
-        except OSError:
-            pass
+    filenames = {
+        "": "NotoSerif-Regular.ttf",
+        "-Italic": "NotoSerif-Italic.ttf",
+        "-Bold": "NotoSerif-Bold.ttf",
+    }
 
-    try:
-        return ImageFont.truetype(f"DejaVuSerif{style}.ttf", size)
-    except OSError:
-        return ImageFont.load_default(size=size)
+    filename = filenames.get(style)
+    if filename is None:
+        raise ValueError(f"Unsupported font style: {style}")
+
+    return ImageFont.truetype(str(FONT_DIR / filename), size)
 
 @lru_cache(maxsize=12)
 def _devanagari_font(size):
