@@ -634,7 +634,7 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
         display: grid !important;
         grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
         column-gap: 6px !important;
-        margin-top: -17px !important;
+        margin-top: -15px !important;
         row-gap: 10px !important;
     }
 
@@ -1526,11 +1526,11 @@ mobile_milestones = f"""
     )}
 
     {mobile_milestone(
-        "Total Pages Read",
-        f"{total_pages:,}",
-        "A lifetime between",
-        "pages",
-        "pp.",
+        "Shortest Book",
+        f"{shortest['pages']:,}" if shortest else "—",
+        shortest["title"] if shortest else "",
+        shortest["author"] if shortest else "",
+        "pages" if shortest else "",
     )}
 
 </div>
