@@ -801,6 +801,21 @@ st.markdown(
         line-height: inherit !important;
     }
 }
+/* Author Details — Rename / Cancel button */
+.st-key-author_rename_toggle button {
+    background: #90694E !important;
+    color: #FFFFFF !important;
+    border: 1px solid #90694E !important;
+    border-radius: 7px !important;
+    font-family: Georgia, serif !important;
+}
+
+.st-key-author_rename_toggle button:hover {
+    background: #7D5740 !important;
+    border-color: #7D5740 !important;
+    color: #FFFFFF !important;
+}
+
     </style>
     """,
     unsafe_allow_html=True,

@@ -96,28 +96,37 @@ def render_author_details():
     # must not turn them into a new author.
     # --------------------------------------------------
     def author_name_changed():
-        entered = st.session_state["author_details_name"]
+        entered = st.session_state["author_details_name"] or ""
+        exact, _ = find_author_matches(entered)
 
-        if not entered.strip():
-            st.session_state["author_details_selected_id"] = None
-        else:
-            exact, _ = find_author_matches(entered)
+        st.session_state["author_details_selected_id"] = (
+            int(exact[0]["id"]) if exact else None
+        )
 
-            if exact:
-                st.session_state["author_details_selected_id"] = (
-                    int(exact[0]["id"])
-                )
-            # When there is no exact match, retain the
-            # previously selected ID for name corrections.
-
+        st.session_state["author_rename_mode"] = False
         st.session_state.pop("author_deleted_message", None)
 
-    name = st.text_input(
-        "Author name",
-        placeholder="Find or enter an author...",
-        key="author_details_name",
-        on_change=author_name_changed,
-    ).strip()
+    with connect() as db:
+        author_names = [
+            row["name"]
+            for row in db.execute(
+                "SELECT name FROM authors ORDER BY LOWER(name), name"
+            ).fetchall()
+        ]
+
+    name = (
+            st.selectbox(
+                "Author name",
+                options=author_names,
+                index=None,
+                placeholder="Find or enter an author...",
+                accept_new_options=True,
+                filter_mode="contains",
+                key="author_details_name",
+                on_change=author_name_changed,
+            )
+            or ""
+        ).strip()
 
 
     if not name:
@@ -182,30 +191,60 @@ def render_author_details():
             st.session_state["author_details_selected_id"] = None
             st.warning("This author no longer exists.")
             return
+        
 
         author_id = int(author["id"])
         books, works = get_author_dependencies(author_id)
         deletion_blocked = bool(books or works)
 
-        st.caption("Existing author — edit details below.")
+        renaming = st.session_state.get("author_rename_mode", False)
 
-        # The search field above doubles as the editable
-        # author name. No duplicate name field.
-        current_iso3 = author["iso3"]
-        country_index = (
-            country_codes.index(current_iso3)
-            if current_iso3 in country_codes
-            else None
+        country_col, action_col = st.columns(
+            [4, 1],
+            gap="small",
+            vertical_alignment="bottom",
         )
 
-        iso3 = st.selectbox(
-            "Country",
-            options=country_codes,
-            index=country_index,
-            format_func=country_name,
-            placeholder="Select country...",
-            key=f"author_country_{author_id}",
-        )
+        with country_col:
+            if renaming:
+                new_name = st.text_input(
+                    "New author name",
+                    value=author["name"],
+                    key=f"author_new_name_{author_id}",
+                ).strip()
+                iso3 = author["iso3"]
+            else:
+                new_name = author["name"]
+
+                current_iso3 = author["iso3"]
+                country_index = (
+                    country_codes.index(current_iso3)
+                    if current_iso3 in country_codes
+                    else None
+                )
+
+                iso3 = st.selectbox(
+                    "Country",
+                    options=country_codes,
+                    index=country_index,
+                    format_func=country_name,
+                    placeholder="Select country...",
+                    key=f"author_country_{author_id}",
+                )
+
+        ## Rename action
+        with action_col:
+            if st.button(
+                "Cancel" if renaming else "Rename",
+                key="author_rename_toggle",
+                type="secondary",
+                width="stretch",
+            ):
+                if renaming:
+                    st.session_state.pop(f"author_new_name_{author_id}", None)
+
+                st.session_state["author_rename_mode"] = not renaming
+                st.rerun()
 
         # Two actions, one compact row.
         save_col, delete_col = st.columns(
@@ -259,24 +298,30 @@ def render_author_details():
 
         # Save changes.
         if save_submitted:
-            try:
-                update_author_details(
-                    author_id=author_id,
-                    name=name,
-                    country=country_name(iso3) if iso3 else "",
-                    iso3=iso3 or "",
-                )
-            except ValueError as exc:
-                st.error(str(exc))
+            name_to_save = new_name if renaming else author["name"]
+
+            if not name_to_save.strip():
+                st.error("Author name cannot be empty.")
             else:
-                st.session_state["author_details_saved"] = (
-                    author_id,
-                    " ".join(name.split()),
-                )
-                st.session_state.pop(
-                    "author_delete_pending", None
-                )
-                st.rerun()
+                try:
+                    update_author_details(
+                        author_id=author_id,
+                        name=name_to_save,
+                        country=country_name(iso3) if iso3 else "",
+                        iso3=iso3 or "",
+                    )
+                except ValueError as exc:
+                    st.error(str(exc))
+                else:
+                    st.session_state["author_details_pending_name"] = name_to_save
+                    st.session_state["author_details_selected_id"] = author_id
+                    st.session_state["author_rename_mode"] = False
+                    st.session_state["author_details_saved"] = (
+                        author_id,
+                        name_to_save,
+                    )
+                    st.session_state.pop("author_delete_pending", None)
+                    st.rerun()
 
         # Explain disabled deletion in one small line.
         if deletion_blocked:
