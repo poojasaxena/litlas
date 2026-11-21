@@ -197,6 +197,12 @@ st.html("""
     color: #58412F !important;
 }
 
+@media screen and (max-width: 640px) {
+    [data-testid="stHeading"] h3 {
+        font-size: 1.2rem !important;
+    }
+}
+
 /* Literary year dialog — parchment styling */
 div[data-testid="stDialog"] [role="dialog"],
 div[role="dialog"]:has(.st-key-litlas_year_books) {
