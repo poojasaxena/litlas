@@ -1465,7 +1465,7 @@ with st.container(key="litlas_desktop_milestones"):
     with pages_col:
         page_milestone(
             "Total Pages Read",
-            f"{total_pages:,}",
+            f"{total_pages:,} pp.",
             "A lifetime between pages",
         )
 
@@ -1519,11 +1519,11 @@ mobile_milestones = f"""
     )}
 
     {mobile_milestone(
-        "Shortest Book",
-        f"{shortest['pages']:,}" if shortest else "—",
-        shortest["title"] if shortest else "",
-        shortest["author"] if shortest else "",
-        "pages" if shortest else "",
+        "Total Pages Read",
+        f"{total_pages:,}",
+        "A lifetime between",
+        "pages",
+        "pp.",
     )}
 
 </div>
