@@ -465,15 +465,34 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 
 .st-key-litlas_year_postcard button,
 .st-key-litlas_year_postcard_mobile button {
-    display: block !important;
+    display: flex !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
     width: 100% !important;
-    min-height: 64px;
-    padding: 10px 14px !important;
-    background: #F5EFE4;
-    border: 1px solid #D4C1A7;
-    border-radius: 7px;
-    color: #58412F;
+    min-height: 78px;
+    padding: 4px 6px !important;
+    background: #F5EFE4 !important;
+    border: 1px solid #D4C1A7 !important;
+    border-radius: 7px !important;
+    color: #58412F !important;
     text-align: left !important;
+}
+
+/* Make Streamlit's inner text fill the button */
+.st-key-litlas_year_postcard button [data-testid="stMarkdownContainer"],
+.st-key-litlas_year_postcard_mobile button [data-testid="stMarkdownContainer"] {
+    width: 100% !important;
+    text-align: left !important;
+}
+
+/* Match spacing between the two rows */
+.st-key-litlas_year_postcard button em,
+.st-key-litlas_year_postcard_mobile button em {
+    display: block;
+    margin-top: 5px !important;
+    font-size: 13px;
+    font-style: italic;
+    color: #58412F;
 }
 
 .st-key-litlas_year_postcard button:hover,
@@ -1390,7 +1409,7 @@ reading_years = pd.to_numeric(
 
 
 postcard_label = (
-    f"Reading Years **{reading_years}**  \n"
+    f"Reading Years **{reading_years} years**  \n"
     "*A year in books · Explore my postcards →*"
 )
 #postcard_label = "**A Year in Books** *Browse years →*"
