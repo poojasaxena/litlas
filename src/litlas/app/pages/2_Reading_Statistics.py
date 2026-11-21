@@ -508,10 +508,13 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     outline-offset: 2px;
 }
 
-/* Reading Years card text */
+/* Reading Years — two-column label layout */
 .st-key-litlas_year_postcard button p,
 .st-key-litlas_year_postcard_mobile button p {
-    display: block;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 8px;
+    row-gap: 5px;
     width: 100%;
     margin: 0;
     font: 15px/1.4 Georgia, serif;
@@ -519,24 +522,31 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     color: #96785D;
 }
 
-/* Distinct reading years — right aligned */
+/* Number aligned to the right */
 .st-key-litlas_year_postcard button strong,
 .st-key-litlas_year_postcard_mobile button strong {
-    float: right;
+    grid-column: 2;
+    float: none !important;
     font-size: 21px;
     font-weight: 700;
-    line-height: 1.2;
     color: #6E4B3A;
 }
 
-/* Literary subtitle */
+/* Subtitle on its own full-width row */
 .st-key-litlas_year_postcard button em,
 .st-key-litlas_year_postcard_mobile button em {
+    grid-column: 1 / -1;
     display: block;
-    margin-top: 12px;
+    margin: 0;
     font-size: 13px;
     font-style: italic;
     color: #58412F;
+}
+
+/* Remove the Markdown line break from the grid */
+.st-key-litlas_year_postcard button br,
+.st-key-litlas_year_postcard_mobile button br {
+    display: none;
 }
 
 @media screen and (max-width: 640px) {
@@ -955,33 +965,6 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
         font-size: 22px !important;
         line-height: 1.2 !important;
     }
-}
-
-/* Reading Years — align with the other milestone cards */
-.st-key-litlas_year_postcard button {
-    width: 100% !important;
-    height: 78px !important;
-    min-height: 78px !important;
-    box-sizing: border-box !important;
-    padding: 4px 6px !important;
-    justify-content: flex-start !important;
-    align-items: center !important;
-}
-
-/* Stretch Streamlit's internal content wrapper */
-.st-key-litlas_year_postcard button > div,
-.st-key-litlas_year_postcard button [data-testid="stMarkdownContainer"] {
-    width: 100% !important;
-    flex: 1 1 100% !important;
-    min-width: 0 !important;
-    text-align: left !important;
-}
-
-/* Align the text itself */
-.st-key-litlas_year_postcard button p {
-    width: 100% !important;
-    margin: 0 !important;
-    text-align: left !important;
 }
 
 </style>
