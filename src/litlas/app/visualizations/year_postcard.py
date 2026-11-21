@@ -353,8 +353,6 @@ def _draw_totals(draw, count, country_count, pages_read):
             break
         except OSError:
             continue
-    else:
-        value_font = _font(STATS_VALUE_SIZE)
     totals = (
         ("Books finished", count),
         ("New countries", country_count),
@@ -363,9 +361,12 @@ def _draw_totals(draw, count, country_count, pages_read):
     for index, (label, value) in enumerate(totals):
         center = CONTENT_MARGIN + CONTENT_WIDTH * (index + 0.5) / len(totals)
         draw.text((center, STATS_LABEL_Y), label, anchor="mt", font=label_font, fill=MUTED)
-        draw.text(
-            (center, STATS_VALUE_Y), f"{value:,}" if value is not None else "—",
-            anchor="mt", font=value_font, fill=INK,
+        _draw_number(
+            draw,
+            (center, STATS_VALUE_Y),
+            f"{value:,}" if value is not None else "—",
+            STATS_VALUE_SIZE,
+            anchor="mt",
         )
 
 
