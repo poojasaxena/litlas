@@ -508,13 +508,10 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     outline-offset: 2px;
 }
 
-/* Reading Years — two-column label layout */
+/* Reading Years card text */
 .st-key-litlas_year_postcard button p,
 .st-key-litlas_year_postcard_mobile button p {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) auto;
-    column-gap: 8px;
-    row-gap: 5px;
+    display: block;
     width: 100%;
     margin: 0;
     font: 15px/1.4 Georgia, serif;
@@ -522,31 +519,24 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     color: #96785D;
 }
 
-/* Number aligned to the right */
+/* Distinct reading years — right aligned */
 .st-key-litlas_year_postcard button strong,
 .st-key-litlas_year_postcard_mobile button strong {
-    grid-column: 2;
-    float: none !important;
+    float: right;
     font-size: 21px;
     font-weight: 700;
+    line-height: 1.2;
     color: #6E4B3A;
 }
 
-/* Subtitle on its own full-width row */
+/* Literary subtitle */
 .st-key-litlas_year_postcard button em,
 .st-key-litlas_year_postcard_mobile button em {
-    grid-column: 1 / -1;
     display: block;
-    margin: 0;
+    margin-top: 12px;
     font-size: 13px;
     font-style: italic;
     color: #58412F;
-}
-
-/* Remove the Markdown line break from the grid */
-.st-key-litlas_year_postcard button br,
-.st-key-litlas_year_postcard_mobile button br {
-    display: none;
 }
 
 @media screen and (max-width: 640px) {
@@ -1452,7 +1442,9 @@ with st.container(key="litlas_desktop_milestones"):
 
     with postcard_col:
         open_desktop_postcard = st.button(
-            postcard_label, key="litlas_year_postcard", width="stretch"
+            postcard_label,
+            key="litlas_year_postcard",
+            width="stretch",
         )
 
 
