@@ -624,6 +624,12 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 /* Reading Statistics — mobile summary grid */
 @media screen and (max-width: 640px) {
 
+    /* Align custom statistic labels with Books, Authors and Countries */
+    .litlas-nobel-stat summary::after,
+    .litlas-marathon-stat summary::after {
+        transform: translateY(-2px);
+    }
+
     [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat) {
         display: grid !important;
         grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
