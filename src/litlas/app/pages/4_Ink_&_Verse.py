@@ -193,7 +193,7 @@ st.markdown(
     }
 
     .litlas-books-intro {
-        font-size: 0.9rem;
+        font-size: 0.6rem;
         margin-bottom: 12px;
     }
     .litlas-gallery-title {
