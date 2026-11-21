@@ -211,7 +211,7 @@ st.markdown(
 
 @media screen and (max-width: 650px) {
     .stMarkdown p.litlas-books-intro {
-        font-size: 0.5rem !important;
+        font-size: 0.7rem !important;
         margin-bottom: 12px;
     }
 }
