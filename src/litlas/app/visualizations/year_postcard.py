@@ -57,6 +57,9 @@ NOTE_FONT_SIZE = 21
 NOTE_TOP = 1612
 NOTE_LINE_SPACING = 23
 
+## Book
+BOOK_DATE_FONT_SIZE =23
+
 BOOK_LIMIT = 4
 PAPER = "#f5f1e6"
 INK = "#533c30"
@@ -263,13 +266,14 @@ def _draw_length(draw, center, width, top, label, book):
 
 
 def _draw_rating_stars(draw, center, top, rating):
-    size, gap = 17, 3
-    star = Image.new("L", (size, size))
+    size, gap = 21, 3
+    star = Image.new("L", (17, 17))
     ImageDraw.Draw(star).polygon(
         [(8, 0), (10, 6), (16, 6), (11, 10), (13, 16),
-         (8, 12), (3, 16), (5, 10), (0, 6), (6, 6)],
+        (8, 12), (3, 16), (5, 10), (0, 6), (6, 6)],
         fill=255,
     )
+    star = star.resize((size, size), Image.Resampling.LANCZOS)
 
     left = round(center - (5 * size + 4 * gap) / 2)
     for index in range(5):
@@ -384,7 +388,7 @@ def _draw_books(image, draw, books, selected_books):
         text_height = len(title_lines) * title_step + gap + len(author_lines) * author_date_gap
 
         date_text = finished.strftime("%d %b %Y").lstrip("0") if pd.notna(finished) else ""
-        date_font = _font(19)
+        date_font = _font(BOOK_DATE_FONT_SIZE)
         author_date_gap = 22
 
         if date_text:
