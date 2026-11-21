@@ -1979,6 +1979,18 @@ with ratings_col:
         st.info("No rated books available yet.")
     else:
         fig_ratings = build_rating_spines_figure(ratings, image_height=380)
+        fig_ratings.update_xaxes(
+            tickmode="array",
+            tickvals=[1, 2, 3, 4, 5],
+            ticktext=["1★", "2★", "3★", "4★", "5★"],
+            tickfont=dict(
+                family="Georgia, serif",
+                size=13,
+                #color="#A47B43",
+            ),
+            ticks="",
+            title=None,
+        )
         fig_ratings.update_layout(
             paper_bgcolor="#FAF7F1",
             plot_bgcolor="#F5EFE4",
