@@ -487,14 +487,34 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     outline-offset: 2px;
 }
 
-.st-key-litlas_year_postcard button p,
-.st-key-litlas_year_postcard_mobile button p {
-    font: 17px/1.3 Georgia, serif;
+/* Desktop Reading Years card */
+.st-key-litlas_year_postcard button p {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    width: 100%;
+    margin: 0;
+    font: 13px/1.4 Georgia, serif;
     text-align: left;
-    color: inherit;
+    color: #96785D;
 }
 
-.st-key-litlas_year_postcard button em,
+.st-key-litlas_year_postcard button strong {
+    margin-left: auto;
+    font-size: 21px;
+    font-weight: 700;
+    color: #6E4B3A;
+}
+
+.st-key-litlas_year_postcard button em {
+    flex: 0 0 100%;
+    margin-top: 5px;
+    font-size: 13px;
+    font-style: italic;
+    color: #58412F;
+}
+
 .st-key-litlas_year_postcard_mobile button em {
     display: block;
     margin-top: 3px;
@@ -503,6 +523,14 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 }
 
 @media screen and (max-width: 640px) {
+
+    /* Mobile postcard button — unchanged */
+    .st-key-litlas_year_postcard_mobile button p {
+        font: 17px/1.3 Georgia, serif;
+        text-align: left;
+        color: inherit;
+    }
+
     [data-testid="stLayoutWrapper"]:has(> .st-key-litlas_desktop_milestones),
     .st-key-litlas_desktop_milestones {
         display: none !important;
@@ -1370,7 +1398,7 @@ reading_years = pd.to_numeric(
 
 
 postcard_label = (
-    f"Reading Years **{reading_years}**  \n"
+    f"Reading Years **{reading_years} years**  \n"
     "*A year in books · Explore my postcards →*"
 )
 #postcard_label = "**A Year in Books** *Browse years →*"
