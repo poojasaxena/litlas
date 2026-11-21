@@ -295,7 +295,7 @@ st.html("""
         font-size: 15px;
         line-height: 1.3;
         padding-top: 0;
-        margin-top: -18px !important;
+        margin-top: -15px !important;
     }
 
     .litlas-about-watercolor {
