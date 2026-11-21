@@ -266,6 +266,14 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
     display: none !important;
 }
 
+/* Attempt to hide Community Cloud viewer branding */
+.viewerBadge_container__1QSob,
+.styles_viewerBadge__1yB5_,
+.viewerBadge_link__1S137,
+.viewerBadge_text__1JaDK {
+    display: none !important;
+}
+
 /* Hide sidebar and mobile-only navigation on desktop */
 [data-testid="stSidebar"],
 [data-testid="stSidebarCollapsedControl"],
