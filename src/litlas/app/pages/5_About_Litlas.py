@@ -189,7 +189,6 @@ st.html("""
         isolation: isolate;
         margin-bottom: 0;
         padding-bottom: 8px;
-        margin-top: -82px !important;
     }
 
     .litlas-about-reading-page {
@@ -296,7 +295,7 @@ st.html("""
         font-size: 15px;
         line-height: 1.3;
         padding-top: 0;
-
+        margin-top: -22px !important;
     }
 
     .litlas-about-watercolor {
