@@ -957,6 +957,32 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     }
 }
 
+/* Reading Years — align with the other milestone cards */
+.st-key-litlas_year_postcard button {
+    width: 100% !important;
+    height: 78px !important;
+    min-height: 78px !important;
+    box-sizing: border-box !important;
+    padding: 4px 6px !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+}
+
+/* Stretch Streamlit's internal content wrapper */
+.st-key-litlas_year_postcard button > div,
+.st-key-litlas_year_postcard button [data-testid="stMarkdownContainer"] {
+    width: 100% !important;
+    flex: 1 1 100% !important;
+    min-width: 0 !important;
+    text-align: left !important;
+}
+
+/* Align the text itself */
+.st-key-litlas_year_postcard button p {
+    width: 100% !important;
+    margin: 0 !important;
+    text-align: left !important;
+}
 
 </style>
 """)
