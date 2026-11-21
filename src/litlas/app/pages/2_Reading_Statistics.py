@@ -848,7 +848,7 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 
 [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
 .litlas-nobel-stat summary::after {
-    content: "Laureates";
+    content: "Laureates ▾";
     font-family: Georgia, serif;
     font-size: 11px;
     color: #96785D;
