@@ -941,7 +941,7 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     }
 
     .litlas-marathon-stat summary::after {
-        content: "Marathons";
+        content: "Marathons ▾";
         font-family: Georgia, serif;
         font-size: 11px;
         color: #96785D;
