@@ -1362,8 +1362,6 @@ def page_milestone(label, value, title="", author=""):
         """
     )
 
-
-
 ## Desktop Reading Milestones
 
 reading_years = pd.to_numeric(
