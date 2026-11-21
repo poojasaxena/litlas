@@ -353,6 +353,8 @@ def _draw_totals(draw, count, country_count, pages_read):
             break
         except OSError:
             continue
+    else:
+        value_font = _font(STATS_VALUE_SIZE)
     totals = (
         ("Books finished", count),
         ("New countries", country_count),
