@@ -23,7 +23,7 @@ CONTENT_WIDTH = WIDTH - 2 * CONTENT_MARGIN
 
 # Header artwork, yearly totals, and map.
 LITLAS_LOGO_SIZE = (270, 200)
-AUTHOR_LOGO_SIZE = (180, 180)
+AUTHOR_LOGO_SIZE = (200, 200)
 TITLE_ART_SIZE = (800, 100)
 TITLE_FALLBACK_FONT_SIZE = 64
 YEAR_FONT_SIZE = 62
@@ -338,7 +338,7 @@ def _draw_totals(draw, count, country_count, pages_read):
 
 
 def _draw_books(image, draw, books, selected_books):
-    heading = "Books I’d Carry Forward" if selected_books else "Highest-Rated Reads"
+    heading = "Books I’d Carry Forward" if selected_books else "Treasured Reads"
     draw.text(
         (CENTER_X, BOOK_HEADING_Y), heading, anchor="mt",
         font=_heading_font(BOOK_HEADING_SIZE), fill=INK,
@@ -419,7 +419,7 @@ def _draw_books(image, draw, books, selected_books):
 
 def render_postcard(
     year, count, first_countries, shortest, longest, books, note, *,
-    selected_books=False, pages_read=None,
+    selected_books=False, pages_read=None, year_countries=None,
 ):
     """Draw the preview and downloadable PNG at the same fixed aspect ratio."""
     image = _paper().copy()
@@ -429,10 +429,10 @@ def render_postcard(
     _draw_header(image, draw, year)
     _draw_totals(draw, count, len(first_countries), pages_read)
     draw.text(
-        (CENTER_X, MAP_HEADING_Y), "New horizons to Litlas", anchor="mt",
+        (CENTER_X, MAP_HEADING_Y), "Litlas Landscapes", anchor="mt",
         font=_heading_font(SECTION_HEADING_SIZE), fill=INK,
     )
-    _draw_map(draw, set(first_countries["code"]))
+    _draw_map(draw, year_countries if year_countries is not None else set(first_countries["code"]))
     _draw_books(image, draw, books, selected_books)
 
     note_font = _font(NOTE_FONT_SIZE, "-Italic")
@@ -513,6 +513,7 @@ def show_year_postcard(read_books, page_details):
 
     books = dated[dated["finished"].dt.year.eq(year)].copy()
     first = new_countries(dated, year)
+    year_countries = explored_country_codes(books["ISO3"])
 
     shortest, longest, pages_read = _reading_page_summary(page_details, year)
     preview = st.empty()
@@ -550,7 +551,9 @@ def show_year_postcard(read_books, page_details):
     entries = [options[book_id] for book_id in chosen] if chosen else highest_rated_books(books)
     png = render_postcard(
         year, len(books), first, shortest, longest, entries, note,
-        selected_books=bool(chosen), pages_read=pages_read,
+        selected_books=bool(chosen),
+        pages_read=pages_read,
+        year_countries=year_countries,
     )
     preview.image(png, width="stretch")
     download_col.download_button(
