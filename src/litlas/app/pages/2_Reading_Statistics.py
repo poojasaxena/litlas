@@ -516,20 +516,35 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 }
 
 .st-key-litlas_year_postcard_mobile button em {
-    display: block;
-    margin-top: 3px;
+    flex: 0 0 100%;
+    margin-top: 5px;
     font-size: 13px;
-    font-style: normal;
+    font-style: italic;
+    text-align: left;
+    color: #58412F;
 }
 
 @media screen and (max-width: 640px) {
 
     /* Mobile postcard button — unchanged */
     .st-key-litlas_year_postcard_mobile button p {
-        font: 17px/1.3 Georgia, serif;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        width: 100%;
+        margin: 0;
+        font: 15px/1.4 Georgia, serif;
         text-align: left;
-        color: inherit;
+        color: #96785D;
     }
+
+    .st-key-litlas_year_postcard_mobile button strong {
+        margin-left: auto;
+        font-size: 21px;
+        font-weight: 700;
+        color: #6E4B3A;
+        }
 
     [data-testid="stLayoutWrapper"]:has(> .st-key-litlas_desktop_milestones),
     .st-key-litlas_desktop_milestones {
