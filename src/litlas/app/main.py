@@ -151,6 +151,10 @@ if not st.session_state.get("litlas_welcome_dismissed", False):
             max-width: 340px;
         }
 
+        .litlas-welcome-instruction {
+            margin-top: -25px;
+        }
+
     .st-key-litlas_welcome_desktop_image {
         display: none !important;
     }
