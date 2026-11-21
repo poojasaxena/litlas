@@ -103,14 +103,16 @@ def _font(size, style=""):
 
 @lru_cache(maxsize=12)
 def _devanagari_font(size):
-    filename = "NotoSerifDevanagari-Regular.ttf"
-    for candidate in (FONT_DIR / filename, filename):
-        try:
-            return ImageFont.truetype(candidate, size)
-        except OSError:
-            continue
-    return _font(size)
+    if not features.check("raqm"):
+        raise RuntimeError(
+            "RAQM is required for correct Devanagari rendering"
+        )
 
+    return ImageFont.truetype(
+        str(FONT_DIR / "NotoSerifDevanagari-Regular.ttf"),
+        size,
+        layout_engine=ImageFont.Layout.RAQM,
+    )
 
 def _book_font(text, size, style=""):
     if any("\u0900" <= char <= "\u097f" for char in text):
