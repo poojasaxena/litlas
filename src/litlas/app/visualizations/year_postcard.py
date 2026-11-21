@@ -513,7 +513,10 @@ def reading_lengths(page_details, year):
 def highest_rated_books(books):
     ratings = pd.to_numeric(books["My Rating"], errors="coerce")
     rated = books.loc[ratings.gt(0)].assign(rating=ratings)
-    ranked = rated.sort_values(["rating", "finished"], ascending=False)
+    ranked = rated.sort_values(
+        ["rating", "finished"],
+        ascending=[False, True],
+    )
     return list(
         ranked.head(BOOK_LIMIT)[["Display Title", "Author", "rating", "finished"]]
         .itertuples(index=False, name=None)
