@@ -7,6 +7,7 @@ import pandas as pd
 from PIL import Image, ImageDraw, ImageFont, ImageOps, features
 import streamlit as st
 
+from litlas.app.ui import is_mobile_browser
 from litlas.processing.countries import (
     explored_country_codes,
     litlas_country_features,
@@ -496,6 +497,7 @@ def show_year_postcard(read_books, page_details):
         st.info("No books with a recorded finish date yet.")
         return
 
+    mobile = is_mobile_browser()
     controls = st.container(key="litlas_postcard_controls")
     year_col, personalize_col, download_col = controls.columns(
         3,
@@ -531,7 +533,10 @@ def show_year_postcard(read_books, page_details):
     drafts = st.session_state.setdefault("litlas_postcard_drafts", {})
     previous_choices, previous_note = drafts.get(year, ([], ""))
 
-    with personalize_col.popover("Personalize the postcard", width="stretch"):
+    with personalize_col.popover(
+        "Personalize" if mobile else "Personalize the postcard",
+        width="stretch",
+    ):
         chosen = st.multiselect(
             "Books you’d carry forward",
             list(options),
@@ -557,7 +562,7 @@ def show_year_postcard(read_books, page_details):
     )
     preview.image(png, width="stretch")
     download_col.download_button(
-        "Download PNG",
+        "Download" if mobile else "Download PNG",
         png,
         file_name=f"litlas-{year}-year-in-books.png",
         mime="image/png",

@@ -948,6 +948,32 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     }
 }
 
+/* Mobile postcard controls — three columns */
+@media screen and (max-width: 640px) {
+    .st-key-litlas_postcard_controls [data-testid="stHorizontalBlock"] {
+        display: grid !important;
+        grid-template-columns: 0.85fr 1.2fr 1fr !important;
+        gap: 6px !important;
+    }
+
+    .st-key-litlas_postcard_controls [data-testid="stColumn"] {
+        width: 100% !important;
+        min-width: 0 !important;
+        flex: none !important;
+    }
+
+    .st-key-litlas_postcard_controls button {
+        font-size: 12px !important;
+        padding-left: 4px !important;
+        padding-right: 4px !important;
+        white-space: nowrap;
+    }
+
+    .st-key-litlas_year_postcard_mobile {
+    margin-top: 8px !important;
+}
+
+    }
 
 </style>
 """)
@@ -1931,6 +1957,12 @@ with recent_col:
                 white-space: nowrap;
             }
             @media screen and (max-width: 640px) {
+                .litlas-recent-reads {
+                    max-height: 340px;
+                    overflow-y: auto;
+                    overscroll-behavior: contain;
+                }
+
                 [data-testid="stHorizontalBlock"]:has(
                     > [data-testid="stColumn"] .litlas-recent-reads
                 ) {
