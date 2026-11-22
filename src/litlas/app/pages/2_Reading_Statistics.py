@@ -947,17 +947,6 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
         align-items: flex-start !important;
     }
 
-    .litlas-marathon-stat summary span {
-        display: none !important;
-    }
-
-    .litlas-marathon-stat summary::after {
-        content: "Marathons ▾";
-        font-family: Georgia, serif;
-        font-size: 11px;
-        color: #96785D;
-    }
-
     [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
     [data-testid="stMetricLabel"],
     [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
