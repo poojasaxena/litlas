@@ -1371,15 +1371,7 @@ st.html("""
         text-align: center !important;
         color: #58412F !important;
     }
-    .st-key-litlas_year_postcard_mobile button em:first-of-type {
-        margin-top: 6px !important;
-    }
 
-    .st-key-litlas_year_postcard_mobile button em:last-of-type {
-        margin-top: 3px !important;
-        font-style: normal !important;
-        color: #81776E !important;
-    }
 }
 </style>
 """)
