@@ -172,8 +172,6 @@ export default function(component) {
                         component.setTriggerValue("rating", {
                             book_id: String(book.book_id), rating: pending
                         });
-
-                        closePopup();
                     });
                     ratingArea.appendChild(done);
                 }
