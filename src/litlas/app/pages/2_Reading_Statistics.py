@@ -1117,6 +1117,50 @@ if not is_mobile:
             color: #96785D;
         }
     }
+
+/* Four reading milestones in one mobile row */
+.st-key-litlas_mobile_milestones
+[data-testid="stHorizontalBlock"] {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 5px !important;
+    align-items: stretch !important;
+}
+
+.st-key-litlas_mobile_milestones
+[data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {
+    flex: 1 1 0 !important;
+    width: 0 !important;
+    min-width: 0 !important;
+}
+
+/* Compact milestone cards */
+.st-key-litlas_mobile_milestones .litlas-mobile-card {
+    padding: 8px 3px;
+    height: 100%;
+}
+
+.st-key-litlas_mobile_milestones .litlas-mobile-number {
+    font-size: 15px;
+}
+
+/* Fourth card — postcard button */
+.st-key-litlas_year_postcard_mobile button {
+    width: 100% !important;
+    min-height: 100px !important;
+    height: 100% !important;
+    padding: 7px 3px !important;
+    justify-content: center !important;
+    text-align: center !important;
+}
+
+.st-key-litlas_year_postcard_mobile button p {
+    display: block !important;
+    font: 11px/1.5 Georgia, serif !important;
+    text-align: center !important;
+    white-space: normal !important;
+    margin: 0 !important;
+}
     </style>
     """)
 
@@ -1546,10 +1590,42 @@ mobile_milestones = f"""
 """
 
 with st.container(key="litlas_mobile_milestones", gap="xxsmall"):
-    st.html(dedent(mobile_milestones))
-    open_mobile_postcard = st.button(
-        postcard_label, key="litlas_year_postcard_mobile", width="stretch"
-    )
+    mobile_cols = st.columns(4, gap="small")
+
+    with mobile_cols[0]:
+        st.html(mobile_milestone(
+            "Longest Book",
+            f"{longest['pages']:,}" if longest else "—",
+            longest["title"] if longest else "",
+            longest["author"] if longest else "",
+            "pages" if longest else "",
+        ))
+
+    with mobile_cols[1]:
+        st.html(mobile_milestone(
+            "Total Pages",
+            f"{total_pages:,}",
+            "A lifetime between",
+            "",
+            "pp.",
+        ))
+
+    with mobile_cols[2]:
+        st.html(mobile_milestone(
+            "Shortest Book",
+            f"{shortest['pages']:,}" if shortest else "—",
+            shortest["title"] if shortest else "",
+            shortest["author"] if shortest else "",
+            "pages" if shortest else "",
+        ))
+
+    with mobile_cols[3]:
+        open_mobile_postcard = st.button(
+            f"**A Year in Books**\n\n**{reading_years} years**\n\nExplore →",
+            key="litlas_year_postcard_mobile",
+            width="stretch",
+        )
+
 
 if open_desktop_postcard or open_mobile_postcard:
     from litlas.app.visualizations.year_postcard import show_year_postcard
