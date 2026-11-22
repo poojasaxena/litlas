@@ -1804,7 +1804,7 @@ with st.container(key="litlas_mobile_milestones", gap="xxsmall"):
 
     with mobile_cols[3]:
         open_mobile_postcard = st.button(
-            f"Litlas Postcards **{reading_years}** *A year in books*  \n*Explore →*",
+            f"Postcards **{reading_years}** *A year in books*  \n*Explore →*",
             key="litlas_year_postcard_mobile",
             width="stretch",
         )
