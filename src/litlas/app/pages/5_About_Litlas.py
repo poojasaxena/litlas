@@ -302,7 +302,7 @@ st.html("""
         top: auto;
         left: auto;
         right: -12px;
-        bottom: 6px;
+        bottom: -60px;
         width: min(170%, 850px);
         max-width: none;
         height: auto;
@@ -317,7 +317,8 @@ st.html("""
     }
 
     .litlas-about-reading-page {
-        padding: 0 0 0;
+        padding: 0;
+        overflow: visible;
     }
 
     .litlas-about-signoff {
