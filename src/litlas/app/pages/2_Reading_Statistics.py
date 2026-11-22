@@ -2011,9 +2011,6 @@ with recent_col:
                     width: 100% !important;
                     flex: none !important;
                 }
-                [data-testid="stColumn"]:has(.litlas-recent-reads) {
-                    order: -1;
-                }
             }
             @media screen and (min-width: 641px) {
                 .litlas-recent-reads {
