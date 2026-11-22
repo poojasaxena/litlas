@@ -27,12 +27,12 @@ LITLAS_LOGO_SIZE = (270, 200)
 AUTHOR_LOGO_SIZE = (200, 200)
 TITLE_ART_SIZE = (800, 100)
 TITLE_FALLBACK_FONT_SIZE = 64
-YEAR_FONT_SIZE = 62
+YEAR_FONT_SIZE = 70
 HEADER_RULE_Y = 265
 STATS_LABEL_Y = 299
 STATS_VALUE_Y = 354
 STATS_LABEL_SIZE = 32
-STATS_VALUE_SIZE = 67
+STATS_VALUE_SIZE = 48
 MAP_HEADING_Y = 443
 MAP_TOP = 513
 MAP_SCALE_X = 3.70
@@ -345,7 +345,7 @@ def _draw_header(image, draw, year):
     )
 
 
-def _draw_totals(draw, count, country_count, pages_read):
+def _draw_totals(draw, count, author_count, country_count, pages_read):
     label_font = _font(STATS_LABEL_SIZE)
     for filename in ("Georgia.ttf", "georgia.ttf"):
         try:
@@ -355,9 +355,12 @@ def _draw_totals(draw, count, country_count, pages_read):
             continue
     else:
         value_font = _font(STATS_VALUE_SIZE)
+
+    ## Prepare the totals to be displayed in the summary section
     totals = (
-        ("Books finished", count),
-        ("New countries", country_count),
+        ("Books devoured", count),
+        ("Authors read", author_count),
+        ("Countries explored", country_count),
         ("Pages read", pages_read),
     )
     for index, (label, value) in enumerate(totals):
@@ -454,7 +457,8 @@ def _draw_books(image, draw, books, selected_books):
 
 def render_postcard(
     year, count, first_countries, shortest, longest, books, note, *,
-    selected_books=False, pages_read=None, year_countries=None,
+    selected_books=False, pages_read=None,
+    year_countries=None, author_count=0,
 ):
     """Draw the preview and downloadable PNG at the same fixed aspect ratio."""
     image = _paper().copy()
@@ -462,12 +466,22 @@ def render_postcard(
     draw.rounded_rectangle((24, 24, WIDTH - 24, HEIGHT - 24), radius=8, outline=RULE, width=2)
 
     _draw_header(image, draw, year)
-    _draw_totals(draw, count, len(first_countries), pages_read)
+
+    explored_countries = (
+        year_countries
+        if year_countries is not None
+        else set(first_countries["code"])
+    )
+
+    _draw_totals(
+        draw, count, author_count, len(explored_countries), pages_read
+    )
+
     draw.text(
         (CENTER_X, MAP_HEADING_Y), "Litlas Landscapes", anchor="mt",
         font=_heading_font(SECTION_HEADING_SIZE), fill=INK,
     )
-    _draw_map(draw, year_countries if year_countries is not None else set(first_countries["code"]))
+    _draw_map(draw, explored_countries)
     _draw_books(image, draw, books, selected_books)
 
     note_font = _font(NOTE_FONT_SIZE, "-Italic")
@@ -552,6 +566,15 @@ def show_year_postcard(read_books, page_details):
 
     books = dated[dated["finished"].dt.year.eq(year)].copy()
     first = new_countries(dated, year)
+    author_count = (
+        books["Author"]
+        .dropna()
+        .astype(str)
+        .str.strip()
+        .replace("", pd.NA)
+        .nunique()
+    )
+
     year_countries = explored_country_codes(books["ISO3"])
 
     shortest, longest, pages_read = _reading_page_summary(page_details, year)
@@ -623,6 +646,7 @@ def show_year_postcard(read_books, page_details):
         selected_books=bool(chosen),
         pages_read=pages_read,
         year_countries=year_countries,
+        author_count=author_count,
     )
     preview.image(png, width="stretch")
     download_col.download_button(
