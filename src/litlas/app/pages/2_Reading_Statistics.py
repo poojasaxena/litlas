@@ -841,18 +841,28 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     color: #96785D;
 }
 
-/* Shorten Nobel label while keeping its popup functional */
-[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
-.litlas-nobel-stat summary span {
-    display: none !important;
-}
+@media screen and (max-width: 640px) {
+    .litlas-nobel-stat summary span,
+    .litlas-marathon-stat summary span {
+        display: inline !important;
+        font-family: Georgia, serif !important;
+        font-size: 11px !important;
+        color: #96785D !important;
+        white-space: nowrap;
+    }
 
-[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
-.litlas-nobel-stat summary::after {
-    content: "Laureates ▾";
-    font-family: Georgia, serif;
-    font-size: 12px;
-    color: #96785D;
+    .litlas-nobel-stat summary::after,
+    .litlas-marathon-stat summary::after {
+        content: "▾" !important;
+        font-size: 9px !important;
+        color: #96785D !important;
+        flex-shrink: 0;
+    }
+
+    .litlas-nobel-stat summary,
+    .litlas-marathon-stat summary {
+        gap: 2px !important;
+    }
 }
 
 [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
@@ -1368,7 +1378,7 @@ with col4:
         '<div class="litlas-nobel-stat">'
         '<details>'
         '<summary title="View Nobel laureates">'
-        '<span>Nobel Laureates Read</span>'
+        f'<span>{"Laureates" if is_mobile else "Nobel Laureates Read"}</span>'
         '</summary>'
         '<div class="litlas-nobel-panel">'
         '<div class="litlas-nobel-title">Nobel Laureates</div>'
@@ -1407,7 +1417,7 @@ with col5:
         '<div class="litlas-marathon-stat">'
         '<details>'
         '<summary title="View long books">'
-        '<span>Literary Marathons</span>'
+        f'<span>{"Marathons" if is_mobile else "Literary Marathons"}</span>'
         '</summary>'
         '<div class="litlas-nobel-panel">'
         '<div class="litlas-nobel-title">Literary Marathons</div>'
