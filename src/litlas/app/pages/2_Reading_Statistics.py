@@ -1600,42 +1600,6 @@ def mobile_milestone(label, number, title="", author="", unit=""):
     </div>
     """
 
-with st.container(key="litlas_mobile_milestones"):
-    col1, col2, col3, col4 = st.columns(4, gap="small")
-
-    with col1:
-        st.html(mobile_milestone(
-            "Longest Book",
-            f"{longest['pages']:,}" if longest else "—",
-            longest["title"] if longest else "",
-            longest["author"] if longest else "",
-            "pages" if longest else "",
-        ))
-
-    with col2:
-        st.html(mobile_milestone(
-            "Total Pages",
-            f"{total_pages:,}",
-            "A lifetime between",
-            "pages",
-        ))
-
-    with col3:
-        st.html(mobile_milestone(
-            "Shortest Book",
-            f"{shortest['pages']:,}" if shortest else "—",
-            shortest["title"] if shortest else "",
-            shortest["author"] if shortest else "",
-            "pages" if shortest else "",
-        ))
-
-    with col4:
-        open_mobile_postcard = st.button(
-            f"A Year in Books\n\n**{reading_years} years**\n\nExplore →",
-            key="litlas_year_postcard_mobile",
-            width="stretch",
-        )
-
 with st.container(key="litlas_mobile_milestones", gap="xxsmall"):
     mobile_cols = st.columns(4, gap="small")
 
