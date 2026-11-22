@@ -182,6 +182,8 @@ def pop_html(group, name, code):
         }}
     </style>
     """
+
+
 def format_rating(value, book_id=None):
     rating = pd.to_numeric(value, errors="coerce")
 
@@ -191,95 +193,80 @@ def format_rating(value, book_id=None):
         rating = max(0.0, min(5.0, float(rating)))
 
     percentage = rating / 5 * 100
+
+    label = (
+        f"{rating:g} out of 5 stars"
+        if rating else "Not rated"
+    )
+
     attributes = 'class="star-rating" '
+    done_button = ""
 
     if book_id is not None:
-        # Calculate the nearest half-star from pointer position.
         calculate = """
             const box = this.getBoundingClientRect();
             const fraction = Math.max(
-                0, Math.min(1, (event.clientX - box.left) / box.width)
+                0,
+                Math.min(1, (event.clientX - box.left) / box.width)
             );
             const selected = Math.max(
-                0.5, Math.min(5, Math.ceil(fraction * 10) / 2)
+                0.5,
+                Math.min(5, Math.ceil(fraction * 10) / 2)
             );
         """
 
         preview_js = calculate + """
+            if (event.pointerType !== 'mouse') return;
+            if (this.dataset.pendingRating) return;
+
             this.style.setProperty(
-                '--rating-fill', (selected / 5 * 100) + '%'
+                '--rating-fill',
+                (selected / 5 * 100) + '%'
             );
         """
 
         restore_js = """
-            this.style.setProperty(
-                '--rating-fill', this.dataset.originalFill
-            );
-        """
-
-        submit_js = calculate + """
-            event.preventDefault();
-            event.stopPropagation();
-
+            const pending = this.dataset.pendingRating;
             this.style.setProperty(
                 '--rating-fill',
-                (selected / 5 * 100) + '%'
+                pending
+                    ? (Number(pending) / 5 * 100) + '%'
+                    : this.dataset.originalFill
             );
-
-            window.parent.postMessage({
-                type: 'litlas-rating-test',
-                book_id: this.dataset.bookId,
-                rating: selected
-            }, '*');
         """
-        touch_preview_js = """
+
+        select_js = calculate + """
             event.preventDefault();
             event.stopPropagation();
-
-            const touch = event.touches[0];
-            if (!touch) return;
-
-            const box = this.getBoundingClientRect();
-            const fraction = Math.max(
-                0,
-                Math.min(1, (touch.clientX - box.left) / box.width)
-            );
-
-            const selected = Math.max(
-                0.5,
-                Math.min(5, Math.ceil(fraction * 10) / 2)
-            );
 
             this.dataset.pendingRating = selected;
+
             this.style.setProperty(
                 '--rating-fill',
                 (selected / 5 * 100) + '%'
             );
+
+            const button = this.nextElementSibling;
+            button.hidden = false;
+            button.textContent = 'Done';
         """
 
-        touch_save_js = """
+        done_js = """
             event.preventDefault();
             event.stopPropagation();
 
-            const touch = event.changedTouches[0];
-            if (!touch) return;
+            const stars = this.previousElementSibling;
+            const selected = Number(stars.dataset.pendingRating);
 
-            const box = this.getBoundingClientRect();
-            const fraction = Math.max(
-                0,
-                Math.min(1, (touch.clientX - box.left) / box.width)
-            );
-
-            const selected = Math.max(
-                0.5,
-                Math.min(5, Math.ceil(fraction * 10) / 2)
-            );
+            if (!selected) return;
 
             window.parent.postMessage({
                 type: 'litlas-rating-test',
-                book_id: this.dataset.bookId,
+                book_id: stars.dataset.bookId,
                 rating: selected
             }, '*');
+
+            this.hidden = true;
         """
 
         attributes = (
@@ -288,18 +275,29 @@ def format_rating(value, book_id=None):
             f'data-original-fill="{percentage}%" '
             f'onpointermove="{escape(preview_js, quote=True)}" '
             f'onpointerleave="{escape(restore_js, quote=True)}" '
-            f'ontouchstart="{escape(touch_preview_js, quote=True)}" '
-            f'ontouchmove="{escape(touch_preview_js, quote=True)}" '
-            f'ontouchend="{escape(touch_save_js, quote=True)}" '
-            f'onclick="{escape(submit_js, quote=True)}" '
+            f'onpointerup="{escape(select_js, quote=True)}" '
+            'onclick="event.preventDefault();event.stopPropagation();" '
         )
 
-    label = (
-        f"{rating:g} out of 5 stars"
-        if rating else "Not rated"
-    )
+        done_button = (
+            '<button type="button" hidden '
+            f'onclick="{escape(done_js, quote=True)}" '
+            'style="'
+            'margin-left:6px;'
+            'padding:3px 7px;'
+            'border:1px solid #B29A7C;'
+            'border-radius:5px;'
+            'background:#F5EFE4;'
+            'color:#58412F;'
+            'font:12px Georgia,serif;'
+            'cursor:pointer;'
+            'touch-action:manipulation;'
+            '">'
+            'Done'
+            '</button>'
+        )
 
-    return (
+    stars_html = (
         f'<span {attributes}'
         f'style="'
         f'--rating-fill:{percentage}%;'
@@ -320,3 +318,6 @@ def format_rating(value, book_id=None):
         '★★★★★'
         '</span>'
     )
+
+    return stars_html + done_button
+
