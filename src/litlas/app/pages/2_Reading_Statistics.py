@@ -1377,8 +1377,8 @@ st.html("""
 
 .st-key-litlas_year_postcard_mobile button em:last-of-type {
     margin-top: 3px !important;
-    font-style: normal !important;
-    color: #81776E !important;
+    font-style: italic !important;
+    color: #58412F !important;
 }
 }
 </style>
