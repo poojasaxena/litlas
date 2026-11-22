@@ -1161,6 +1161,46 @@ if not is_mobile:
     white-space: normal !important;
     margin: 0 !important;
 }
+
+/* Four milestone cards — one horizontal row on mobile */
+.st-key-litlas_mobile_milestones
+[data-testid="stHorizontalBlock"] {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+}
+
+.st-key-litlas_mobile_milestones
+[data-testid="stColumn"] {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: none !important;
+}
+
+/* Consistent card height */
+.st-key-litlas_mobile_milestones .litlas-mobile-card,
+.st-key-litlas_year_postcard_mobile button {
+    min-height: 112px !important;
+    box-sizing: border-box;
+}
+
+/* Postcard typography */
+.st-key-litlas_year_postcard_mobile button {
+    padding: 6px 3px !important;
+    justify-content: center !important;
+}
+
+.st-key-litlas_year_postcard_mobile button p {
+    font: 11px/1.35 Georgia, serif !important;
+    text-align: center !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+}
+
+.st-key-litlas_year_postcard_mobile button strong {
+    font-size: 17px;
+    color: #6E4B3A;
+}
     </style>
     """)
 
@@ -1560,34 +1600,41 @@ def mobile_milestone(label, number, title="", author="", unit=""):
     </div>
     """
 
-mobile_milestones = f"""
-<div class="litlas-mobile-milestones">
+with st.container(key="litlas_mobile_milestones"):
+    col1, col2, col3, col4 = st.columns(4, gap="small")
 
-    {mobile_milestone(
-        "Longest Book",
-        f"{longest['pages']:,}" if longest else "—",
-        longest["title"] if longest else "",
-        longest["author"] if longest else "",
-        "pages" if longest else "",
-    )}
+    with col1:
+        st.html(mobile_milestone(
+            "Longest Book",
+            f"{longest['pages']:,}" if longest else "—",
+            longest["title"] if longest else "",
+            longest["author"] if longest else "",
+            "pages" if longest else "",
+        ))
 
-    {mobile_milestone(
-        "Total Pages Read",
-        f"{total_pages:,}",
-        "A lifetime between",
-        "pages",
-    )}
+    with col2:
+        st.html(mobile_milestone(
+            "Total Pages",
+            f"{total_pages:,}",
+            "A lifetime between",
+            "pages",
+        ))
 
-    {mobile_milestone(
-        "Shortest Book",
-        f"{shortest['pages']:,}" if shortest else "—",
-        shortest["title"] if shortest else "",
-        shortest["author"] if shortest else "",
-        "pages" if shortest else "",
-    )}
+    with col3:
+        st.html(mobile_milestone(
+            "Shortest Book",
+            f"{shortest['pages']:,}" if shortest else "—",
+            shortest["title"] if shortest else "",
+            shortest["author"] if shortest else "",
+            "pages" if shortest else "",
+        ))
 
-</div>
-"""
+    with col4:
+        open_mobile_postcard = st.button(
+            f"A Year in Books\n\n**{reading_years} years**\n\nExplore →",
+            key="litlas_year_postcard_mobile",
+            width="stretch",
+        )
 
 with st.container(key="litlas_mobile_milestones", gap="xxsmall"):
     mobile_cols = st.columns(4, gap="small")
