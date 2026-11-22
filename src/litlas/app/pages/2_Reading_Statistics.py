@@ -1028,6 +1028,42 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
         color: #58412F !important;
     }
 }
+
+/* Mobile: consistent Laureates and Marathons labels */
+@media screen and (max-width: 640px) {
+
+    .litlas-nobel-stat summary,
+    .litlas-marathon-stat summary {
+        display: flex !important;
+        align-items: center !important;
+        gap: 2px !important;
+        min-width: 0 !important;
+        white-space: nowrap !important;
+    }
+
+    .litlas-nobel-stat summary span,
+    .litlas-marathon-stat summary span {
+        display: inline !important;
+        font-family: Georgia, serif !important;
+        font-size: 10px !important;
+        font-weight: 400 !important;
+        line-height: 18px !important;
+        color: #96785D !important;
+        white-space: nowrap !important;
+    }
+
+    .litlas-nobel-stat summary::after,
+    .litlas-marathon-stat summary::after {
+        content: "▾" !important;
+        display: inline-block !important;
+        font-size: 8px !important;
+        line-height: 18px !important;
+        color: #96785D !important;
+        transform: none !important;
+        flex-shrink: 0 !important;
+    }
+}
+
 </style>
 """)
 
