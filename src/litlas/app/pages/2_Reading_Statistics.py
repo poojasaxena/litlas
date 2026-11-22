@@ -1003,6 +1003,24 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 
     }
 
+    
+@media screen and (max-width: 640px) {
+    .st-key-litlas_year_postcard_mobile button p {
+        font: 11px/1.2 Georgia, serif !important;
+        color: #96785D !important;
+        text-align: center !important;
+    }
+
+    .st-key-litlas_year_postcard_mobile button strong {
+        font-size: 17px !important;
+        color: #6E4B3A !important;
+    }
+
+    .st-key-litlas_year_postcard_mobile button em {
+        font-size: 10px !important;
+        color: #58412F !important;
+    }
+}
 </style>
 """)
 
@@ -1660,7 +1678,7 @@ with st.container(key="litlas_mobile_milestones", gap="xxsmall"):
 
     with mobile_cols[3]:
         open_mobile_postcard = st.button(
-            f"**A Year in Books**\n\n**{reading_years} years**\n\nExplore →",
+            f"Postcards\n\n**{reading_years} years**\n\n*Explore →*",
             key="litlas_year_postcard_mobile",
             width="stretch",
         )
