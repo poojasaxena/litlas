@@ -1041,8 +1041,9 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
         white-space: nowrap !important;
     }
 
-    .litlas-nobel-stat summary span,
-    .litlas-marathon-stat summary span {
+[data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
+.litlas-nobel-stat summary span,
+.litlas-marathon-stat summary span {
         display: inline !important;
         font-family: Georgia, serif !important;
         font-size: 10px !important;
