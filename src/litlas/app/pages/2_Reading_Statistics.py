@@ -1293,12 +1293,25 @@ st.html("""
         flex: none !important;
     }
 
-    /* Match the height of the four cards */
-    .st-key-litlas_mobile_milestones .litlas-mobile-card,
-    .st-key-litlas_year_postcard_mobile button {
-        min-height: 112px !important;
-        box-sizing: border-box !important;
-    }
+/* Four milestone cards — identical height */
+.st-key-litlas_mobile_milestones .litlas-mobile-card,
+.st-key-litlas_year_postcard_mobile button {
+    height: 120px !important;
+    min-height: 120px !important;
+    box-sizing: border-box !important;
+}
+
+/* Prevent long book details from stretching the cards */
+.st-key-litlas_mobile_milestones .litlas-mobile-card {
+    overflow: hidden;
+}
+
+.st-key-litlas_mobile_milestones .litlas-mobile-book-title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
 
 /* Fourth card — centred horizontally, aligned at top */
 .st-key-litlas_year_postcard_mobile button {
