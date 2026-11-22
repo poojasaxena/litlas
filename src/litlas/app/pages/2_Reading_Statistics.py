@@ -1794,7 +1794,7 @@ with st.container(key="litlas_mobile_milestones", gap="xxsmall"):
 
     with mobile_cols[1]:
         st.html(mobile_milestone(
-            "Total Pages",
+            "Total Pages Read",
             f"{total_pages:,}",
             "A lifetime in pages",
             "",
