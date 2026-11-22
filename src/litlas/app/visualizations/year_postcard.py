@@ -357,15 +357,46 @@ def _draw_totals(draw, count, author_count, country_count, pages_read):
         value_font = _font(STATS_VALUE_SIZE)
 
     ## Prepare the totals to be displayed in the summary section
-    totals = (
-        ("Books devoured", count),
-        ("Authors read", author_count),
-        ("Countries explored", country_count),
-        ("Pages read", pages_read),
+    icon_font = ImageFont.truetype(
+        FONT_DIR / "MaterialSymbolsRounded.ttf", 30
     )
-    for index, (label, value) in enumerate(totals):
+
+    totals = (
+        ("book_2", "Books", count),
+        ("person_edit", "Authors", author_count),
+        ("public", "Countries", country_count),
+        ("auto_stories", "Pages", pages_read),
+    )
+
+    for index, (symbol, label, value) in enumerate(totals):
         center = CONTENT_MARGIN + CONTENT_WIDTH * (index + 0.5) / len(totals)
-        draw.text((center, STATS_LABEL_Y), label, anchor="mt", font=label_font, fill=MUTED)
+
+        # Centre the combined icon + label over the number.
+        icon_width = draw.textlength(
+            symbol, font=icon_font, features=["liga"]
+        )
+        label_width = draw.textlength(label, font=label_font)
+        gap = 9
+        group_width = icon_width + gap + label_width
+        left = center - group_width / 2
+
+        draw.text(
+            (left, STATS_LABEL_Y + 17),
+            symbol,
+            font=icon_font,
+            features=["liga"],
+            anchor="lm",
+            fill=GOLD,
+        )
+
+        draw.text(
+            (left + icon_width + gap, STATS_LABEL_Y + 17),
+            label,
+            font=label_font,
+            anchor="lm",
+            fill=MUTED,
+        )
+
         _draw_number(
             draw,
             (center, STATS_VALUE_Y),
