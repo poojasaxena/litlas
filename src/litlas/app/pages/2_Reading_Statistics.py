@@ -1375,10 +1375,14 @@ st.html("""
     margin-top: 6px !important;
 }
 
-.st-key-litlas_year_postcard_mobile button em:last-of-type {
-    margin-top: 3px !important;
+.st-key-litlas_year_postcard_mobile button em:first-of-type {
     font-style: italic !important;
     color: #58412F !important;
+}
+
+.st-key-litlas_year_postcard_mobile button em:last-of-type {
+    font-style: normal !important;
+    color: #81776E !important;
 }
 }
 </style>
@@ -1812,7 +1816,7 @@ with st.container(key="litlas_mobile_milestones", gap="xxsmall"):
 
     with mobile_cols[3]:
         open_mobile_postcard = st.button(
-            f"Postcards **{reading_years}** *A year in books · Explore →*",
+            f"Postcards **{reading_years}** *A year in books* · *Explore →*"
             key="litlas_year_postcard_mobile",
             width="stretch",
         )
