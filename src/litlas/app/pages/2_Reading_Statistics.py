@@ -1688,7 +1688,7 @@ with st.container(key="litlas_desktop_milestones"):
     with pages_col:
         page_milestone(
             "Total Pages Read",
-            f"{total_pages:,} pp.",
+            f"{total_pages:,} pages",
             "A lifetime between pages",
         )
 
@@ -1741,7 +1741,7 @@ with st.container(key="litlas_mobile_milestones", gap="xxsmall"):
             f"{total_pages:,}",
             "A lifetime in pages",
             "",
-            "pp.",
+            "pages",
         ))
 
     with mobile_cols[2]:
