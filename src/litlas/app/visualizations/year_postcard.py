@@ -562,6 +562,7 @@ def show_year_postcard(read_books, page_details):
         index=years.index(2025) if 2025 in years else 0,
         key="litlas_postcard_year",
         label_visibility="collapsed",
+        accept_new_options=False,
     )
 
     books = dated[dated["finished"].dt.year.eq(year)].copy()

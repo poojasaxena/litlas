@@ -175,6 +175,11 @@ export default function(component) {
 
                         closePopup();
                     });
+                    if (window.innerWidth <= 640) {
+                        ratingArea.style.flexDirection = "column";
+                        ratingArea.style.alignItems = "flex-end";
+                        ratingArea.style.gap = "4px";
+                    }
                     ratingArea.appendChild(done);
                 }
             }
