@@ -2,6 +2,7 @@
 """Reading statistics for Litlas."""
 
 from html import escape
+import math
 from textwrap import dedent
 
 import plotly.graph_objects as go
@@ -26,7 +27,7 @@ from litlas.app.nobel import match_nobel_authors, load_literature_laureates
 from litlas.app.visualizations.book_of_honour import render_book_of_honour
 from litlas.app.visualizations.wanderlust import build_wanderlust_figure
 
-from litlas.db_backend import get_repository, backend_name
+from litlas.db_backend import get_repository, backend_name, is_postgres
 
 
 ## Repository and data access functions
@@ -85,6 +86,7 @@ def load_popup_books(read_books):
             "title": title,
             "author": author,
             "stars_html": format_rating(rating),
+            "book_id": str(book["Book Id"]),
         }
 
         # Rating popup
@@ -1053,6 +1055,23 @@ render_page_header(
     mobile_subtitle_offset_y=-12,  # Move “Where stories meet the world” up
     mobile_header_bottom_gap=-20,  # Pull the mobile navigation up toward the header
 )
+
+# Rating editing is restricted to the owner on PostgreSQL.
+if is_postgres():
+    owner_email = str(
+        st.secrets.get("admin_email", "")
+    ).strip().casefold()
+
+    can_edit_ratings = (
+        bool(owner_email)
+        and bool(getattr(st.user, "is_logged_in", False))
+        and st.user.get("email_verified") is True
+        and str(st.user.get("email", "")).strip().casefold()
+        == owner_email
+    )
+else:
+    can_edit_ratings = True
+
 
 ## Load reading statistics
 stats = load_statistics_data(backend_name())
@@ -2285,7 +2304,134 @@ with ratings_col:
             key="litlas_ratings",
         )
 
-        render_rating_popup(books_by_rating)
+        rating_event = render_rating_popup(
+            books_by_rating,
+            can_edit=can_edit_ratings,
+        )
+
+        if rating_event.rating is not None:
+            try:
+                event = rating_event.rating
+                book_id = str(event["book_id"])
+                new_rating = float(event["rating"])
+
+                if (
+                    not math.isfinite(new_rating)
+                    or not 0.5 <= new_rating <= 5.0
+                    or new_rating * 2 != int(new_rating * 2)
+                ):
+                    raise ValueError("Invalid rating.")
+
+                if not can_edit_ratings:
+                    raise PermissionError(
+                        "Owner login required to edit ratings."
+                    )
+
+                repo = get_repository()
+                editable = repo.get_editable_books()
+                matches = editable.loc[
+                    editable["goodreads_id"].astype(str) == book_id
+                ]
+
+                if len(matches) != 1:
+                    raise ValueError(
+                        "Book record not found or ambiguous."
+                    )
+
+                book = matches.iloc[0]
+                original_rating = float(book["rating"])
+
+                pages_override = (
+                    None
+                    if pd.isna(book["pages_override"])
+                    else int(book["pages_override"])
+                )
+
+                repo.update_book_details(
+                    goodreads_id=book_id,
+                    display_title=str(book["display_title"]),
+                    rating_override=(
+                        None
+                        if new_rating == original_rating
+                        else new_rating
+                    ),
+                    pages_override=pages_override,
+                )
+
+            except (
+                ValueError, TypeError, KeyError, PermissionError
+            ) as exc:
+                st.error(str(exc))
+
+            else:
+                load_statistics_data.clear()
+                load_popup_books.clear()
+
+                st.session_state["rating_chart_saved"] = (
+                    str(book["display_title"]),
+                    new_rating,
+                )
+                st.rerun()
+
+        if saved := st.session_state.pop(
+            "rating_chart_saved", None
+        ):
+            st.html("""
+            <style>
+            @keyframes litlas-rating-fade {
+                0% {
+                    opacity: 0;
+                    transform: translate(-50%, 8px);
+                }
+                12% {
+                    opacity: 1;
+                    transform: translate(-50%, 0);
+                }
+                80% {
+                    opacity: 1;
+                }
+                100% {
+                    opacity: 0;
+                }
+            }
+
+            .litlas-rating-confirmation {
+                position: fixed;
+                bottom: 38px;
+                left: 50%;
+                z-index: 99999;
+
+                background: #F7F0E4;
+                border: 1px solid #D4C1A7;
+                border-radius: 7px;
+                padding: 9px 20px;
+
+                color: #58412F;
+                font-family: Georgia, serif;
+                font-size: 14px;
+                text-align: center;
+
+                max-width: min(340px, 85vw);
+                white-space: normal;
+
+                box-shadow: 0 3px 12px rgba(88, 65, 47, 0.12);
+                animation: litlas-rating-fade 3s ease forwards;
+                pointer-events: none;
+            }
+            </style>
+            """)
+
+            st.html(
+                '<div class="litlas-rating-confirmation">'
+                f'★ Rating saved · {saved[1]:g}/5'
+                '<div style="font-size:12px;margin-top:3px;'
+                'color:#81776E;overflow-wrap:anywhere;">'
+                f'{escape(saved[0])}'
+                '</div>'
+                '</div>'
+            )
+
+
 
 
 # ---------------------------------------------------------
