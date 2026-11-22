@@ -1316,7 +1316,7 @@ st.html("""
 /* Fourth card — centred horizontally, aligned at top */
 .st-key-litlas_year_postcard_mobile button {
     width: 100% !important;
-    height: 100% !important;
+    height: 120px!important;
     padding: 9px 3px !important;
     justify-content: center !important;
     align-items: flex-start !important;
