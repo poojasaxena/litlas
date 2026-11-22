@@ -1290,7 +1290,7 @@ st.html("""
     }
     .st-key-litlas_year_postcard_mobile button em {
         display: block !important;
-        margin: 6px 0 0 !important;
+        margin: 5px 0 0 !important;
         font-size: 10px !important;
         font-style: italic !important;
         text-align: center !important;
