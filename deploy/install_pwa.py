@@ -16,7 +16,7 @@ def main() -> None:
         raise RuntimeError("The Streamlit frontend changed. Check the manifest link.")
 
     project = Path(__file__).resolve().parents[1]
-    artwork = project / "data" / "assets" / "illustrations"
+    artwork = project / "data" / "assets" / "icon_app"
     manifest_path = Path(__file__).with_name("litlas.webmanifest")
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     for icon in manifest["icons"]:
