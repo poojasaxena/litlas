@@ -300,6 +300,7 @@ div[data-testid="stAlert"] [data-testid="stIconMaterial"] {
         padding-top: 0 !important;
         padding-bottom: 0 !important;
         margin-top: 0 !important;
+        row-gap: 10px !important;
     }
 
     /* Compact spacing between the header and page content */

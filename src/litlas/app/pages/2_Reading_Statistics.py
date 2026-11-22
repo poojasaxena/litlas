@@ -2243,7 +2243,7 @@ with ratings_col:
             tickfont=dict(
                 family="Georgia, serif",
                 size=13,
-                #color="#A47B43",
+                color="#A47B43",
             ),
             ticks="",
             title=None,
