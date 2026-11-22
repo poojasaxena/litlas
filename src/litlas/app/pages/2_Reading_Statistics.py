@@ -997,10 +997,6 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
         white-space: nowrap;
     }
 
-    .st-key-litlas_year_postcard_mobile {
-    margin-top: 8px !important;
-}
-
     }
 
     
@@ -1723,7 +1719,7 @@ with st.container(key="litlas_mobile_milestones", gap="xxsmall"):
 
     with mobile_cols[3]:
         open_mobile_postcard = st.button(
-            f"Postcards  \n**{reading_years}\n years**  \n*Explore →*",
+            f"Postcards  \n**{reading_years}**  \nyears  \n*Explore →*",
             key="litlas_year_postcard_mobile",
             width="stretch",
         )
