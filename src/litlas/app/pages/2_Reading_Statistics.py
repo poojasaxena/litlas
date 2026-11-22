@@ -124,7 +124,7 @@ st.set_page_config(
 
 apply_page_style()
 is_mobile = is_mobile_browser()
-
+st.caption(f"Mobile detection: {is_mobile}")
 
 st.html("""
 <style>
