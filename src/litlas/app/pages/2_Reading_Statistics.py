@@ -543,7 +543,6 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
         font: 15px/1.4 Georgia, serif;
         text-align: left;
         color: #96785D;
-        transform: translateY(-9px);
     }
 
     .st-key-litlas_year_postcard_mobile button strong {
@@ -1247,16 +1246,24 @@ st.html("""
         box-sizing: border-box !important;
     }
 
-    /* Fourth card: same alignment and spacing */
-    .st-key-litlas_year_postcard_mobile button {
-        width: 100% !important;
-        height: 100% !important;
-        padding: 9px 3px !important;
-        justify-content: flex-start !important;
-        align-items: center !important;
-        text-align: center !important;
-        overflow: hidden !important;
-    }
+/* Fourth card — centred horizontally, aligned at top */
+.st-key-litlas_year_postcard_mobile button {
+    width: 100% !important;
+    height: 100% !important;
+    padding: 9px 3px !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    text-align: center !important;
+    overflow: hidden !important;
+}
+
+.st-key-litlas_year_postcard_mobile button > div {
+    width: 100% !important;
+    min-width: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
 
     .st-key-litlas_year_postcard_mobile button p {
         display: block !important;
@@ -1713,7 +1720,7 @@ with st.container(key="litlas_mobile_milestones", gap="xxsmall"):
         st.html(mobile_milestone(
             "Total Pages",
             f"{total_pages:,}",
-            "A lifetime between",
+            "A lifetime in pages",
             "",
             "pp.",
         ))
