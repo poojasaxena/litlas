@@ -543,6 +543,7 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
         font: 15px/1.4 Georgia, serif;
         text-align: left;
         color: #96785D;
+        transform: translateY(-9px);
     }
 
     .st-key-litlas_year_postcard_mobile button strong {
@@ -1290,7 +1291,7 @@ st.html("""
     }
     .st-key-litlas_year_postcard_mobile button em {
         display: block !important;
-        margin: 5px 0 0 !important;
+        margin: 8px 0 0 !important;
         font-size: 10px !important;
         font-style: italic !important;
         text-align: center !important;
@@ -1728,7 +1729,7 @@ with st.container(key="litlas_mobile_milestones", gap="xxsmall"):
 
     with mobile_cols[3]:
         open_mobile_postcard = st.button(
-            f"Postcards  \n**{reading_years}**  \n*Explore →*",
+            f"Postcards **{reading_years}** *Explore →*",
             key="litlas_year_postcard_mobile",
             width="stretch",
         )
