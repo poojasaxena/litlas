@@ -1251,7 +1251,7 @@ st.html("""
         width: 100% !important;
         height: 100% !important;
         padding: 9px 3px !important;
-        justify-content: center !important;
+        justify-content: flex-start !important;
         align-items: center !important;
         text-align: center !important;
         overflow: hidden !important;
