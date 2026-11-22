@@ -1204,6 +1204,34 @@ if not is_mobile:
     </style>
     """)
 
+
+st.html("""
+<style>
+@media screen and (max-width: 640px) {
+    .st-key-litlas_mobile_milestones
+    [data-testid="stHorizontalBlock"] {
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        gap: 5px !important;
+        align-items: stretch !important;
+    }
+
+    .st-key-litlas_mobile_milestones
+    [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {
+        width: 100% !important;
+        min-width: 0 !important;
+        flex: none !important;
+    }
+
+    .st-key-litlas_mobile_milestones .litlas-mobile-card,
+    .st-key-litlas_year_postcard_mobile button {
+        min-height: 112px !important;
+        box-sizing: border-box;
+    }
+}
+</style>
+""")
+
 col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
