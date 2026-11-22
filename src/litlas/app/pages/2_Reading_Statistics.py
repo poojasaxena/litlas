@@ -1226,6 +1226,8 @@ if not is_mobile:
 st.html("""
 <style>
 @media screen and (max-width: 640px) {
+
+    /* Keep all four milestones in one row */
     .st-key-litlas_mobile_milestones
     [data-testid="stHorizontalBlock"] {
         display: grid !important;
@@ -1241,10 +1243,53 @@ st.html("""
         flex: none !important;
     }
 
+    /* Match the height of the four cards */
     .st-key-litlas_mobile_milestones .litlas-mobile-card,
     .st-key-litlas_year_postcard_mobile button {
         min-height: 112px !important;
-        box-sizing: border-box;
+        box-sizing: border-box !important;
+    }
+
+    /* Fourth card: same alignment and spacing */
+    .st-key-litlas_year_postcard_mobile button {
+        width: 100% !important;
+        height: 100% !important;
+        padding: 9px 3px !important;
+        justify-content: center !important;
+        align-items: center !important;
+        text-align: center !important;
+        overflow: hidden !important;
+    }
+
+    .st-key-litlas_year_postcard_mobile button p {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        font: 11px/1.45 Georgia, serif !important;
+        text-align: center !important;
+        color: #96785D !important;
+        white-space: normal !important;
+        overflow-wrap: normal !important;
+    }
+
+    .st-key-litlas_year_postcard_mobile button strong {
+        display: block !important;
+        margin: 2px 0 !important;
+        font-family: Georgia, serif !important;
+        font-size: 17px !important;
+        font-weight: 700 !important;
+        line-height: 1.2 !important;
+        white-space: nowrap !important;
+        color: #6E4B3A !important;
+    }
+
+    .st-key-litlas_year_postcard_mobile button em {
+        display: block !important;
+        margin: 8px 0 0 !important;
+        font-size: 10px !important;
+        font-style: italic !important;
+        text-align: center !important;
+        color: #58412F !important;
     }
 }
 </style>
@@ -1678,7 +1723,7 @@ with st.container(key="litlas_mobile_milestones", gap="xxsmall"):
 
     with mobile_cols[3]:
         open_mobile_postcard = st.button(
-            f"Postcards\n\n**{reading_years} years**\n\n*Explore →*",
+            f"Postcards  \n**{reading_years}\n years**  \n*Explore →*",
             key="litlas_year_postcard_mobile",
             width="stretch",
         )
