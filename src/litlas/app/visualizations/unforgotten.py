@@ -232,7 +232,7 @@ def render_unforgotten():
     """Render The Unforgotten as a compact literary card collection."""
 
     repo = get_repository()
-    characters = repo.list_unforgotten()
+    characters = repo.get_unforgotten_characters()
 
     min_height_css = (
         f"min-height: {CARD_MIN_HEIGHT}px;"
