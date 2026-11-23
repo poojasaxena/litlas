@@ -825,13 +825,13 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
 [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
 [data-testid="stColumn"]:nth-child(2)
 [data-testid="stMetricLabel"] p::after {
-    content: "Authors";
+    content: "Countries";
 }
 
 [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
 [data-testid="stColumn"]:nth-child(3)
 [data-testid="stMetricLabel"] p::after {
-    content: "Countries";
+    content: "Authors";
 }
 
 [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
@@ -1149,12 +1149,12 @@ if not is_mobile:
 
         [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
         > [data-testid="stColumn"]:nth-child(2) [data-testid="stMetricLabel"] p {
-            --litlas-stat-icon: "person_edit";
+            --litlas-stat-icon: "public";
         }
 
         [data-testid="stHorizontalBlock"]:has(.litlas-nobel-stat)
         > [data-testid="stColumn"]:nth-child(3) [data-testid="stMetricLabel"] p {
-            --litlas-stat-icon: "public";
+            --litlas-stat-icon: "person_edit";
         }
 
         .litlas-nobel-stat summary {
@@ -1394,10 +1394,10 @@ with col1:
     st.metric("Books devoured", summary["books"])
 
 with col2:
-    st.metric("Authors discovered", summary["authors"])
+    st.metric("Countries explored", len(read_countries))
 
 with col3:
-    st.metric("Countries explored", len(read_countries))
+    st.metric("Authors discovered", summary["authors"])
 
 with col4:
     if nobel_data_available:
@@ -2164,21 +2164,8 @@ with recent_col:
     if recent.empty:
         st.caption("No books with a recorded finish date yet.")
     else:
-        # Notes are private. Use the same owner verification as Ledger on PostgreSQL.
-        show_notes = backend_name() == "sqlite"
-        if not show_notes and getattr(st.user, "is_logged_in", False):
-            owner_email = str(st.secrets.get("admin_email", "")).strip().casefold()
-            show_notes = (
-                bool(owner_email)
-                and st.user.get("email_verified") is True
-                and str(st.user.get("email", "")).strip().casefold() == owner_email
-            )
-
-        notes = (
-            repository.get_reading_notes(recent["Book Id"].astype(str).tolist())
-            if show_notes
-            else {}
-        )
+        notes = repository.get_reading_notes(recent["Book Id"].astype(str).tolist())
+            
         entries = []
 
         for book_id, title, author, iso, country, rating, date in recent.itertuples(
