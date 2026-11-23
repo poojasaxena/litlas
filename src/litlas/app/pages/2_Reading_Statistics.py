@@ -22,6 +22,7 @@ from litlas.app.visualizations.constellation import (
     load_constellation_books,
     build_constellation_figure,
 )
+from litlas.app.visualizations.unforgotten import render_unforgotten
 from litlas.app.visualizations.rating_popup import render_rating_popup
 from litlas.app.nobel import match_nobel_authors, load_literature_laureates
 from litlas.app.visualizations.book_of_honour import render_book_of_honour
@@ -1075,6 +1076,84 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     border-color: #A47B43 !important;
 }
 
+/* =====================================================
+   Reading Statistics — second-row subtitles
+   ===================================================== */
+/* Second-row headings: local styling only */
+.litlas-second-row-title {
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 32px;
+    font-weight: 700;
+    font-style: italic;
+    line-height: 1.2;
+    color: #58412F;
+    margin: 0;
+}
+
+.litlas-second-row-subtitle {
+    font-family: "Source Sans 3", sans-serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    font-weight: 400;
+    line-height: 1.3;
+    color: #7A6858;
+    margin: 4px 0 0;
+}
+
+.litlas-second-row-header {
+    margin: 0 0 8px;
+}
+/* =====================================================
+   Highlights — compact scrollable reading-year list
+   ===================================================== */
+
+.litlas-highlights-list {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #CDB699 transparent;
+    padding-right: 5px;
+}
+
+.litlas-highlight-row {
+    display: grid;
+    grid-template-columns: 37px minmax(0, 1fr);
+    column-gap: 7px;
+    row-gap: 3px;
+    padding: 7px 0;
+    border-bottom: 1px solid #E2D5C3;
+    font-family: Georgia, serif;
+    font-size: 13px;
+    line-height: 1.35;
+    color: #58412F;
+}
+
+
+.litlas-highlight-year {
+    color: #96785D;
+    white-space: nowrap;
+}
+
+.litlas-highlight-title {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.litlas-highlight-author {
+    color: #81776E;
+    font-size: 12px;
+    margin-top: 2px;
+    overflow-wrap: anywhere;
+}
+
+.litlas-highlight-stars {
+    grid-column: 2;
+    color: #A47B43;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
 </style>
 """)
 
@@ -2021,7 +2100,7 @@ def add_horizontal_book_stacks(fig, counts):
 # Row 1: Country distribution and ratings
 # ---------------------------------------------------------
 
-country_col, recent_col, ratings_col = st.columns([1, 1.1, 0.9], gap="small")
+country_col, recent_col, ratings_col = st.columns([1.3, 0.8, 0.9], gap="small")
 
 density = stats["density"]
 density = density[
@@ -2580,7 +2659,10 @@ with ratings_col:
 # Row 2: Reading history
 # ---------------------------------------------------------
 
-history_col, highlights_col = st.columns([2, 1], gap="small")
+characters_col, history_col, highlights_col = st.columns(
+    [1.8, 2.5, 0.8],
+    gap="small",
+)
 
 history = stats["history"]
 
@@ -2589,17 +2671,31 @@ books_by_year = {
     for year in history["year"]
 }
 
+# ---------------------------------------------------------
+# Unforgettable Characters
+# ---------------------------------------------------------
+
+with characters_col:
+    render_unforgotten()
+
 
 with history_col:
-    st.subheader("Timeless Pages")
+    st.html("""
+        <div class="litlas-second-row-header">
+            <div class="litlas-second-row-title">Timeless Pages</div>
+            <div class="litlas-second-row-subtitle">
+                A reading journey, year by year.
+            </div>
+        </div>
+    """)
 
     if history.empty:
         st.info("No books have a recorded reading date yet.")
     else:
         fig_history = build_year_spines_figure(
             history,
-            spine_width=0.78 if is_mobile else 0.60,
-            image_height=400,
+            spine_width=0.80 if is_mobile else 0.60,
+            image_height=430,
         )
 
         if is_mobile:
@@ -2623,17 +2719,29 @@ with history_col:
         #     f"{missing_dates} books have no usable Date Read value."
         # )
 
+
+# ---------------------------------------------------------
+# Yearly literary highlights
+# ---------------------------------------------------------
+
 # ---------------------------------------------------------
 # Yearly literary highlights
 # ---------------------------------------------------------
 
 with highlights_col:
-    st.subheader("Highlights")
-
+    st.html("""
+        <div class="litlas-second-row-header">
+            <div class="litlas-second-row-title">Highlights</div>
+            <div class="litlas-second-row-subtitle">
+                Memory, year by year.
+            </div>
+        </div>
+    """)
     highlights = stats["highlights"]
 
     if highlights.empty:
         st.caption("No rated books with reading dates available.")
+
     else:
         rows = []
 
@@ -2647,51 +2755,36 @@ with highlights_col:
 
             rows.append(
                 f"""
-                <div style="
-                    display:flex;
-                    align-items:baseline;
-                    gap:10px;
-                    padding:8px 0;
-                    border-bottom:1px solid #E2D5C3;
-                    font-family:Georgia,serif;
-                ">
-                    <span style="
-                        color:#96785D;
-                        font-size:13px;
-                        white-space:nowrap;
-                    ">{year}</span>
+                <div class="litlas-highlight-row">
 
-                    <span style="
-                        flex:1;
-                        min-width:0;
-                        font-size:13px;
-                        color:#58412F;
-                        line-height:1.5;
-                    ">
-                        <i>{title}</i>
-                        <span style="color:#81776E;">
-                            · {author}
-                        </span>
+                    <span class="litlas-highlight-year">
+                        {year}
                     </span>
 
-                    <span style="
-                        color:#A47B43;
-                        font-size:13px;
-                        white-space:nowrap;
-                    ">{stars}</span>
+                    <div class="litlas-highlight-title">
+                        <i>{title}</i>
+
+                        <div class="litlas-highlight-author">
+                            {author}
+                        </div>
+                    </div>
+
+                    <span class="litlas-highlight-stars">
+                        {stars}
+                    </span>
+
                 </div>
                 """
             )
 
         if rows:
-            st.html("\n".join(rows))
+            st.html(
+                '<div class="litlas-highlights-list">'
+                + "\n".join(rows)
+                + '</div>'
+            )
         else:
             st.caption("No books recorded for this year.")
-
-    # st.caption(
-    #     "Highest-rated completed book per year. "
-    #     "Ties resolved by length, then completion date."
-    # )
 
 ### Constellation Plot
 if not is_mobile:
