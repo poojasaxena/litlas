@@ -33,9 +33,11 @@ export default function(component) {
         if (!point) return;
 
         const rating = Number(point.x);
+        const isUnrated = !isYear && !isCountry && rating === 0;
+
         const key = (isYear || isCountry)
             ? String(point.customdata)
-            : String(rating);
+            : isUnrated ? "unrated" : String(rating);
         const entries = books[key] || [];
 
         closePopup();
@@ -60,7 +62,11 @@ export default function(component) {
         const title = document.createElement("strong");
         title.textContent = isCountry
             ? "Books From This Country"
-            : isYear ? "Books From My Reading Year" : "Books From My Rating";
+            : isYear
+                ? "Books From My Reading Year"
+                : isUnrated
+                    ? "Books Awaiting a Rating"
+                    : "Books From My Rating";
         title.style.fontSize = "20px";
 
         const close = document.createElement("button");
@@ -76,8 +82,11 @@ export default function(component) {
         const caption = document.createElement("div");
         caption.textContent = isCountry
             ? `${component.data.country_names[key] || key} · ${entries.length} books`
-            : isYear ? `${key} · ${entries.length} books completed`
-            : `${rating} ★ · ${entries.length} books`;
+            : isYear
+                ? `${key} · ${entries.length} books completed`
+                : isUnrated
+                    ? `Unrated · ${entries.length} books`
+                    : `${rating} ★ · ${entries.length} books`;
         Object.assign(caption.style, {
             margin: "14px 0 10px", color: "#96785D", fontSize: "13px"
         });

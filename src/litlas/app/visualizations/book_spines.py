@@ -31,6 +31,38 @@ def _enhance_spine(image: Image.Image) -> Image.Image:
     image = ImageEnhance.Sharpness(image).enhance(SPINE_SHARPNESS)
     return image
 
+def _warm_gray_spine(image: Image.Image) -> Image.Image:
+    """Turn a decorative spine into a warm gray Litlas-style version."""
+    gray = image.convert("L").convert("RGBA")
+
+    # warm beige-gray tint
+    tint = Image.new("RGBA", gray.size, (182, 172, 156, 90))
+    gray = Image.alpha_composite(gray, tint)
+
+    gray = ImageEnhance.Contrast(gray).enhance(1.05)
+    gray = ImageEnhance.Brightness(gray).enhance(1.02)
+    return gray
+
+
+@lru_cache(maxsize=4)
+def _unrated_spine_parts():
+    """Create a neutral unrated spine from an existing decorative spine."""
+    # use one existing spine as a base, then mute it elegantly
+    top, middle, bottom = _spine_parts("3")
+    return (
+        _warm_gray_spine(top),
+        _warm_gray_spine(middle),
+        _warm_gray_spine(bottom),
+    )
+
+
+def _rating_tick_label(value: float) -> str:
+    """Pretty x-axis labels."""
+    if value == 0:
+        return "?"
+    if float(value).is_integer():
+        return f"{int(value)}★"
+    return ""
 
 @lru_cache(maxsize=32)
 def _spine_parts(rating: str):
@@ -235,7 +267,10 @@ def build_rating_spines_figure(ratings: pd.DataFrame, image_height=420) -> go.Fi
         if count <= 0:
             continue
 
-        top, middle, bottom = _spine_parts(f"{rating:g}")
+        if rating == 0:
+            top, middle, bottom = _unrated_spine_parts()
+        else:
+            top, middle, bottom = _spine_parts(f"{rating:g}")
 
         # Decorative caps stay proportionate even for short bars.
         cap_height = min(5.0, count * 0.23)
@@ -283,7 +318,7 @@ def build_rating_spines_figure(ratings: pd.DataFrame, image_height=420) -> go.Fi
             title=None,
             tickmode="array",
             tickvals=x_values,
-            ticktext=[f"{x:g}" for x in x_values],
+            ticktext=[_rating_tick_label(x) for x in x_values],
             range=[min(x_values) - 0.45, max(x_values) + 0.45] if x_values else [0, 1],
             showgrid=False,
             zeroline=False,

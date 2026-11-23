@@ -89,10 +89,13 @@ def load_popup_books(read_books):
             "book_id": str(book["Book Id"]),
         }
 
-        # Rating popup
-        if pd.notna(book["My Rating"]):
+        # Rating popup — zero means unrated in Litlas
+        if rating > 0:
             key = f"{rating:g}"
-            books_by_rating.setdefault(key, []).append(entry)
+        else:
+            key = "unrated"
+
+        books_by_rating.setdefault(key, []).append(entry)
 
         # Reading-year popup
         date_read = book["Date Read"]
@@ -1052,6 +1055,24 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
         transform: none !important;
         flex-shrink: 0 !important;
     }
+}
+
+
+/* Litlas — Show unrated checkbox */
+
+/* Unchecked: warm parchment */
+.st-key-litlas_show_unrated
+[data-testid="stCheckbox"] label > div:first-of-type {
+    background-color: #F5EFE4 !important;
+    border: 1px solid #B29A7C !important;
+    box-shadow: none !important;
+}
+
+/* Checked: antique gold */
+.st-key-litlas_show_unrated
+[data-testid="stCheckbox"] label:has(input:checked) > div:first-of-type {
+    background-color: #A47B43 !important;
+    border-color: #A47B43 !important;
 }
 
 </style>
@@ -2300,18 +2321,71 @@ books_by_rating = {
     )
     for rating in ratings["rating"]
 }
+books_by_rating["unrated"] = cached_ratings.get("unrated", [])
+
 
 with ratings_col:
-    st.subheader("Ratings")
+    heading_col, toggle_col = st.columns(
+        [3, 2], vertical_alignment="center"
+    )
+
+    with heading_col:
+        st.subheader("Ratings")
+
+    with toggle_col:
+        show_unrated = st.checkbox(
+            "Show unrated",
+            value=False,
+            key="litlas_show_unrated",
+        )
 
     if ratings.empty:
         st.info("No rated books available yet.")
+
     else:
-        fig_ratings = build_rating_spines_figure(ratings, image_height=380)
+        # Start with the existing rated books.
+        plot_ratings = ratings.copy()
+
+        # Add unrated books only when requested.
+        if show_unrated:
+            unrated_count = len(
+                books_by_rating.get("unrated", [])
+            )
+
+            if unrated_count > 0:
+                plot_ratings = pd.concat(
+                    [
+                        plot_ratings,
+                        pd.DataFrame({
+                            "rating": [0.0],
+                            "books": [unrated_count],
+                        }),
+                    ],
+                    ignore_index=True,
+                )
+
+        # Existing spine renderer also handles rating 0.
+        fig_ratings = build_rating_spines_figure(
+            plot_ratings,
+            image_height=380,
+        )
+
+        # Elegant x-axis labels.
+        show_unrated_spine = (
+            show_unrated
+            and bool(books_by_rating.get("unrated"))
+        )
+
         fig_ratings.update_xaxes(
             tickmode="array",
-            tickvals=[1, 2, 3, 4, 5],
-            ticktext=["1★", "2★", "3★", "4★", "5★"],
+            tickvals=(
+                ([0] if show_unrated_spine else [])
+                + [1, 2, 3, 4, 5]
+            ),
+            ticktext=(
+                (["?"] if show_unrated_spine else [])
+                + ["1★", "2★", "3★", "4★", "5★"]
+            ),
             tickfont=dict(
                 family="Georgia, serif",
                 size=13,
@@ -2320,10 +2394,12 @@ with ratings_col:
             ticks="",
             title=None,
         )
+
         fig_ratings.update_layout(
             paper_bgcolor="#FAF7F1",
             plot_bgcolor="#F5EFE4",
         )
+
         fig_ratings.add_annotation(
             xref="paper",
             yref="paper",
@@ -2349,7 +2425,6 @@ with ratings_col:
             bgcolor="rgba(0,0,0,0)",
         )
 
-
         st.plotly_chart(
             fig_ratings,
             width="stretch",
@@ -2357,6 +2432,7 @@ with ratings_col:
             key="litlas_ratings",
         )
 
+        # Existing rating popup and editing functionality.
         rating_event = render_rating_popup(
             books_by_rating,
             can_edit=can_edit_ratings,
@@ -2382,8 +2458,10 @@ with ratings_col:
 
                 repo = get_repository()
                 editable = repo.get_editable_books()
+
                 matches = editable.loc[
-                    editable["goodreads_id"].astype(str) == book_id
+                    editable["goodreads_id"].astype(str)
+                    == book_id
                 ]
 
                 if len(matches) != 1:
@@ -2392,7 +2470,12 @@ with ratings_col:
                     )
 
                 book = matches.iloc[0]
-                original_rating = float(book["rating"])
+
+                original_rating = (
+                    float(book["rating"])
+                    if pd.notna(book["rating"])
+                    else None
+                )
 
                 pages_override = (
                     None
@@ -2405,14 +2488,18 @@ with ratings_col:
                     display_title=str(book["display_title"]),
                     rating_override=(
                         None
-                        if new_rating == original_rating
+                        if original_rating is not None
+                        and new_rating == original_rating
                         else new_rating
                     ),
                     pages_override=pages_override,
                 )
 
             except (
-                ValueError, TypeError, KeyError, PermissionError
+                ValueError,
+                TypeError,
+                KeyError,
+                PermissionError,
             ) as exc:
                 st.error(str(exc))
 
@@ -2424,7 +2511,9 @@ with ratings_col:
                     str(book["display_title"]),
                     new_rating,
                 )
+
                 st.rerun()
+
 
         if saved := st.session_state.pop(
             "rating_chart_saved", None
