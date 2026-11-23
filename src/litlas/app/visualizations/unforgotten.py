@@ -385,7 +385,7 @@ def render_unforgotten():
 
     for item in characters:
         name = html.escape(item["name"])
-        short = html.escape(item["short"])
+        short = html.escape(item["familiar_name"] or "")
         book = html.escape(item["book"])
         reflection = html.escape(item["reflection"])
 

@@ -27,6 +27,7 @@ from litlas.database.importer import (
 )
 from litlas.db_backend import get_repository
 from litlas.processing.paths import illustration_path
+from litlas.app.library.unforgotten_editor import render_unforgotten_editor
 
 ADD_BOOK_ICON = str(illustration_path("add_book"))
 
@@ -179,7 +180,7 @@ TOOLS = [
     ("Edit a Book", "📖"),
     ("Favourites", "🤎"),
     ("Author Details", "✒️"),
-    ("Goodreads", "📜"),
+    ("Unforgotten", "📜"),
 ]
 
 
@@ -1014,300 +1015,301 @@ if selected_tool:
                 render_author_details()
 
 
-    elif selected_tool == "Goodreads":
-        st.subheader("Goodreads Library Sync")
-        st.caption(
-            "Compare your latest Goodreads export with Litlas. "
-            "No database changes will be made."
-        )
+    elif selected_tool == "Unforgotten":
+         render_unforgotten_editor()
+        # st.subheader("Goodreads Library Sync")
+        # st.caption(
+        #     "Compare your latest Goodreads export with Litlas. "
+        #     "No database changes will be made."
+        # )
 
 
-        if st.button(
-            "Check for changes",
-            key="goodreads_check_changes",
-            type="secondary",
-        ):
-            try:
-                st.session_state["goodreads_preview"] = (
-                    preview_goodreads_import()
-                )
-            except (ValueError, OSError) as exc:
-                st.session_state.pop("goodreads_preview", None)
-                st.error(str(exc))
+        # if st.button(
+        #     "Check for changes",
+        #     key="goodreads_check_changes",
+        #     type="secondary",
+        # ):
+        #     try:
+        #         st.session_state["goodreads_preview"] = (
+        #             preview_goodreads_import()
+        #         )
+        #     except (ValueError, OSError) as exc:
+        #         st.session_state.pop("goodreads_preview", None)
+        #         st.error(str(exc))
 
 
-        preview = st.session_state.get("goodreads_preview")
+        # preview = st.session_state.get("goodreads_preview")
 
-        message = st.session_state.pop(
-            "goodreads_resolution_message", None
-        )
-        if message:
-            st.success(message)
+        # message = st.session_state.pop(
+        #     "goodreads_resolution_message", None
+        # )
+        # if message:
+        #     st.success(message)
 
-        if preview is not None:
-            source_name = Path(preview["source"]).name
+        # if preview is not None:
+        #     source_name = Path(preview["source"]).name
 
-            st.caption(f"Source: {source_name}")
+        #     st.caption(f"Source: {source_name}")
 
-            # ---------------------------------------------
-            # Compact import summary
-            # ---------------------------------------------
-            summary = [
-                ("New books", len(preview["new_books"])),
-                ("Updates", len(preview["changed_books"])),
-                ("Date conflicts", len(preview["date_conflicts"])),
-                ("Unchanged", len(preview["unchanged_books"])),
-            ]
+        #     # ---------------------------------------------
+        #     # Compact import summary
+        #     # ---------------------------------------------
+        #     summary = [
+        #         ("New books", len(preview["new_books"])),
+        #         ("Updates", len(preview["changed_books"])),
+        #         ("Date conflicts", len(preview["date_conflicts"])),
+        #         ("Unchanged", len(preview["unchanged_books"])),
+        #     ]
 
-            summary_html = "".join(
-                f"""
-                <div style="flex:1; text-align:center;">
-                    <div style="
-                        font-family:Georgia,serif;
-                        font-size:21px;
-                        color:#58412F;
-                        line-height:1.2;
-                    ">{count}</div>
-                    <div style="
-                        font-size:12px;
-                        color:#81776E;
-                        margin-top:3px;
-                    ">{escape(label)}</div>
-                </div>
-                """
-                for label, count in summary
-            )
+        #     summary_html = "".join(
+        #         f"""
+        #         <div style="flex:1; text-align:center;">
+        #             <div style="
+        #                 font-family:Georgia,serif;
+        #                 font-size:21px;
+        #                 color:#58412F;
+        #                 line-height:1.2;
+        #             ">{count}</div>
+        #             <div style="
+        #                 font-size:12px;
+        #                 color:#81776E;
+        #                 margin-top:3px;
+        #             ">{escape(label)}</div>
+        #         </div>
+        #         """
+        #         for label, count in summary
+        #     )
 
-            st.markdown(
-                f"""
-                <div style="
-                    display:flex;
-                    gap:12px;
-                    padding:12px 16px;
-                    background:#F7F0E4;
-                    border:1px solid #D4C1A7;
-                    border-radius:8px;
-                ">
-                    {summary_html}
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+        #     st.markdown(
+        #         f"""
+        #         <div style="
+        #             display:flex;
+        #             gap:12px;
+        #             padding:12px 16px;
+        #             background:#F7F0E4;
+        #             border:1px solid #D4C1A7;
+        #             border-radius:8px;
+        #         ">
+        #             {summary_html}
+        #         </div>
+        #         """,
+        #         unsafe_allow_html=True,
+        #     )
 
-            # ---------------------------------------------
-            # Compact date-conflict review
-            # ---------------------------------------------
-            conflicts = preview["date_conflicts"]
+        #     # ---------------------------------------------
+        #     # Compact date-conflict review
+        #     # ---------------------------------------------
+        #     conflicts = preview["date_conflicts"]
 
-            if conflicts:
-                with st.expander(
-                    f"Reading-date conflicts ({len(conflicts)})",
-                    expanded=False,):
-                    rows = []
+        #     if conflicts:
+        #         with st.expander(
+        #             f"Reading-date conflicts ({len(conflicts)})",
+        #             expanded=False,):
+        #             rows = []
 
-                    for conflict in conflicts:
-                        litlas_date = pd.to_datetime(
-                            conflict["litlas_date"],
-                            errors="coerce",
-                        )
-                        goodreads_date = pd.to_datetime(
-                            conflict["goodreads_date"],
-                            errors="coerce",
-                        )
+        #             for conflict in conflicts:
+        #                 litlas_date = pd.to_datetime(
+        #                     conflict["litlas_date"],
+        #                     errors="coerce",
+        #                 )
+        #                 goodreads_date = pd.to_datetime(
+        #                     conflict["goodreads_date"],
+        #                     errors="coerce",
+        #                 )
 
-                        def format_date(value):
-                            if pd.isna(value):
-                                return "Not recorded"
-                            return (
-                                f"{value.day} "
-                                f"{value.strftime('%B %Y')}"
-                            )
+        #                 def format_date(value):
+        #                     if pd.isna(value):
+        #                         return "Not recorded"
+        #                     return (
+        #                         f"{value.day} "
+        #                         f"{value.strftime('%B %Y')}"
+        #                     )
 
-                        title = escape(conflict["title"])
-                        litlas_text = escape(
-                            format_date(litlas_date)
-                        )
-                        goodreads_text = escape(
-                            format_date(goodreads_date)
-                        )
+        #                 title = escape(conflict["title"])
+        #                 litlas_text = escape(
+        #                     format_date(litlas_date)
+        #                 )
+        #                 goodreads_text = escape(
+        #                     format_date(goodreads_date)
+        #                 )
 
-                        rows.append(
-                            f"""
-                            <div style="
-                                display:grid;
-                                grid-template-columns:2fr 1fr 1fr;
-                                gap:14px;
-                                align-items:center;
-                                padding:9px 4px;
-                                border-bottom:1px solid #E4D6C5;
-                                font-family:Georgia,serif;
-                                font-size:13px;
-                                color:#58412F;
-                            ">
-                                <div>{title}</div>
-                                <div>{litlas_text}</div>
-                                <div>{goodreads_text}</div>
-                            </div>
-                            """
-                        )
+        #                 rows.append(
+        #                     f"""
+        #                     <div style="
+        #                         display:grid;
+        #                         grid-template-columns:2fr 1fr 1fr;
+        #                         gap:14px;
+        #                         align-items:center;
+        #                         padding:9px 4px;
+        #                         border-bottom:1px solid #E4D6C5;
+        #                         font-family:Georgia,serif;
+        #                         font-size:13px;
+        #                         color:#58412F;
+        #                     ">
+        #                         <div>{title}</div>
+        #                         <div>{litlas_text}</div>
+        #                         <div>{goodreads_text}</div>
+        #                     </div>
+        #                     """
+        #                 )
 
-                    table_html = f"""
-                    <div style="
-                        background:#F7F0E4;
-                        border-radius:7px;
-                        padding:6px 12px;
-                    ">
-                        <div style="
-                            display:grid;
-                            grid-template-columns:2fr 1fr 1fr;
-                            gap:14px;
-                            padding:8px 4px;
-                            border-bottom:1px solid #C5AA87;
-                            color:#81776E;
-                            font-size:12px;
-                        ">
-                            <div>Book</div>
-                            <div>Litlas</div>
-                            <div>Goodreads</div>
-                        </div>
-                        {''.join(rows)}
-                    </div>
-                    """
+        #             table_html = f"""
+        #             <div style="
+        #                 background:#F7F0E4;
+        #                 border-radius:7px;
+        #                 padding:6px 12px;
+        #             ">
+        #                 <div style="
+        #                     display:grid;
+        #                     grid-template-columns:2fr 1fr 1fr;
+        #                     gap:14px;
+        #                     padding:8px 4px;
+        #                     border-bottom:1px solid #C5AA87;
+        #                     color:#81776E;
+        #                     font-size:12px;
+        #                 ">
+        #                     <div>Book</div>
+        #                     <div>Litlas</div>
+        #                     <div>Goodreads</div>
+        #                 </div>
+        #                 {''.join(rows)}
+        #             </div>
+        #             """
 
-                    st.markdown(
-                        " ".join(dedent(table_html).split()),
-                        unsafe_allow_html=True,
-                    )
+        #             st.markdown(
+        #                 " ".join(dedent(table_html).split()),
+        #                 unsafe_allow_html=True,
+        #             )
 
 
-                # -----------------------------------------
-                # Review and resolve one conflict
-                # -----------------------------------------
-                st.markdown("##### Review a conflict")
+        #         # -----------------------------------------
+        #         # Review and resolve one conflict
+        #         # -----------------------------------------
+        #         st.markdown("##### Review a conflict")
 
-                conflict_options = {
-                    conflict["book_id"]: conflict
-                    for conflict in conflicts
-                }
+        #         conflict_options = {
+        #             conflict["book_id"]: conflict
+        #             for conflict in conflicts
+        #         }
 
-                selected_book_id = st.selectbox(
-                    "Select a book",
-                    options=list(conflict_options),
-                    format_func=lambda book_id: (
-                        conflict_options[book_id]["title"]
-                    ),
-                    index=None,
-                    placeholder="Find a book to review...",
-                    key="goodreads_conflict_book",
-                )
+        #         selected_book_id = st.selectbox(
+        #             "Select a book",
+        #             options=list(conflict_options),
+        #             format_func=lambda book_id: (
+        #                 conflict_options[book_id]["title"]
+        #             ),
+        #             index=None,
+        #             placeholder="Find a book to review...",
+        #             key="goodreads_conflict_book",
+        #         )
 
-                if selected_book_id is not None:
-                    selected = conflict_options[selected_book_id]
+        #         if selected_book_id is not None:
+        #             selected = conflict_options[selected_book_id]
 
-                    litlas_date = pd.to_datetime(
-                        selected["litlas_date"],
-                        errors="coerce",
-                    )
-                    goodreads_date = pd.to_datetime(
-                        selected["goodreads_date"],
-                        errors="coerce",
-                    )
+        #             litlas_date = pd.to_datetime(
+        #                 selected["litlas_date"],
+        #                 errors="coerce",
+        #             )
+        #             goodreads_date = pd.to_datetime(
+        #                 selected["goodreads_date"],
+        #                 errors="coerce",
+        #             )
 
-                    left, right = st.columns(2)
+        #             left, right = st.columns(2)
 
-                    with left:
-                        st.caption("Litlas")
-                        st.write(
-                            litlas_date.strftime("%d %B %Y")
-                            if pd.notna(litlas_date)
-                            else "Not recorded"
-                        )
+        #             with left:
+        #                 st.caption("Litlas")
+        #                 st.write(
+        #                     litlas_date.strftime("%d %B %Y")
+        #                     if pd.notna(litlas_date)
+        #                     else "Not recorded"
+        #                 )
 
-                    with right:
-                        st.caption("Goodreads")
-                        st.write(
-                            goodreads_date.strftime("%d %B %Y")
-                            if pd.notna(goodreads_date)
-                            else "Not recorded"
-                        )
+        #             with right:
+        #                 st.caption("Goodreads")
+        #                 st.write(
+        #                     goodreads_date.strftime("%d %B %Y")
+        #                     if pd.notna(goodreads_date)
+        #                     else "Not recorded"
+        #                 )
 
-                    decision = st.radio(
-                        "Which date is correct?",
-                        [
-                            "Keep Litlas date",
-                            "Use Goodreads date",
-                            "Decide later",
-                        ],
-                        index=2,
-                        horizontal=True,
-                        key=f"goodreads_date_choice_{selected_book_id}",
-                    )
+        #             decision = st.radio(
+        #                 "Which date is correct?",
+        #                 [
+        #                     "Keep Litlas date",
+        #                     "Use Goodreads date",
+        #                     "Decide later",
+        #                 ],
+        #                 index=2,
+        #                 horizontal=True,
+        #                 key=f"goodreads_date_choice_{selected_book_id}",
+        #             )
 
-                    decision_codes = {
-                        "Keep Litlas date": "keep_litlas",
-                        "Use Goodreads date": "use_goodreads",
-                    }
+        #             decision_codes = {
+        #                 "Keep Litlas date": "keep_litlas",
+        #                 "Use Goodreads date": "use_goodreads",
+        #             }
 
-                    if decision != "Decide later":
-                        if st.button(
-                            "Save this decision",
-                            key=f"save_date_resolution_{selected_book_id}",
-                            type="secondary",
-                        ):
-                            try:
-                                resolve_goodreads_date_conflict(
-                                    book_id=selected_book_id,
-                                    litlas_date=selected["litlas_date"],
-                                    goodreads_date=selected["goodreads_date"],
-                                    decision=decision_codes[decision],
-                                    source=preview["source"],
-                                )
-                            except ValueError as exc:
-                                st.error(str(exc))
-                            else:
-                                st.session_state["goodreads_preview"] = (
-                                    preview_goodreads_import(
-                                        preview["source"]
-                                    )
-                                )
-                                st.session_state[
-                                    "goodreads_resolution_message"
-                                ] = (
-                                    f"Resolved: {selected['title']} "
-                                    f"— {decision}"
-                                )
-                                st.rerun()
+        #             if decision != "Decide later":
+        #                 if st.button(
+        #                     "Save this decision",
+        #                     key=f"save_date_resolution_{selected_book_id}",
+        #                     type="secondary",
+        #                 ):
+        #                     try:
+        #                         resolve_goodreads_date_conflict(
+        #                             book_id=selected_book_id,
+        #                             litlas_date=selected["litlas_date"],
+        #                             goodreads_date=selected["goodreads_date"],
+        #                             decision=decision_codes[decision],
+        #                             source=preview["source"],
+        #                         )
+        #                     except ValueError as exc:
+        #                         st.error(str(exc))
+        #                     else:
+        #                         st.session_state["goodreads_preview"] = (
+        #                             preview_goodreads_import(
+        #                                 preview["source"]
+        #                             )
+        #                         )
+        #                         st.session_state[
+        #                             "goodreads_resolution_message"
+        #                         ] = (
+        #                             f"Resolved: {selected['title']} "
+        #                             f"— {decision}"
+        #                         )
+        #                         st.rerun()
 
 
             
-            elif (
-                not preview["new_books"]
-                and not preview["changed_books"]
-            ):
-                st.success("No differences found.")
+        #     elif (
+        #         not preview["new_books"]
+        #         and not preview["changed_books"]
+        #     ):
+        #         st.success("No differences found.")
 
-            if preview["new_books"]:
-                with st.expander(
-                    f"New books ({len(preview['new_books'])})"
-                ):
-                    for book in preview["new_books"]:
-                        st.write(
-                            f"{book['Title']} — {book['Author']}"
-                        )
+        #     if preview["new_books"]:
+        #         with st.expander(
+        #             f"New books ({len(preview['new_books'])})"
+        #         ):
+        #             for book in preview["new_books"]:
+        #                 st.write(
+        #                     f"{book['Title']} — {book['Author']}"
+        #                 )
 
-            if preview["changed_books"]:
-                with st.expander(
-                    f"Other updates ({len(preview['changed_books'])})"
-                ):
-                    for book in preview["changed_books"]:
-                        st.write(
-                            book["title"],
-                            book["changes"],
-                        )
+        #     if preview["changed_books"]:
+        #         with st.expander(
+        #             f"Other updates ({len(preview['changed_books'])})"
+        #         ):
+        #             for book in preview["changed_books"]:
+        #                 st.write(
+        #                     book["title"],
+        #                     book["changes"],
+        #                 )
 
-            if preview["new_authors"]:
-                with st.expander(
-                    f"New authors ({len(preview['new_authors'])})"
-                ):
-                    for author in preview["new_authors"]:
-                        st.write(author)
+        #     if preview["new_authors"]:
+        #         with st.expander(
+        #             f"New authors ({len(preview['new_authors'])})"
+        #         ):
+        #             for author in preview["new_authors"]:
+        #                 st.write(author)

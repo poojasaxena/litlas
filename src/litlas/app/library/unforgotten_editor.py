@@ -1,264 +1,291 @@
+"""Compact owner-only editor for The Unforgotten collection."""
 
-"""Owner-only editor for The Unforgotten collection."""
-
+import pandas as pd
 import streamlit as st
 
 from litlas.db_backend import get_repository, is_postgres
 
 
-def render_unforgotten_editor() -> None:
-    """Add, edit, hide, reorder, and delete literary characters."""
+NEW_ENTRY_KEYS = (
+    "name", "familiar", "work", "reflection", "type", "order", "visible"
+)
 
-    st.subheader("The Unforgotten")
-    st.caption("A collection of characters who remain with us.")
+
+def render_unforgotten_editor() -> None:
+    """Add, edit, hide, reorder and delete literary characters."""
 
     if not is_postgres():
-        st.info("The Unforgotten editor requires PostgreSQL.")
+        st.info("The Unforgotten requires PostgreSQL.")
         return
 
     repo = get_repository()
-
     try:
-        characters = repo.get_unforgotten_characters(
-            include_hidden=True
-        )
+        characters = repo.get_unforgotten_characters(include_hidden=True)
         books = repo.load_read_books()
     except Exception as exc:
         st.error(f"Unable to load The Unforgotten: {exc}")
         return
 
+    # Work choices are linked to existing Litlas works.
     work_options = {}
-
     for _, book in books.iterrows():
         work_id = book.get("Work ID")
-        if work_id is None or str(work_id) == "nan":
+        if pd.isna(work_id):
             continue
-
-        work_id = str(work_id)
-        title = str(book["Work Title"])
-        author = str(book["Author"])
-
-        work_options[work_id] = f"{title} — {author}"
+        work_options[str(work_id)] = (
+            f"{book['Work Title']} — {book['Author']}"
+        )
 
     if not work_options:
-        st.warning("No literary works are available.")
+        st.warning("No literary works available.")
         return
 
-    work_ids = sorted(
-        work_options,
-        key=lambda wid: work_options[wid].casefold(),
-    )
+    work_ids = sorted(work_options, key=lambda wid: work_options[wid].casefold())
+    character_by_id = {int(item["id"]): item for item in characters}
+    choices = [0, *character_by_id]
+    visible_count = sum(bool(c["is_visible"]) for c in characters)
 
-    character_by_id = {
-        int(item["id"]): item for item in characters
-    }
+    # IMPORTANT: reset widget state BEFORE the widgets are instantiated.
+    # This avoids Streamlit's 'cannot be modified after widget instantiated' error.
+    if st.session_state.pop("unforgotten_reset_new", False):
+        for suffix in NEW_ENTRY_KEYS:
+            st.session_state.pop(f"unforgotten_0_{suffix}", None)
 
-    st.caption(
-        f"{len(characters)} characters · "
-        f"{sum(bool(c['is_visible']) for c in characters)} visible"
-    )
+    if st.session_state.pop("unforgotten_select_new", False):
+        st.session_state["unforgotten_selection"] = 0
 
-    choices = [0] + list(character_by_id)
+    if st.session_state.get("unforgotten_selection", 0) not in choices:
+        st.session_state["unforgotten_selection"] = 0
 
-    def character_label(character_id):
+    def character_label(character_id: int) -> str:
         if character_id == 0:
             return "＋ Add new character"
-
         item = character_by_id[character_id]
         suffix = "" if item["is_visible"] else " (hidden)"
         return f"{item['name']} — {item['book']}{suffix}"
 
-    current_selection = st.session_state.get(
-        "unforgotten_selection", 0
+    # Consume confirmation once, before the form is rendered.
+    confirmation = st.session_state.pop("unforgotten_message", None)
+
+    st.subheader("The Unforgotten")
+
+    st.markdown(
+        """
+        <style>
+        .st-key-litlas_unforgotten_panel {
+            max-width: 950px;
+            width: 100%;
+            background: #f8f0e4;
+            border: 1px solid #ddc5a8;
+            border-radius: 11px;
+            padding: 16px 20px 18px;
+            box-sizing: border-box;
+        }
+        .st-key-litlas_unforgotten_panel [data-testid="stVerticalBlock"] {
+            gap: 0.65rem;
+        }
+        .st-key-litlas_unforgotten_panel [data-testid="stForm"] {
+            border: none;
+            padding: 0;
+            background: transparent;
+        }
+        .st-key-litlas_unforgotten_panel [data-testid="stWidgetLabel"] {
+            margin-bottom: 2px;
+        }
+        .st-key-litlas_unforgotten_panel div[data-testid="stCaptionContainer"] {
+            margin: 0;
+        }
+        .st-key-litlas_unforgotten_panel [data-testid="stFormSubmitButton"] button {
+            background: #90684f;
+            color: white;
+            border-color: #90684f;
+        }
+        @media (max-width: 768px) {
+            .st-key-litlas_unforgotten_panel { padding: 12px; }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
     )
 
-    if current_selection not in choices:
-        st.session_state["unforgotten_selection"] = 0
+    with st.container(key="litlas_unforgotten_panel"):
+        # Selector is outside the form: choosing a character updates immediately.
+        col_select, col_count = st.columns(
+            [3, 1], gap="small", vertical_alignment="bottom"
+        )
+        with col_select:
+            selected_id = st.selectbox(
+                "Choose a character",
+                choices,
+                format_func=character_label,
+                key="unforgotten_selection",
+            )
+        with col_count:
+            st.caption(f"{len(characters)} characters · {visible_count} visible")
 
-    selected_id = st.selectbox(
-        "Choose a character",
-        choices,
-        format_func=character_label,
-        key="unforgotten_selection",
-    )
+        item = character_by_id.get(selected_id)
+        next_order = max(
+            (int(c["display_order"]) for c in characters), default=0
+        ) + 1
+        prefix = f"unforgotten_{selected_id}"
+        default_work = str(item["work_id"]) if item else None
 
-    item = character_by_id.get(selected_id)
+        with st.form(f"{prefix}_form", clear_on_submit=False, border=False):
+            col_name, col_familiar, col_work = st.columns(3, gap="small")
+            with col_name:
+                name = st.text_input(
+                    "Character name",
+                    value=item["name"] if item else "",
+                    placeholder="Enter character name...",
+                    key=f"{prefix}_name",
+                )
+            with col_familiar:
+                familiar_name = st.text_input(
+                    "Familiar name",
+                    value=(item["familiar_name"] or "") if item else "",
+                    placeholder="Optional...",
+                    key=f"{prefix}_familiar",
+                )
+            with col_work:
+                work_id = st.selectbox(
+                    "Literary work",
+                    work_ids,
+                    index=(
+                        work_ids.index(default_work)
+                        if default_work in work_ids
+                        else None
+                    ),
+                    placeholder="Find a book...",
+                    format_func=lambda wid: work_options[wid],
+                    key=f"{prefix}_work",
+                )
 
-    default_work = item["work_id"] if item else work_ids[0]
-    if default_work not in work_ids:
-        st.error("The selected character's work is unavailable.")
-        return
-
-    next_order = max(
-        (int(c["display_order"]) for c in characters),
-        default=0,
-    ) + 1
-
-    # Each character gets distinct widget keys so that switching
-    # records loads its own values rather than retaining old inputs.
-    prefix = f"unforgotten_{selected_id}"
-
-    with st.form(f"{prefix}_form"):
-        left, right = st.columns(2)
-
-        with left:
-            name = st.text_input(
-                "Character name",
-                value=item["name"] if item else "",
-                key=f"{prefix}_name",
+            reflection = st.text_input(
+                "Reflection or quotation",
+                value=item["reflection"] if item else "",
+                placeholder="One thought or memorable line...",
+                key=f"{prefix}_reflection",
             )
 
-        with right:
-            familiar_name = st.text_input(
-                "Familiar name",
-                value=(item["familiar_name"] or "") if item else "",
-                key=f"{prefix}_familiar",
+            col_type, col_order, col_visible = st.columns(
+                [2, 1, 1], gap="small", vertical_alignment="bottom"
+            )
+            with col_type:
+                reflection_type = st.radio(
+                    "Reflection type",
+                    ["personal", "quotation"],
+                    index=(
+                        1 if item and item["reflection_type"] == "quotation" else 0
+                    ),
+                    format_func=lambda value: (
+                        "My words" if value == "personal" else "Quotation"
+                    ),
+                    horizontal=True,
+                    key=f"{prefix}_type",
+                )
+            with col_order:
+                display_order = st.number_input(
+                    "Display order",
+                    min_value=0,
+                    value=int(item["display_order"]) if item else next_order,
+                    step=1,
+                    key=f"{prefix}_order",
+                )
+            with col_visible:
+                is_visible = st.checkbox(
+                    "Visible",
+                    value=bool(item["is_visible"]) if item else True,
+                    key=f"{prefix}_visible",
+                )
+
+            _, delete_col, save_col, message_col, _ = st.columns(
+                [1.5, 1, 1, 0.8, 1.5],
+                gap="small",
+                vertical_alignment="center",
             )
 
-        work_id = st.selectbox(
-            "Literary work",
-            work_ids,
-            index=work_ids.index(default_work),
-            format_func=lambda wid: work_options[wid],
-            key=f"{prefix}_work",
-        )
+            with delete_col:
+                delete_requested = st.form_submit_button(
+                    "Delete",
+                    disabled=item is None,
+                    width="stretch",
+                )
 
-        reflection = st.text_area(
-            "Reflection or quotation",
-            value=item["reflection"] if item else "",
-            height=110,
-            key=f"{prefix}_reflection",
-        )
+            with save_col:
+                save_requested = st.form_submit_button(
+                    "Save",
+                    type="secondary",
+                    width="stretch",
+                )
 
-        reflection_type = st.radio(
-            "Reflection type",
-            ["personal", "quotation"],
-            index=(
-                1 if item and item["reflection_type"] == "quotation"
-                else 0
-            ),
-            format_func=lambda value: (
-                "My own words"
-                if value == "personal"
-                else "Literary quotation"
-            ),
-            horizontal=True,
-            key=f"{prefix}_type",
-        )
+            with message_col:
+                if confirmation:
+                    st.markdown(
+                        '<span style="color:#6E4B3A; font-size:13px; '
+                        'white-space:nowrap;">✓ '
+                        f'{confirmation}</span>',
+                        unsafe_allow_html=True,
+                    )
 
-        col_order, col_visible = st.columns(2)
-
-        with col_order:
-            display_order = st.number_input(
-                "Display order",
-                min_value=0,
-                value=(
-                    int(item["display_order"])
-                    if item else next_order
-                ),
-                step=1,
-                key=f"{prefix}_order",
-            )
-
-        with col_visible:
-            is_visible = st.checkbox(
-                "Visible in Reading Statistics",
-                value=bool(item["is_visible"]) if item else True,
-                key=f"{prefix}_visible",
-            )
-
-        save = st.form_submit_button(
-            "Save character",
-            type="primary",
-            use_container_width=True,
-        )
-
-    if save:
-        if not name.strip():
-            st.error("Please enter a character name.")
-        elif not reflection.strip():
-            st.error("Please enter a reflection.")
-        else:
-            try:
+        # Saving resets the form and displays a compact confirmation.
+        if save_requested:
+            if not name.strip():
+                st.error("Please enter a character name.")
+            elif not work_id:
+                st.error("Please select a literary work.")
+            elif not reflection.strip():
+                st.error("Please enter a reflection.")
+            else:
                 details = dict(
                     work_id=work_id,
-                    name=name,
-                    familiar_name=familiar_name,
-                    reflection=reflection,
+                    name=name.strip(),
+                    familiar_name=familiar_name.strip() or None,
+                    reflection=reflection.strip(),
                     reflection_type=reflection_type,
                     display_order=int(display_order),
                     is_visible=is_visible,
                 )
-
-                if item:
-                    repo.update_unforgotten_character(
-                        character_id=selected_id,
-                        **details,
-                    )
+                try:
+                    if item:
+                        repo.update_unforgotten_character(
+                            character_id=selected_id, **details
+                        )
+                    else:
+                        repo.add_unforgotten_character(**details)
+                except Exception as exc:
+                    st.error(f"Unable to save character: {exc}")
                 else:
-                    repo.add_unforgotten_character(**details)
-
-                st.session_state.pop(
-                    "unforgotten_delete_id", None
-                )
-                st.success("Character saved successfully.")
-                st.rerun()
-
-            except Exception as exc:
-                st.error(f"Unable to save character: {exc}")
-
-    if item:
-        st.divider()
-
-        pending_delete = st.session_state.get(
-            "unforgotten_delete_id"
-        )
-
-        if pending_delete == selected_id:
-            st.warning(
-                f"Permanently delete {item['name']}?"
-            )
-
-            confirm, cancel = st.columns(2)
-
-            with confirm:
-                if st.button(
-                    "Confirm deletion",
-                    type="primary",
-                    key=f"{prefix}_confirm_delete",
-                    use_container_width=True,
-                ):
-                    try:
-                        repo.delete_unforgotten_character(
-                            selected_id
-                        )
-                        st.session_state[
-                            "unforgotten_selection"
-                        ] = 0
-                        st.session_state.pop(
-                            "unforgotten_delete_id", None
-                        )
-                        st.rerun()
-                    except Exception as exc:
-                        st.error(f"Unable to delete: {exc}")
-
-            with cancel:
-                if st.button(
-                    "Cancel",
-                    key=f"{prefix}_cancel_delete",
-                    use_container_width=True,
-                ):
-                    st.session_state.pop(
-                        "unforgotten_delete_id", None
-                    )
+                    st.session_state["unforgotten_reset_new"] = True
+                    st.session_state["unforgotten_select_new"] = True
+                    st.session_state.pop("unforgotten_delete_id", None)
+                    st.session_state["unforgotten_message"] = "Saved"
                     st.rerun()
 
-        else:
-            if st.button(
-                "Delete character",
-                key=f"{prefix}_delete",
-            ):
-                st.session_state[
-                    "unforgotten_delete_id"
-                ] = selected_id
-                st.rerun()
+        if delete_requested and item:
+            st.session_state["unforgotten_delete_id"] = selected_id
+
+        if item and st.session_state.get("unforgotten_delete_id") == selected_id:
+            st.caption(f"Permanently delete {item['name']}?")
+            _, confirm_col, cancel_col, _ = st.columns(
+                [2, 1, 1, 2], gap="small"
+            )
+            with confirm_col:
+                if st.button(
+                    "Confirm", key=f"{prefix}_confirm", width="stretch"
+                ):
+                    try:
+                        repo.delete_unforgotten_character(selected_id)
+                    except Exception as exc:
+                        st.error(f"Unable to delete: {exc}")
+                    else:
+                        st.session_state["unforgotten_select_new"] = True
+                        st.session_state["unforgotten_reset_new"] = True
+                        st.session_state.pop("unforgotten_delete_id", None)
+                        st.session_state["unforgotten_message"] = "Deleted"
+                        st.rerun()
+            with cancel_col:
+                if st.button(
+                    "Cancel", key=f"{prefix}_cancel", width="stretch"
+                ):
+                    st.session_state.pop("unforgotten_delete_id", None)
+                    st.rerun()
