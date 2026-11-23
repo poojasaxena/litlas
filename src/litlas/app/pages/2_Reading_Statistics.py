@@ -2251,11 +2251,16 @@ with recent_col:
                 line-height: 1.25;
                 white-space: nowrap;
             }
+
             @media screen and (max-width: 640px) {
                 .litlas-recent-reads {
-                    max-height: 340px;
-                    overflow-y: auto;
-                    overscroll-behavior: contain;
+                    max-height: none;
+                    overflow: visible;
+                }
+
+                /* Show only the three latest books on mobile */
+                .litlas-recent-reads li:nth-child(n+4) {
+                    display: none;
                 }
 
                 [data-testid="stHorizontalBlock"]:has(
