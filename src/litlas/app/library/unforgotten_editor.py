@@ -26,7 +26,6 @@ def render_unforgotten_editor() -> None:
         st.error(f"Unable to load The Unforgotten: {exc}")
         return
 
-    # Work choices are linked to existing Litlas works.
     work_options = {}
     for _, book in books.iterrows():
         work_id = book.get("Work ID")
@@ -42,30 +41,24 @@ def render_unforgotten_editor() -> None:
 
     work_ids = sorted(work_options, key=lambda wid: work_options[wid].casefold())
     character_by_id = {int(item["id"]): item for item in characters}
-    choices = [0, *character_by_id]
     visible_count = sum(bool(c["is_visible"]) for c in characters)
 
-    # IMPORTANT: reset widget state BEFORE the widgets are instantiated.
-    # This avoids Streamlit's 'cannot be modified after widget instantiated' error.
-    if st.session_state.pop("unforgotten_reset_new", False):
+    # A blank selector means a new character.  Reset widget state BEFORE
+    # creating the selector or form widgets (Streamlit requires this).
+    if st.session_state.pop("unforgotten_reset_form", False):
+        st.session_state["unforgotten_selection"] = None
         for suffix in NEW_ENTRY_KEYS:
-            st.session_state.pop(f"unforgotten_0_{suffix}", None)
+            st.session_state.pop(f"unforgotten_new_{suffix}", None)
 
-    if st.session_state.pop("unforgotten_select_new", False):
-        st.session_state["unforgotten_selection"] = 0
-
-    if st.session_state.get("unforgotten_selection", 0) not in choices:
-        st.session_state["unforgotten_selection"] = 0
+    if st.session_state.get("unforgotten_selection") not in (
+        None, *character_by_id.keys()
+    ):
+        st.session_state["unforgotten_selection"] = None
 
     def character_label(character_id: int) -> str:
-        if character_id == 0:
-            return "＋ Add new character"
         item = character_by_id[character_id]
         suffix = "" if item["is_visible"] else " (hidden)"
         return f"{item['name']} — {item['book']}{suffix}"
-
-    # Consume confirmation once, before the form is rendered.
-    confirmation = st.session_state.pop("unforgotten_message", None)
 
     st.subheader("The Unforgotten")
 
@@ -109,14 +102,15 @@ def render_unforgotten_editor() -> None:
     )
 
     with st.container(key="litlas_unforgotten_panel"):
-        # Selector is outside the form: choosing a character updates immediately.
         col_select, col_count = st.columns(
             [3, 1], gap="small", vertical_alignment="bottom"
         )
         with col_select:
             selected_id = st.selectbox(
-                "Choose a character",
-                choices,
+                "Edit an existing character (optional)",
+                options=list(character_by_id),
+                index=None,
+                placeholder="Select a character to edit; otherwise add below...",
                 format_func=character_label,
                 key="unforgotten_selection",
             )
@@ -127,7 +121,7 @@ def render_unforgotten_editor() -> None:
         next_order = max(
             (int(c["display_order"]) for c in characters), default=0
         ) + 1
-        prefix = f"unforgotten_{selected_id}"
+        prefix = f"unforgotten_{selected_id}" if item else "unforgotten_new"
         default_work = str(item["work_id"]) if item else None
 
         with st.form(f"{prefix}_form", clear_on_submit=False, border=False):
@@ -152,8 +146,7 @@ def render_unforgotten_editor() -> None:
                     work_ids,
                     index=(
                         work_ids.index(default_work)
-                        if default_work in work_ids
-                        else None
+                        if default_work in work_ids else None
                     ),
                     placeholder="Find a book...",
                     format_func=lambda wid: work_options[wid],
@@ -175,7 +168,8 @@ def render_unforgotten_editor() -> None:
                     "Reflection type",
                     ["personal", "quotation"],
                     index=(
-                        1 if item and item["reflection_type"] == "quotation" else 0
+                        1 if item and item["reflection_type"] == "quotation"
+                        else 0
                     ),
                     format_func=lambda value: (
                         "My words" if value == "personal" else "Quotation"
@@ -203,31 +197,23 @@ def render_unforgotten_editor() -> None:
                 gap="small",
                 vertical_alignment="center",
             )
-
             with delete_col:
                 delete_requested = st.form_submit_button(
-                    "Delete",
-                    disabled=item is None,
-                    width="stretch",
+                    "Delete", disabled=item is None, width="stretch"
                 )
-
             with save_col:
                 save_requested = st.form_submit_button(
-                    "Save",
-                    type="secondary",
-                    width="stretch",
+                    "Save", type="secondary", width="stretch"
                 )
-
             with message_col:
-                if confirmation:
+                message = st.session_state.pop("unforgotten_message", None)
+                if message:
                     st.markdown(
-                        '<span style="color:#6E4B3A; font-size:13px; '
-                        'white-space:nowrap;">✓ '
-                        f'{confirmation}</span>',
+                        f'<span style="color:#90684f;font-size:13px;'
+                        f'white-space:nowrap;">✓ {message}</span>',
                         unsafe_allow_html=True,
                     )
 
-        # Saving resets the form and displays a compact confirmation.
         if save_requested:
             if not name.strip():
                 st.error("Please enter a character name.")
@@ -255,8 +241,7 @@ def render_unforgotten_editor() -> None:
                 except Exception as exc:
                     st.error(f"Unable to save character: {exc}")
                 else:
-                    st.session_state["unforgotten_reset_new"] = True
-                    st.session_state["unforgotten_select_new"] = True
+                    st.session_state["unforgotten_reset_form"] = True
                     st.session_state.pop("unforgotten_delete_id", None)
                     st.session_state["unforgotten_message"] = "Saved"
                     st.rerun()
@@ -278,8 +263,7 @@ def render_unforgotten_editor() -> None:
                     except Exception as exc:
                         st.error(f"Unable to delete: {exc}")
                     else:
-                        st.session_state["unforgotten_select_new"] = True
-                        st.session_state["unforgotten_reset_new"] = True
+                        st.session_state["unforgotten_reset_form"] = True
                         st.session_state.pop("unforgotten_delete_id", None)
                         st.session_state["unforgotten_message"] = "Deleted"
                         st.rerun()
