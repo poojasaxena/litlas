@@ -6,7 +6,7 @@ Visualization of unforgettable literary characters.
 import base64
 import html
 import streamlit as st
-
+from litlas.db_backend import get_repository
 
 # =====================================================
 # THE UNFORGOTTEN — LAYOUT CONTROLS
@@ -231,6 +231,9 @@ ORNAMENT_IMAGE = base64.b64encode(
 def render_unforgotten():
     """Render The Unforgotten as a compact literary card collection."""
 
+    repo = get_repository()
+    characters = repo.list_unforgotten()
+
     min_height_css = (
         f"min-height: {CARD_MIN_HEIGHT}px;"
         if CARD_MIN_HEIGHT > 0
@@ -380,7 +383,7 @@ def render_unforgotten():
 
     cards = []
 
-    for item in UNFORGOTTEN:
+    for item in characters:
         name = html.escape(item["name"])
         short = html.escape(item["short"])
         book = html.escape(item["book"])

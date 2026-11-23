@@ -1067,3 +1067,204 @@ def verify_author_country(author_id, country, iso3):
 
         if cursor.rowcount != 1:
             raise ValueError("Author not found or already manually verified.")
+
+
+
+# ============================================================
+# THE UNFORGOTTEN — Literary Character Collection
+# ============================================================
+
+REFLECTION_TYPES = ("personal", "quotation")
+
+
+def get_unforgotten_characters(include_hidden: bool = False) -> list[dict]:
+    """Return characters with their literary work and author details.
+
+    Public views receive visible characters only.
+    Library Management can request all characters.
+    """
+    visibility_filter = "" if include_hidden else "WHERE uc.is_visible = TRUE"
+
+    query = f"""
+        SELECT
+            uc.id,
+            uc.work_id,
+            uc.name,
+            uc.familiar_name,
+            uc.reflection,
+            uc.reflection_type,
+            uc.display_order,
+            uc.is_visible,
+            w.title AS book,
+            a.name AS author
+        FROM unforgotten_characters AS uc
+        JOIN works AS w ON w.id = uc.work_id
+        JOIN authors AS a ON a.id = w.author_id
+        {visibility_filter}
+        ORDER BY
+            uc.display_order,
+            uc.id
+    """
+
+    with connect() as db:
+        return [dict(row) for row in db.execute(query)]
+
+
+def add_unforgotten_character(
+    work_id: str,
+    name: str,
+    reflection: str,
+    familiar_name: str | None = None,
+    reflection_type: str = "personal",
+    display_order: int | None = None,
+    is_visible: bool = True,
+) -> int:
+    """Add a memorable character linked to an existing Litlas work."""
+
+    work_id = str(work_id).strip()
+    name = " ".join(name.split())
+    familiar_name = (
+        " ".join(familiar_name.split()) if familiar_name else None
+    )
+    reflection = reflection.strip()
+
+    if not work_id:
+        raise ValueError("Please select a book.")
+
+    if not name:
+        raise ValueError("Character name cannot be empty.")
+
+    if not reflection:
+        raise ValueError("Reflection cannot be empty.")
+
+    if reflection_type not in REFLECTION_TYPES:
+        raise ValueError("Invalid reflection type.")
+
+    with connect() as db:
+        work = db.execute(
+            "SELECT id FROM works WHERE id = %s",
+            (work_id,),
+        ).fetchone()
+
+        if work is None:
+            raise ValueError("Selected literary work does not exist.")
+
+        if display_order is None:
+            # Serialize automatic ordering across concurrent additions.
+            db.execute(
+                "SELECT pg_advisory_xact_lock(7142184)"
+            )
+            row = db.execute(
+                """
+                SELECT COALESCE(MAX(display_order), 0) + 1 AS next_order
+                FROM unforgotten_characters
+                """
+            ).fetchone()
+            display_order = row["next_order"]
+
+        cursor = db.execute(
+            """
+            INSERT INTO unforgotten_characters (
+                work_id,
+                name,
+                familiar_name,
+                reflection,
+                reflection_type,
+                display_order,
+                is_visible
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
+            """,
+            (
+                work_id,
+                name,
+                familiar_name,
+                reflection,
+                reflection_type,
+                int(display_order),
+                bool(is_visible),
+            ),
+        )
+
+        return cursor.fetchone()["id"]
+
+
+def update_unforgotten_character(
+    character_id: int,
+    work_id: str,
+    name: str,
+    reflection: str,
+    familiar_name: str | None = None,
+    reflection_type: str = "personal",
+    display_order: int = 0,
+    is_visible: bool = True,
+) -> None:
+    """Update an existing character's details."""
+
+    work_id = str(work_id).strip()
+    name = " ".join(name.split())
+    familiar_name = (
+        " ".join(familiar_name.split()) if familiar_name else None
+    )
+    reflection = reflection.strip()
+
+    if not work_id:
+        raise ValueError("Please select a book.")
+
+    if not name:
+        raise ValueError("Character name cannot be empty.")
+
+    if not reflection:
+        raise ValueError("Reflection cannot be empty.")
+
+    if reflection_type not in REFLECTION_TYPES:
+        raise ValueError("Invalid reflection type.")
+
+    with connect() as db:
+        cursor = db.execute(
+            """
+            UPDATE unforgotten_characters
+            SET
+                work_id = %s,
+                name = %s,
+                familiar_name = %s,
+                reflection = %s,
+                reflection_type = %s,
+                display_order = %s,
+                is_visible = %s
+            WHERE id = %s
+            """,
+            (
+                work_id,
+                name,
+                familiar_name,
+                reflection,
+                reflection_type,
+                int(display_order),
+                bool(is_visible),
+                int(character_id),
+            ),
+        )
+
+        if cursor.rowcount != 1:
+            raise ValueError("Character not found.")
+
+
+def delete_unforgotten_character(character_id: int) -> str:
+    """Delete a character and return its name."""
+
+    with connect() as db:
+        row = db.execute(
+            """
+            DELETE FROM unforgotten_characters
+            WHERE id = %s
+            RETURNING name
+            """,
+            (int(character_id),),
+        ).fetchone()
+
+        if row is None:
+            raise ValueError("Character not found.")
+
+        return row["name"]
