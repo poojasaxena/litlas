@@ -5,6 +5,7 @@ Visualization of unforgettable literary characters.
 
 import base64
 import html
+import re
 import streamlit as st
 from litlas.db_backend import get_repository
 
@@ -51,6 +52,10 @@ SCROLL_HEIGHT = 400          # Maximum grid height when scrolling (px)
 # Responsive layout
 SINGLE_COLUMN_BREAKPOINT = 340  # Grid container width (px)
 
+# Devanagari typography
+DEVANAGARI_NAME_SIZE = 17
+DEVANAGARI_REFLECTION_SIZE = 14
+DEVANAGARI_REFLECTION_LINE_HEIGHT = 1.4
 
 # =====================================================
 # CHARACTER DATA
@@ -367,6 +372,15 @@ def render_unforgotten():
             overflow-wrap: break-word;
         }}
 
+        .litlas-unforgotten-card.devanagari .litlas-unforgotten-name {{
+            font-size: {DEVANAGARI_NAME_SIZE}px;
+        }}
+
+        .litlas-unforgotten-card.devanagari .litlas-unforgotten-reflection {{
+            font-size: {DEVANAGARI_REFLECTION_SIZE}px;
+            line-height: {DEVANAGARI_REFLECTION_LINE_HEIGHT};
+        }}
+
         @container (max-width: {SINGLE_COLUMN_BREAKPOINT}px) {{
             .litlas-unforgotten-grid {{
                 grid-template-columns: 1fr;
@@ -388,9 +402,14 @@ def render_unforgotten():
         short = html.escape(item["familiar_name"] or "")
         book = html.escape(item["book"])
         reflection = html.escape(item["reflection"])
+        is_devanagari = bool(
+            re.search(r"[\u0900-\u097F]", name + reflection)
+        )
+
+        script_class = " devanagari" if is_devanagari else ""
 
         card = f"""
-        <div class="litlas-unforgotten-card">
+        <div class="litlas-unforgotten-card{script_class}">
 
             <div class="litlas-unforgotten-icon">
                 <img

@@ -2660,7 +2660,7 @@ with ratings_col:
 # ---------------------------------------------------------
 
 characters_col, history_col, highlights_col = st.columns(
-    [1.8, 2.5, 0.8],
+    [1.8, 2.4, 0.9],
     gap="small",
 )
 
