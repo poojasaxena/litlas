@@ -322,7 +322,7 @@ st.html("""
     }
 
     .litlas-about-signoff {
-        margin-top: 2px;
+        margin-top: 8px;
     }
 
     .litlas-about-personal-logo {
