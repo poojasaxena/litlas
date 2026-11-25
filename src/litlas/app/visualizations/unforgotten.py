@@ -48,7 +48,7 @@ SUBTITLE_TOP_GAP = 4         # Space between title and subtitle (px)
 # Optional scrolling
 ENABLE_SCROLL = True        # Change to True to enable scrolling
 SCROLL_HEIGHT = 400          # Maximum grid height when scrolling (px)
-MOBILE_SCROLL_HEIGHT = 300       # Maximum grid height on mobile when scrolling (px)
+MOBILE_SCROLL_HEIGHT = 320       # Maximum grid height on mobile when scrolling (px)
 
 # Responsive layout
 SINGLE_COLUMN_BREAKPOINT = 340  # Grid container width (px)
