@@ -48,6 +48,7 @@ SUBTITLE_TOP_GAP = 4         # Space between title and subtitle (px)
 # Optional scrolling
 ENABLE_SCROLL = True        # Change to True to enable scrolling
 SCROLL_HEIGHT = 400          # Maximum grid height when scrolling (px)
+MOBILE_SCROLL_HEIGHT = 300       # Maximum grid height on mobile when scrolling (px)
 
 # Responsive layout
 SINGLE_COLUMN_BREAKPOINT = 340  # Grid container width (px)
@@ -384,6 +385,8 @@ def render_unforgotten():
         @container (max-width: {SINGLE_COLUMN_BREAKPOINT}px) {{
             .litlas-unforgotten-grid {{
                 grid-template-columns: 1fr;
+                max-height: {MOBILE_SCROLL_HEIGHT}px;
+                overflow-y: auto;
             }}
         }}
 
