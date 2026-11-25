@@ -53,7 +53,7 @@ MOBILE_SCROLL_HEIGHT = 320       # Maximum grid height on mobile when scrolling 
 # Responsive layout
 SINGLE_COLUMN_BREAKPOINT = 340  # Grid container width (px)
 
-# Devanagari typography
+# Devanagari some typography adjustments
 DEVANAGARI_NAME_SIZE = 17
 DEVANAGARI_REFLECTION_SIZE = 14
 DEVANAGARI_REFLECTION_LINE_HEIGHT = 1.4
@@ -390,6 +390,19 @@ def render_unforgotten():
             }}
         }}
 
+        .litlas-unforgotten-subtitle .subtitle-mobile {{
+            display: none;
+        }}
+
+        @media (max-width: 600px) {{
+            .litlas-unforgotten-subtitle .subtitle-desktop {{
+                display: none;
+            }}
+
+            .litlas-unforgotten-subtitle .subtitle-mobile {{
+                display: inline;
+            }}
+        }}
         </style>
         """
     )
@@ -463,7 +476,12 @@ def render_unforgotten():
                 </div>
 
                 <div class="litlas-unforgotten-subtitle">
-                    Some characters leave the page, but never leave us.
+                    <span class="subtitle-desktop">
+                        Some characters leave the page, but never leave us.
+                    </span>
+                    <span class="subtitle-mobile">
+                        Beyond the pages, they stay with us.
+                    </span>
                 </div>
             </div>
 
