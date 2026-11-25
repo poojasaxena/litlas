@@ -75,8 +75,8 @@ render_page_header(
     mobile_eyebrow_offset_y=-10,    # Move the eyebrow up 9 px
     mobile_title_offset_x=50,
     mobile_title_offset_y=-10,  # Move the large Litlas lettering up 12 px
-    mobile_ornament_width=100,   # Thin decorative line
-    mobile_ornament_offset_x=12,
+    mobile_ornament_width=90,   # Thin decorative line
+    mobile_ornament_offset_x=10,
     mobile_ornament_offset_y=-12,  # Move the line up
     mobile_subtitle_offset_x=13, # Where stories meet the world
     mobile_subtitle_offset_y=-12,  # Move “Where stories meet the world” up
