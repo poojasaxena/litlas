@@ -131,10 +131,10 @@ Suggested smoke tests before publishing or updating the hosted version:
 
 ## Project status
 
-**Active development — version 0.4.0.**
+Active development — version 0.4.0.
 
 ## Credits
 
-Created and maintained by **[Your publishing name]**.
+Created and maintained by Pooja Saxena
 
 Litlas is a personal project celebrating the places, authors, and books that shape a reading life.
