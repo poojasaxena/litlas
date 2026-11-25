@@ -1154,6 +1154,39 @@ div[role="dialog"]:has(.st-key-litlas_year_books, .st-key-litlas_rating_books)
     white-space: nowrap;
 }
 
+/* Highlights — compact mobile layout */
+@media screen and (max-width: 640px) {
+
+    .litlas-highlight-row {
+        grid-template-columns: 32px minmax(0, 1fr) auto;
+        column-gap: 6px;
+        row-gap: 0;
+        padding: 6px 0;
+        align-items: start;
+        font-size: 12px;
+    }
+
+    .litlas-highlight-year {
+        font-size: 11px;
+    }
+
+    .litlas-highlight-title {
+        min-width: 0;
+    }
+
+    .litlas-highlight-author {
+        font-size: 11px;
+        margin-top: 2px;
+    }
+
+    .litlas-highlight-stars {
+        grid-column: 3;
+        grid-row: 1;
+        justify-self: end;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+}
 </style>
 """)
 
