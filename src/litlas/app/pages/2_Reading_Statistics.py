@@ -1607,7 +1607,7 @@ with col5:
         '<div class="litlas-nobel-panel">'
         '<div class="litlas-nobel-title">Literary Marathons</div>'
         '<div class="litlas-nobel-caption">'
-        'Books exceeding 600 pages'
+        'Books exceeding 500 pages'
         '</div>'
         f'{content}'
         '</div>'

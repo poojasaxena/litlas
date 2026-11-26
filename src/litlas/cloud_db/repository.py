@@ -295,7 +295,7 @@ def get_page_statistics():
             JOIN authors a ON a.id = b.author_id
             WHERE b.shelf = 'read'
               AND b.excluded_from_display = 0
-              AND COALESCE(b.pages_override, b.pages) > 600
+              AND COALESCE(b.pages_override, b.pages) > 500
             ORDER BY pages DESC, title
         """).fetchall()
 
