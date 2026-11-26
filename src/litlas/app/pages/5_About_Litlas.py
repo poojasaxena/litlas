@@ -8,6 +8,7 @@ import streamlit as st
 
 from litlas.app.ui import apply_page_style, load_logo_path, render_page_header, is_mobile_browser
 from litlas.processing.paths import ILLUSTRATIONS_DIR
+from litlas.app.visualizations.unforgotten import ORNAMENT_IMAGE
 
 # -------------------------------------------------
 # Page configuration
@@ -109,6 +110,18 @@ st.html("""
     text-align: center;
 }
 
+.litlas-about-ornament {
+    width: 75px;
+    margin: 0 auto 8px;
+    opacity: 0.9;
+}
+
+.litlas-about-ornament svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
 .litlas-about .litlas-about-title {
     margin: 0 0 13px;
     padding: 0;
@@ -182,6 +195,11 @@ st.html("""
 @media screen and (width > 840px) {
     [data-testid="stMain"]:has(.litlas-about) {
         overflow-x: clip;
+    }
+
+    .litlas-about-ornament {
+        width: 60px;
+        margin-bottom: 5px;
     }
 
     .litlas-about {
@@ -398,6 +416,9 @@ st.html(f"""
     <div class="litlas-about-reading-page">
         <img class="litlas-about-watercolor" src="data:image/png;base64,{watercolor_src}" alt="">
         <div class="litlas-about-story">
+            <div class="litlas-about-ornament" aria-hidden="true">
+                <img src="data:image/svg+xml;base64,{ORNAMENT_IMAGE}" alt="">
+            </div>
             <h2 id="litlas-about-title" class="litlas-about-title">The Stories I Carry</h2>
             <p>
                 <span class="litlas-drop-cap">I</span> am an enthusiastic reader with a curiosity for
