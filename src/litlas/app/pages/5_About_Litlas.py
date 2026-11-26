@@ -199,7 +199,7 @@ st.html("""
 
     .litlas-about-ornament {
         width: 30px;
-        margin-bottom: 0;
+        margin-bottom: -2px;
     }
 
     .litlas-about {
