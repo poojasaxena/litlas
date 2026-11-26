@@ -198,8 +198,8 @@ st.html("""
     }
 
     .litlas-about-ornament {
-        width: 60px;
-        margin-bottom: 5px;
+        width: 30px;
+        margin-bottom: 3px;
     }
 
     .litlas-about {
