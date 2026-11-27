@@ -197,11 +197,6 @@ st.html("""
         overflow-x: clip;
     }
 
-    .litlas-about-ornament {
-        width: 30px;
-        margin-bottom: -2px;
-    }
-
     .litlas-about {
         position: relative;
         isolation: isolate;
@@ -314,6 +309,11 @@ st.html("""
         line-height: 1.3;
         padding-top: 0;
         margin-top: -15px !important;
+    }
+
+    .litlas-about-ornament {
+        width: 30px;
+        margin-bottom: -2px;
     }
 
     .litlas-about-watercolor {
