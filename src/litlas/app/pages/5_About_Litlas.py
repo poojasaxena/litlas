@@ -53,7 +53,7 @@ render_page_header(
     mobile_title_width=360,      # Large decorative page title (Literary Atlas here)
     mobile_title_offset_x=17,
     mobile_title_offset_y=-12,  # Move the large Litlas lettering up 12 px
-    mobile_ornament_width=120,   # Thin decorative line
+    mobile_ornament_width=100,   # Thin decorative line
     mobile_ornament_offset_x=12,
     mobile_ornament_offset_y=-14,  # Move the line up
     mobile_subtitle_offset_x=13,
