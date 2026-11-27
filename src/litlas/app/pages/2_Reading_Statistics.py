@@ -1221,7 +1221,7 @@ render_page_header(
     mobile_ornament_offset_x=12,
     mobile_ornament_offset_y=-15,  # Move the line up
     mobile_subtitle_offset_x=13, # Where stories meet the world
-    mobile_subtitle_offset_y=-14,  # Move “Where stories meet the world” up
+    mobile_subtitle_offset_y=-16,  # Move “Where stories meet the world” up
     mobile_header_bottom_gap=-20,  # Pull the mobile navigation up toward the header
 )
 
