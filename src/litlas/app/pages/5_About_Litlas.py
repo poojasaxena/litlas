@@ -325,7 +325,7 @@ st.html("""
         max-width: none;
         height: auto;
         transform: none;
-        opacity: 0.65;
+        opacity: 0.55;
         mask-image: linear-gradient(
             to right,
             transparent 52%,
