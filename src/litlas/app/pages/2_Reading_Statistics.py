@@ -1203,6 +1203,7 @@ render_page_header(
     ornament_width=260,
 
     # Mobile illustration on the left
+    mobile_title_svg="statistics.svg",
     mobile_illustration_size=100,
     mobile_illustration_top=0,  # Move the illustration up 4 px
 
