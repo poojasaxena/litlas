@@ -175,6 +175,7 @@ if is_postgres():
 # Library Management tools
 # ---------------------------------------------------------
 
+
 TOOLS = [
     ("Add a Book", "📚"),
     ("Edit a Book", "📖"),
@@ -577,6 +578,15 @@ st.markdown(
         white-space: normal !important;
     }
 
+    /* Unforgotten — smaller mobile label */
+    .st-key-litlas_library_navigation
+    .st-key-tool_Unforgotten
+    button:is([kind="secondary"], [kind="primary"])
+    [data-testid="stMarkdownContainer"] p {
+        font-size: 9px !important;
+        letter-spacing: -0.2px !important;
+        white-space: nowrap !important;
+    }
     /* Scale down the custom Add a Book illustration */
     .st-key-litlas_library_navigation
     .st-key-tool_add_book
