@@ -583,7 +583,7 @@ st.markdown(
     .st-key-tool_Unforgotten
     button:is([kind="secondary"], [kind="primary"])
     [data-testid="stMarkdownContainer"] p {
-        font-size: 9px !important;
+        font-size: 8px !important;
         letter-spacing: -0.2px !important;
         white-space: nowrap !important;
     }
