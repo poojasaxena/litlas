@@ -1212,8 +1212,8 @@ render_page_header(
     mobile_heading_offset_x=-45, # Move the entire text group left 45 px
 
     # Individual elements, from top to bottom
-    mobile_eyebrow_offset_x=15,
-    mobile_eyebrow_offset_y=-16,    # Move the eyebrow up 9 px
+    mobile_eyebrow_offset_x=18,
+    mobile_eyebrow_offset_y=-14,    # Move the eyebrow up 9 px
     mobile_title_width=180,      # Large decorative page title (Literary Atlas here)
     mobile_title_offset_x=50,
     mobile_title_offset_y=-16,  # Move the large Litlas lettering up 12 px
