@@ -1215,10 +1215,10 @@ render_page_header(
     mobile_eyebrow_offset_x=18,
     mobile_eyebrow_offset_y=-14,    # Move the eyebrow up 9 px
     mobile_title_width=190,      # Large decorative page title (Literary Atlas here)
-    mobile_title_offset_x=40,
+    mobile_title_offset_x=38,
     mobile_title_offset_y=-16,  # Move the large Litlas lettering up 12 px
-    mobile_ornament_width=80,   # Thin decorative line
-    mobile_ornament_offset_x=16,
+    mobile_ornament_width=90,   # Thin decorative line
+    mobile_ornament_offset_x=18,
     mobile_ornament_offset_y=-15,  # Move the line up
     mobile_subtitle_offset_x=16, # Where stories meet the world
     mobile_subtitle_offset_y=-16,  # Move “Where stories meet the world” up
