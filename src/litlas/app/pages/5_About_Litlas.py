@@ -312,7 +312,7 @@ st.html("""
     }
 
     .litlas-about-ornament {
-        width: 40px;
+        width: 50px;
         margin-bottom: -2px;
     }
 
