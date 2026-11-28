@@ -146,7 +146,7 @@ def render_book_editor_contents(show_heading=True):
 
     if show_heading:
         st.subheader("Library Editor")
-        st.caption("Edit book titles, personal ratings, and page counts.")
+        st.caption("Edit book titles, ratings, page counts, and reading notes.")
 
     book_options = {
         str(row["goodreads_id"]): f'{row["display_title"]} — {row["author"]}'
@@ -273,9 +273,10 @@ def render_book_editor_contents(show_heading=True):
                 )
 
         with save_col:
-            with st.form("book_save_form", border=False):
-                submitted = st.form_submit_button(
+            with st.container(key="book_save_area"):
+                submitted = st.button(
                     "Save to Litlas",
+                    key="book_save_button",
                     use_container_width=True,
                 )
 

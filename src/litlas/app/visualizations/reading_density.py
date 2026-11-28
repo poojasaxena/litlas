@@ -213,6 +213,48 @@ class ReadingDensitySwitch(MacroElement):
                 panel.setAttribute("role", "group");
                 panel.setAttribute("aria-label", "Map view");
 
+                // Mobile-only expandable control
+                const mobileToggle = L.DomUtil.create(
+                    "button", "litlas-density-toggle", panel
+                );
+
+                mobileToggle.type = "button";
+                mobileToggle.setAttribute("aria-label", "Expand map view");
+                mobileToggle.setAttribute("aria-expanded", "false");
+
+                mobileToggle.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        width="16" height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M12 2 2 7l10 5 10-5-10-5Z"/>
+                        <path d="m2 12 10 5 10-5"/>
+                        <path d="m2 17 10 5 10-5"/>
+                    </svg>
+                `;
+
+                function setExpanded(expanded) {
+                    panel.classList.toggle("is-expanded", expanded);
+                    mobileToggle.setAttribute("aria-expanded", String(expanded));
+                    mobileToggle.setAttribute(
+                        "aria-label",
+                        expanded ? "Collapse map view" : "Expand map view"
+                    );
+                }
+
+                mobileToggle.addEventListener("click", () => {
+                    setExpanded(!panel.classList.contains("is-expanded"));
+                });
+
+                // Collapse when interacting with the map
+                map.on("click popupopen dragstart", () => {
+                    setExpanded(false);
+                });
+
                 function button(label) {
                     const item = L.DomUtil.create("button", "", panel);
                     item.type = "button";
@@ -243,6 +285,8 @@ class ReadingDensitySwitch(MacroElement):
                 }
                 densityButton.addEventListener("click", () => {
                     selectDensity(compact ? !enabled : true);
+                    setExpanded(false);
+
                 });
                 selectDensity(false);
 
@@ -295,6 +339,54 @@ class ReadingDensitySwitch(MacroElement):
             }
             .litlas-explorer-control[hidden] {
                 display: none;
+            }
+
+            /* Hide the expandable icon on desktop */
+            .litlas-density-switch .litlas-density-toggle {
+                display: none;
+            }
+
+            /* Preserve the original desktop button border */
+            .litlas-density-switch .litlas-density-toggle + button {
+                border-left: 0;
+            }
+
+            /* Mobile-only collapsible density control */
+            @media (max-width: 640px) {
+
+                .litlas-density-switch .litlas-density-toggle {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 28px;
+                    min-height: 28px;
+                    padding: 0;
+                    color: #896A50;
+                }
+
+                /* Hide original buttons while collapsed */
+                .litlas-density-switch:not(.is-expanded)
+                button:not(.litlas-density-toggle) {
+                    display: none;
+                }
+
+                /* Reveal original buttons when expanded */
+                .litlas-density-switch.is-expanded
+                button:not(.litlas-density-toggle) {
+                    display: inline-block;
+                }
+
+                /* Separator when expanded */
+                .litlas-density-switch.is-expanded
+                .litlas-density-toggle + button {
+                    border-left: 1px solid #D4C1A7;
+                }
+
+                /* Highlight icon when reading density is active */
+                .litlas-density-switch:has(button[aria-pressed="true"])
+                .litlas-density-toggle {
+                    background: #E6D8C3;
+                }
             }
 
             @media (max-width: 640px) {

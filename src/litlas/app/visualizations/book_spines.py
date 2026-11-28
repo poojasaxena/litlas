@@ -69,8 +69,17 @@ def _spine_parts(rating: str):
     """Read one spine image once, enhance it, and preserve decorative ends."""
     path = BOOK_SPINES_DIR / f"rating_{rating.replace('.', '_')}.png"
 
+
     with Image.open(path) as source:
         spine = source.convert("RGBA")
+
+        # Ignore nearly transparent pixels when detecting boundaries
+        alpha = spine.getchannel("A")
+        bbox = alpha.point(lambda p: 255 if p > 128 else 0).getbbox()
+
+        if bbox:
+            spine = spine.crop(bbox)
+
         spine = _enhance_spine(spine)
 
         width, height = spine.size

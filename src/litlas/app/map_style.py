@@ -94,6 +94,23 @@ def apply_map_style(m: folium.Map) -> None:
         .leaflet-interactive:focus {
             outline: none !important;
         }
+
+        /* Compact country tooltips on mobile */
+        @media screen and (max-width: 640px) {
+            .leaflet-tooltip {
+                font-size: 10px !important;
+                font-family: Georgia, serif !important;
+                padding: 3px 5px !important;
+                line-height: 1.2 !important;
+            }
+        }
+        /* Vintage country tooltip styling */
+        .leaflet-tooltip {
+            background: #FAF7F1 !important;
+            color: #58412F !important;
+            border: 1px solid #D4C1A7 !important;
+            border-radius: 4px !important;
+        }
     </style>
     """).substitute(ocean_color=OCEAN_COLOR)))
 
@@ -130,7 +147,7 @@ def create_litlas_map(mobile_focus=False) -> folium.Map:
         location=[15, 0],
         zoom_start=2,
         tiles=None,
-        control_scale=True,
+        control_scale=False,
         prefer_canvas=False,
         world_copy_jump=True,
         zoom_control=True,
